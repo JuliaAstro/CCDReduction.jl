@@ -1,6 +1,6 @@
 # CCDReduction.jl
 
-A package for performing astronomical data reduction and processing. 
+A package for performing CCD data reduction and processing. 
 
 ## Roadmap
 
