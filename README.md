@@ -1,4 +1,4 @@
-# Processing.jl
+# CCDReduction.jl
 
 A package for performing astronomical data reduction and processing. 
 
