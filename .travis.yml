@@ -4,21 +4,18 @@ os:
   - linux
   - osx
   - freebsd
+  - windows
 
 julia:
   - 1.0
   - 1.4
   - nightly
 
-env:
-  - DATADEPS_ALWAYS_ACCEPT=true
-
 notifications:
   email: false
 
 cache:
   directories:
-    - $HOME/.julia/datadeps
     - $HOME/.julia/artifacts
 
 branches:
