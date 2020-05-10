@@ -1,7 +1,7 @@
 # CCDReduction.jl
 
-[![Build Status](https://travis-ci.com/siddharthlal25/CCDReduction.jl.svg?branch=master)](https://travis-ci.com/siddharthlal25/CCDReduction.jl)
-[![Codecov](https://codecov.io/gh/siddharthlal25/CCDReduction.jl/branch/master/graph/badge.svg)](https://codecov.io/gh/siddharthlal25/CCDReduction.jl)
+[![Build Status](https://travis-ci.com/juliaastro/CCDReduction.jl.svg?branch=master)](https://travis-ci.com/juliaastro/CCDReduction.jl)
+[![Codecov](https://codecov.io/gh/juliaastro/CCDReduction.jl/branch/master/graph/badge.svg)](https://codecov.io/gh/juliaastro/CCDReduction.jl)
 [![License](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 [![Stable](https://img.shields.io/badge/docs-stable-blue.svg)](https://juliaastro.github.io/CCDReduction.jl/stable)
