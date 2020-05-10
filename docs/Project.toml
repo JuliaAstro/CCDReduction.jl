@@ -1,0 +1,6 @@
+[deps]
+CCDReduction = "b790e538-3052-4cb9-9f1f-e05859a455f5"
+Documenter = "e30172f5-a6a5-5a46-863b-614d45cd2de4"
+
+[compat]
+Documenter = "0.24"
