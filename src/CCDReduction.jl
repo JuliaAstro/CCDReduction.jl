@@ -1,5 +1,8 @@
 module CCDReduction
 
-greet() = print("Hello World!")
+export bias_subtraction,
+       bias_subtraction!
 
-end # module
+include("methods.jl")
+
+end
