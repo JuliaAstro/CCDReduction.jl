@@ -12,10 +12,27 @@ function bias_subtraction!(frame::AbstractArray, bias_frame::AbstractArray)
     end
     return frame
 end
+
+
 """
     bias_subtraction(frame::AbstractArray, bias_frame::AbstractArray)
 
 Subtract the bias frame from image.
+
+!!! note
+    The dimesions of `frame` and `bias_frame` should be identical.
+
+# Examples
+```jldoctest
+julia> frame = [1.0 2.2 3.3 4.5];
+
+julia> bias = [0.0 0.2 0.3 0.5];
+
+julia> bias_subtraction(frame, bias)
+1×4 Array{Float64,2}:
+ 1.0  2.0  3.0  4.0
+
+```
 
 # See Also
 * [`bias_subtraction!`](@ref)
