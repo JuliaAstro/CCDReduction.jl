@@ -9,7 +9,8 @@ makedocs(modules = [CCDReduction],
     authors = "Siddharth Lal",
     strict = true,
     pages = [
-        "Home" => "index.md"
+        "Home" => "index.md",
+        "API/Reference" => "api.md"
     ],
 )
 
