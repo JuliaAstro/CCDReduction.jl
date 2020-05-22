@@ -11,3 +11,14 @@
     # testing error
     @test_throws ErrorException bias_subtraction(ones(500, 1), ones(500, 500))
 end
+
+@testset "overscan subtraction" begin
+    # testing non-mutating version
+    @test @inferred overscan_subtraction(ones(500, 600), ones(2, 600), overscan_axis = 1) == zeros(500, 600)
+
+    # testing mutating version
+    frame = ones(500, 600)
+    overscan_frame = frame[:, 540:600]
+    @inferred overscan_subtraction!(frame, overscan_frame)
+    @test frame == zeros(500, 600)
+end
