@@ -1,6 +1,6 @@
 @testset "bias subtraction" begin
     # testing non-mutating version
-    @test @inferred bias_subtraction(ones(500, 500), ones(500, 500)) == zeros(500, 500)
+    @test @inferred(bias_subtraction(ones(500, 500), ones(500, 500))) == zeros(500, 500)
 
     # testing mutating version
     frame = ones(500, 500)
@@ -14,11 +14,10 @@ end
 
 @testset "overscan subtraction" begin
     # testing non-mutating version
-    @test @inferred overscan_subtraction(ones(500, 600), ones(2, 600), overscan_axis = 1) == zeros(500, 600)
+    @test overscan_subtraction(ones(500, 600), (1:2, 600), dims = 1) == zeros(500, 600)
 
     # testing mutating version
     frame = ones(500, 600)
-    overscan_frame = frame[:, 540:600]
-    @inferred overscan_subtraction!(frame, overscan_frame)
+    overscan_subtraction!(frame, (:, 540:600), dims = 2)
     @test frame == zeros(500, 600)
 end
