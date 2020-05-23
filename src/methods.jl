@@ -3,11 +3,11 @@ axes_min_length(idxs) = argmin([a isa Colon ? Inf : length(a) for a in idxs])
 
 #-------------------------------------------------------------------------------
 """
-    bias_subtraction!(frame::AbstractArray, bias_frame::AbstractArray)
+    subtract_bias!(frame::AbstractArray, bias_frame::AbstractArray)
 
-In place version of [`bias_subtraction`](@ref)
+In place version of [`subtract_bias`](@ref)
 """
-function bias_subtraction!(frame::AbstractArray, bias_frame::AbstractArray)
+function subtract_bias!(frame::AbstractArray, bias_frame::AbstractArray)
     size(frame) != size(bias_frame) && error("size of frame and bias_frame are not same")
     for i in eachindex(frame)
         @inbounds frame[i] = frame[i] - bias_frame[i]
@@ -17,7 +17,7 @@ end
 
 
 """
-    bias_subtraction(frame::AbstractArray, bias_frame::AbstractArray)
+    subtract_bias(frame::AbstractArray, bias_frame::AbstractArray)
 
 Subtract the bias frame from image.
 
@@ -30,24 +30,24 @@ julia> frame = [1.0 2.2 3.3 4.5];
 
 julia> bias = [0.0 0.2 0.3 0.5];
 
-julia> bias_subtraction(frame, bias)
+julia> subtract_bias(frame, bias)
 1×4 Array{Float64,2}:
  1.0  2.0  3.0  4.0
 
 ```
 
 # See Also
-* [`bias_subtraction!`](@ref)
+* [`subtract_bias!`](@ref)
 """
-bias_subtraction(frame::AbstractArray, bias_frame::AbstractArray) = bias_subtraction!(deepcopy(frame), bias_frame)
+subtract_bias(frame::AbstractArray, bias_frame::AbstractArray) = subtract_bias!(deepcopy(frame), bias_frame)
 
 
 """
-    overscan_subtraction(frame::AbstractArray, idxs; dims = axes_min_length(idxs))
+    subtract_overscan(frame::AbstractArray, idxs; dims = axes_min_length(idxs))
 
-In place version of [`overscan_subtraction`](@ref)
+In place version of [`subtract_overscan`](@ref)
 """
-function overscan_subtraction!(frame::AbstractArray, idxs; dims = axes_min_length(idxs))
+function subtract_overscan!(frame::AbstractArray, idxs; dims = axes_min_length(idxs))
     overscan_region = @view frame[idxs...]
     overscan_value = median(overscan_region, dims = dims)
     frame .-= overscan_value
@@ -56,7 +56,7 @@ end
 
 
 """
-    overscan_subtraction!(frame::AbstractArray, idxs; dims = axes_min_length(idxs))
+    subtract_overscan!(frame::AbstractArray, idxs; dims = axes_min_length(idxs))
 
 Subtract the overscan frame from image.
 
@@ -67,13 +67,13 @@ of `dims` is the axis with smaller length in overscan region.
 ```jldoctest
 julia> frame = [4.0 2.0 3.0 1.0 1.0];
 
-julia> overscan_subtraction(frame, (:, 4:5), dims = 2)
+julia> subtract_overscan(frame, (:, 4:5), dims = 2)
 1×5 Array{Float64,2}:
  3.0  1.0  2.0  0.0  0.0
 
 ```
 
 # See Also
-* [`overscan_subtraction!`](@ref)
+* [`subtract_overscan!`](@ref)
 """
-overscan_subtraction(frame::AbstractArray, idxs; dims = axes_min_length(idxs)) = overscan_subtraction!(deepcopy(frame), idxs, dims = dims)
+subtract_overscan(frame::AbstractArray, idxs; dims = axes_min_length(idxs)) = subtract_overscan!(deepcopy(frame), idxs, dims = dims)

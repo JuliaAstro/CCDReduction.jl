@@ -2,10 +2,10 @@ module CCDReduction
 
 using Statistics
 
-export bias_subtraction,
-       bias_subtraction!,
-       overscan_subtraction,
-       overscan_subtraction!
+export subtract_bias,
+       subtract_bias!,
+       subtract_overscan,
+       subtract_overscan!
 
 include("methods.jl")
 
