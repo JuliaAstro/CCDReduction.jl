@@ -1,3 +1,7 @@
+# helper function
+axes_min_length(idxs) = argmin([a isa Colon ? Inf : length(a) for a in idxs])
+
+#-------------------------------------------------------------------------------
 """
     bias_subtraction!(frame::AbstractArray, bias_frame::AbstractArray)
 
@@ -41,11 +45,11 @@ bias_subtraction(frame::AbstractArray, bias_frame::AbstractArray) = bias_subtrac
 
 
 """
-    overscan_subtraction(frame::AbstractArray, idxs; dims = Colon())
+    overscan_subtraction(frame::AbstractArray, idxs; dims = axes_min_length(idxs))
 
 In place version of [`overscan_subtraction`](@ref)
 """
-function overscan_subtraction!(frame::AbstractArray, idxs; dims = Colon())
+function overscan_subtraction!(frame::AbstractArray, idxs; dims = axes_min_length(idxs))
     overscan_region = @view frame[idxs...]
     overscan_value = median(overscan_region, dims = dims)
     frame .-= overscan_value
@@ -54,11 +58,12 @@ end
 
 
 """
-    overscan_subtraction!(frame::AbstractArray, idxs; dims = Colon())
+    overscan_subtraction!(frame::AbstractArray, idxs; dims = axes_min_length(idxs))
 
 Subtract the overscan frame from image.
 
-`dims` is the dimension along which `overscan_frame` is combined.
+`dims` is the dimension along which `overscan_frame` is combined. The default value
+of `dims` is the axis with smaller length in overscan region.
 
 # Example
 ```jldoctest
@@ -73,4 +78,4 @@ julia> overscan_subtraction(frame, (:, 4:5), dims = 2)
 # See Also
 * [`overscan_subtraction!`](@ref)
 """
-overscan_subtraction(frame::AbstractArray, idxs; dims = Colon()) = overscan_subtraction!(deepcopy(frame), idxs, dims = dims)
+overscan_subtraction(frame::AbstractArray, idxs; dims = axes_min_length(idxs)) = overscan_subtraction!(deepcopy(frame), idxs, dims = dims)
