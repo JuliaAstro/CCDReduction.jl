@@ -14,10 +14,10 @@ end
 
 @testset "overscan subtraction" begin
     # testing non-mutating version
-    @test overscan_subtraction(ones(500, 600), (1:2, 600), dims = 1) == zeros(500, 600)
+    @test @inferred(overscan_subtraction(ones(500, 600), (1:2, 600), dims = 1)) == zeros(500, 600)
 
     # testing mutating version
     frame = ones(500, 600)
-    overscan_subtraction!(frame, (:, 540:600), dims = 2)
+    @inferred overscan_subtraction!(frame, (:, 540:600), dims = 2)
     @test frame == zeros(500, 600)
 end

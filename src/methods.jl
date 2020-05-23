@@ -40,12 +40,6 @@ julia> bias_subtraction(frame, bias)
 bias_subtraction(frame::AbstractArray, bias_frame::AbstractArray) = bias_subtraction!(deepcopy(frame), bias_frame)
 
 
-#=
-***Note to future developer***
-The code for overscan_subtraction is not type-stable because of splat operation.
-Modern day ccds are of the dimension 4096 x 4096, so performance would not be an
-issue with this code even without type-stability
-=#
 """
     overscan_subtraction(frame::AbstractArray, idxs; dims = Colon())
 
@@ -54,7 +48,8 @@ In place version of [`overscan_subtraction`](@ref)
 function overscan_subtraction!(frame::AbstractArray, idxs; dims = Colon())
     overscan_region = @view frame[idxs...]
     overscan_value = median(overscan_region, dims = dims)
-    return frame .-= overscan_value
+    frame .-= overscan_value
+    return frame
 end
 
 
