@@ -8,9 +8,7 @@ axes_min_length(idxs) = argmin([a isa Colon ? Inf : length(a) for a in idxs])
 In place version of [`bias_subtraction`](@ref)
 """
 function bias_subtraction!(frame::AbstractArray, bias_frame::AbstractArray)
-    if size(frame) != size(bias_frame)
-        error("size of frame and bias_frame are not same")
-    end
+    size(frame) != size(bias_frame) && error("size of frame and bias_frame are not same")
     for i in eachindex(frame)
         @inbounds frame[i] = frame[i] - bias_frame[i]
     end
