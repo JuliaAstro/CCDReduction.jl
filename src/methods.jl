@@ -86,11 +86,11 @@ In place version of [`flat_correct`](@ref)
 """
 function flat_correct!(frame::AbstractArray, flat_frame::AbstractArray; min_value = nothing, norm_value = nothing)
     size(frame) != size(flat_frame) && error("size of frame and flat frame are not same")
-    !isnothing(norm_value) && norm_value < 0 && error("norm_value must be greater than 0")
+    !(norm_value === nothing) && norm_value < 0 && error("norm_value must be greater than 0")
 
-    !isnothing(min_value) && @. flat_frame[flat_frame < min_value] = min_value
+    !(min_value === nothing) && @. flat_frame[flat_frame < min_value] = min_value
 
-    if !isnothing(norm_value)
+    if !(norm_value === nothing)
         flat_frame ./= norm_value
     else
         flat_frame ./= mean(flat_frame)
