@@ -103,12 +103,12 @@ end
 
 Correct `frame` for non-uniformity using the calibrated `flat_frame`.
 
-`min_value` is minimum value of `flat_frame`, an entry less than `min_value` is converted to `min_value` in `flat_frame`.
-`norm_value` is normalising constant for `flat_frame`, if set to `nothing` then `mean` of `flat_frame` is used for normalising.
+If `min_value` is provided, the `flat_frame` will be minimum-clipped to that value. By default,
+the `flat_frame` is normalized by its mean, but this can be changed by providing a custom `norm_value`.
 
 !!! note
-    The function [`flat_correct`](@ref) has a division step of `frame` by `flat_frame`, if `flat_frame` has a zero entry then
-    the returned value is either `Inf` (dividend `frame` element is non-zero) or `NaN` (dividend `frame` element is zero).
+    This function may introduce non-finite values if `flat_frame` contains values very close to `0` due to dividing by zero.
+    The default behavior will return `Inf` if the frame value is non-zero, and `Nan` if the frame value is `0`.
 
 # Examples
 ```jldoctest
