@@ -21,9 +21,6 @@ end
 
 Subtract the bias frame from image.
 
-!!! note
-    The dimesions of `frame` and `bias_frame` should be identical.
-
 # Examples
 ```jldoctest
 julia> frame = [1.0 2.2 3.3 4.5];
@@ -63,7 +60,7 @@ Subtract the overscan frame from image.
 `dims` is the dimension along which `overscan_frame` is combined. The default value
 of `dims` is the axis with smaller length in overscan region.
 
-# Example
+# Examples
 ```jldoctest
 julia> frame = [4.0 2.0 3.0 1.0 1.0];
 
@@ -104,12 +101,16 @@ end
 """
     flat_correct(frame::AbstractArray, flat_frame::AbstractArray; min_value = nothing, norm_value = nothing)
 
-Correct the image for flat fielding.
+Correct `frame` for non-uniformity using the calibrated `flat_frame`.
+
+`min_value` is minimum value of `flat_frame`, an entry less than `min_value` is converted to `min_value` in `flat_frame`.
+`norm_value` is normalising constant for `flat_frame`, if set to `nothing` then `mean` of `flat_frame` is used for normalising.
 
 !!! note
-    The dimesions of `frame` and `flat_frame` should be identical.
+    The function [`flat_correct`](@ref) has a division step of `frame` by `flat_frame`, if `flat_frame` has a zero entry then
+    the returned value is either `Inf` (dividend `frame` element is non-zero) or `NaN` (dividend `frame` element is zero).
 
-# Example
+# Examples
 ```jldoctest
 julia> frame = ones(3, 3);
 
