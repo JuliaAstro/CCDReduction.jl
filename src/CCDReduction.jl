@@ -1,7 +1,11 @@
 module CCDReduction
 
-export bias_subtraction,
-       bias_subtraction!
+using Statistics
+
+export subtract_bias,
+       subtract_bias!,
+       subtract_overscan,
+       subtract_overscan!
 
 include("methods.jl")
 
