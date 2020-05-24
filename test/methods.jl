@@ -35,8 +35,7 @@ end
     #testing mutating version
     frame = ones(5, 5)
     flat = rand(5, 5)
-    flat_copy = flat
-    reduced_flat = flat_copy ./ mean(flat_copy)
+    reduced_flat = flat ./ mean(flat)
     reduced_frame = frame ./ reduced_flat
 
     @inferred flat_correct!(frame, flat)
