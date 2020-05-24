@@ -77,3 +77,59 @@ julia> subtract_overscan(frame, (:, 4:5), dims = 2)
 * [`subtract_overscan!`](@ref)
 """
 subtract_overscan(frame::AbstractArray, idxs; dims = axes_min_length(idxs)) = subtract_overscan!(deepcopy(frame), idxs, dims = dims)
+
+
+"""
+    flat_correct!(frame::AbstractArray, flat_frame::AbstractArray; min_value = nothing, norm_value = nothing)
+
+In place version of [`flat_correct`](@ref)
+"""
+function flat_correct!(frame::AbstractArray, flat_frame::AbstractArray; min_value = nothing, norm_value = nothing)
+    size(frame) != size(flat_frame) && error("size of frame and flat frame are not same")
+    !isnothing(norm_value) && norm_value < 0 && error("norm_value must be greater than 0")
+
+    !isnothing(min_value) && @. flat_frame[flat_frame < min_value] = min_value
+
+    if !isnothing(norm_value)
+        flat_frame ./= norm_value
+    else
+        flat_frame ./= mean(flat_frame)
+    end
+
+    frame ./= flat_frame
+    return frame
+end
+
+
+"""
+    flat_correct(frame::AbstractArray, flat_frame::AbstractArray; min_value = nothing, norm_value = nothing)
+
+Correct the image for flat fielding.
+
+!!! note
+    The dimesions of `frame` and `flat_frame` should be identical.
+
+# Example
+```jldoctest
+julia> frame = ones(3, 3);
+
+julia> flat = fill(2.0, (3, 3));
+
+julia> flat_correct(frame, flat, min_value = 3.0, norm_value = 6.0)
+3×3 Array{Float64,2}:
+ 2.0  2.0  2.0
+ 2.0  2.0  2.0
+ 2.0  2.0  2.0
+
+julia> flat_correct(frame, flat)
+3×3 Array{Float64,2}:
+ 1.0  1.0  1.0
+ 1.0  1.0  1.0
+ 1.0  1.0  1.0
+
+```
+
+# See Also
+* [`flat_correct!`](@ref)
+"""
+flat_correct(frame::AbstractArray, flat_frame::AbstractArray; min_value = nothing, norm_value = nothing) = flat_correct!(deepcopy(frame), flat_frame, min_value = min_value, norm_value = norm_value)
