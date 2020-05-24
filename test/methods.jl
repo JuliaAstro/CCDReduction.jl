@@ -29,8 +29,7 @@ end
     frame = ones(5, 5)
     flat = fill(2.0, (5, 5))
     @test @inferred(flat_correct(frame, flat)) == ones(5, 5)
-    @test @inferred(flat_correct(frame, flat, min_value = 3.0)) == ones(5, 5)
-    @test @inferred(flat_correct(frame, flat, min_value = 3.0, norm_value = 2.0)) == fill(2/3, (5, 5))
+    @test @inferred(flat_correct(frame, flat, norm_value = 4.0)) == fill(2.0, (5, 5))
 
     #testing mutating version
     frame = ones(5, 5)

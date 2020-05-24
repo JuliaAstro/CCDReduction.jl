@@ -77,34 +77,25 @@ subtract_overscan(frame::AbstractArray, idxs; dims = axes_min_length(idxs)) = su
 
 
 """
-    flat_correct!(frame::AbstractArray, flat_frame::AbstractArray; min_value = nothing, norm_value = nothing)
+    flat_correct!(frame::AbstractArray, flat_frame::AbstractArray; norm_value = mean(flat_frame))
 
 In place version of [`flat_correct`](@ref)
 """
-function flat_correct!(frame::AbstractArray, flat_frame::AbstractArray; min_value = nothing, norm_value = nothing)
+function flat_correct!(frame::AbstractArray, flat_frame::AbstractArray; norm_value = mean(flat_frame))
     size(frame) != size(flat_frame) && error("size of frame and flat frame are not same")
-    !(norm_value === nothing) && norm_value < 0 && error("norm_value must be greater than 0")
+    norm_value < 0 && error("norm_value must be greater than 0")
 
-    !(min_value === nothing) && @. flat_frame[flat_frame < min_value] = min_value
-
-    if !(norm_value === nothing)
-        flat_frame ./= norm_value
-    else
-        flat_frame ./= mean(flat_frame)
-    end
-
-    frame ./= flat_frame
+    frame ./= (flat_frame ./ norm_value)
     return frame
 end
 
 
 """
-    flat_correct(frame::AbstractArray, flat_frame::AbstractArray; min_value = nothing, norm_value = nothing)
+    flat_correct(frame::AbstractArray, flat_frame::AbstractArray; norm_value = mean(flat_frame))
 
 Correct `frame` for non-uniformity using the calibrated `flat_frame`.
 
-If `min_value` is provided, the `flat_frame` will be minimum-clipped to that value. By default,
-the `flat_frame` is normalized by its mean, but this can be changed by providing a custom `norm_value`.
+By default, the `flat_frame` is normalized by its mean, but this can be changed by providing a custom `norm_value`.
 
 !!! note
     This function may introduce non-finite values if `flat_frame` contains values very close to `0` due to dividing by zero.
@@ -116,11 +107,11 @@ julia> frame = ones(3, 3);
 
 julia> flat = fill(2.0, (3, 3));
 
-julia> flat_correct(frame, flat, min_value = 3.0, norm_value = 6.0)
+julia> flat_correct(frame, flat, norm_value = 1.0)
 3×3 Array{Float64,2}:
- 2.0  2.0  2.0
- 2.0  2.0  2.0
- 2.0  2.0  2.0
+ 0.5  0.5  0.5
+ 0.5  0.5  0.5
+ 0.5  0.5  0.5
 
 julia> flat_correct(frame, flat)
 3×3 Array{Float64,2}:
@@ -133,4 +124,4 @@ julia> flat_correct(frame, flat)
 # See Also
 * [`flat_correct!`](@ref)
 """
-flat_correct(frame::AbstractArray, flat_frame::AbstractArray; min_value = nothing, norm_value = nothing) = flat_correct!(deepcopy(frame), flat_frame, min_value = min_value, norm_value = norm_value)
+flat_correct(frame::AbstractArray, flat_frame::AbstractArray; norm_value = mean(flat_frame)) = flat_correct!(deepcopy(frame), flat_frame, norm_value = norm_value)
