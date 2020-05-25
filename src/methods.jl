@@ -5,7 +5,7 @@ axes_min_length(idxs) = argmin([a isa Colon ? Inf : length(a) for a in idxs])
 """
     subtract_bias!(frame::AbstractArray, bias_frame::AbstractArray)
 
-In place version of [`subtract_bias`](@ref)
+In-place version of [`subtract_bias`](@ref)
 """
 function subtract_bias!(frame::AbstractArray, bias_frame::AbstractArray)
     size(frame) != size(bias_frame) && error("size of frame and bias_frame are not same")
@@ -42,7 +42,7 @@ subtract_bias(frame::AbstractArray, bias_frame::AbstractArray) = subtract_bias!(
 """
     subtract_overscan(frame::AbstractArray, idxs; dims = axes_min_length(idxs))
 
-In place version of [`subtract_overscan`](@ref)
+In-place version of [`subtract_overscan`](@ref)
 """
 function subtract_overscan!(frame::AbstractArray, idxs; dims = axes_min_length(idxs))
     overscan_region = @view frame[idxs...]
@@ -79,7 +79,7 @@ subtract_overscan(frame::AbstractArray, idxs; dims = axes_min_length(idxs)) = su
 """
     flat_correct!(frame::AbstractArray, flat_frame::AbstractArray; norm_value = mean(flat_frame))
 
-In place version of [`flat_correct`](@ref)
+In-place version of [`flat_correct`](@ref)
 """
 function flat_correct!(frame::AbstractArray, flat_frame::AbstractArray; norm_value = mean(flat_frame))
     size(frame) != size(flat_frame) && error("size of frame and flat frame are not same")
@@ -124,4 +124,4 @@ julia> flat_correct(frame, flat)
 # See Also
 * [`flat_correct!`](@ref)
 """
-flat_correct(frame::AbstractArray, flat_frame::AbstractArray; norm_value = mean(flat_frame)) = flat_correct!(deepcopy(frame), flat_frame, norm_value = norm_value)
+flat_correct(frame::AbstractArray, flat_frame::AbstractArray; kwargs...) = flat_correct!(deepcopy(frame), flat_frame; kwargs...)
