@@ -120,3 +120,65 @@ julia> flat_correct(frame, flat)
 * [`flat_correct!`](@ref)
 """
 flat_correct(frame::AbstractArray, flat_frame::AbstractArray; kwargs...) = flat_correct!(deepcopy(frame), flat_frame; kwargs...)
+
+
+"""
+    trim(frame::AbstractArray, idxs)
+
+    Trims the frame to remove the region specified by idxs.
+
+    This function trims the array in a manner such that final array should be a rectangle.
+    The input for idxs has to be of the form (:, 45:60) or (1:20, :) i.e. containing exactly one colon,
+    the former trims all columns from 45 to 60 whereas the later trims all the rows from 1 to 20.
+
+!!! note
+    This function returns a collected output of the trimmed view of frame, so any
+    modifications to output array will not result in modification of frame.
+
+# Examples
+```jldoctest
+julia> frame = ones(5, 5);
+
+julia> trim(frame, (:, 2:5))
+5×1 Array{Float64,2}:
+ 1.0
+ 1.0
+ 1.0
+ 1.0
+ 1.0
+
+```
+
+# See Also
+[`trim!`](@ref)
+"""
+function trim(frame::AbstractArray, idxs)
+    ds = findall(x -> !isa(x, Colon), idxs)
+    length(ds) == 1 || error("invalid trim indices $idxs")
+
+    return selectdim(frame, ds[1], Not(idxs[ds[1]])) |> Array
+end
+
+
+"""
+    trim!(frame::AbstractArray, idxs)
+
+Trims the frame to remove the region specified by idxs.
+
+This function trims the array in a manner such that final array should be a rectangle.
+The input for idxs has to be of the form (:, 45:60) or (1:20, :) i.e. containing exactly one colon,
+the former trims all columns from 45 to 60 whereas the later trims all the rows from 1 to 20.
+
+!!! note
+    This function returns a view of the frame, so any modification to output
+    array will result in modification of frame.
+
+# See Also
+[`trim`](@ref)
+"""
+function trim!(frame::AbstractArray, idxs)
+    ds = findall(x -> !isa(x, Colon), idxs)
+    length(ds) == 1 || error("invalid trim indices $idxs")
+
+    return selectdim(frame, ds[1], Not(idxs[ds[1]]))
+end
