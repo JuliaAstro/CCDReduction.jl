@@ -11,7 +11,7 @@ using CCDReduction: axes_min_length
     @test frame == zeros(500, 500)
 
     # testing error
-    @test_throws ErrorException subtract_bias(ones(500, 1), ones(500, 500))
+    @test_throws DimensionMismatch subtract_bias(ones(500, 1), ones(500, 500))
 end
 
 @testset "overscan subtraction" begin
@@ -41,7 +41,7 @@ end
     @test reduced_frame == frame
 
     #testing error
-    @test_throws ErrorException flat_correct(ones(5, 5), ones(5, 6))
+    @test_throws DimensionMismatch flat_correct(ones(5, 5), ones(5, 6))
     @test_throws ErrorException flat_correct(ones(5, 5), ones(5, 5), norm_value = -2)
 end
 

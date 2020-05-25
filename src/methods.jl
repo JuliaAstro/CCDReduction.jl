@@ -8,10 +8,7 @@ axes_min_length(idxs) = argmin([a isa Colon ? Inf : length(a) for a in idxs])
 In-place version of [`subtract_bias`](@ref)
 """
 function subtract_bias!(frame::AbstractArray, bias_frame::AbstractArray)
-    size(frame) != size(bias_frame) && error("size of frame and bias_frame are not same")
-    for i in eachindex(frame)
-        @inbounds frame[i] = frame[i] - bias_frame[i]
-    end
+    frame .-= bias_frame
     return frame
 end
 
@@ -82,9 +79,7 @@ subtract_overscan(frame::AbstractArray, idxs; dims = axes_min_length(idxs)) = su
 In-place version of [`flat_correct`](@ref)
 """
 function flat_correct!(frame::AbstractArray, flat_frame::AbstractArray; norm_value = mean(flat_frame))
-    size(frame) != size(flat_frame) && error("size of frame and flat frame are not same")
     norm_value <= 0 && error("norm_value must be positive")
-
     frame ./= (flat_frame ./ norm_value)
     return frame
 end
