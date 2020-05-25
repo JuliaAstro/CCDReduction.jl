@@ -11,7 +11,7 @@ using CCDReduction: axes_min_length
     @test frame == zeros(500, 500)
 
     # testing error
-    @test_throws ErrorException subtract_bias(ones(500, 1), ones(500, 500))
+    @test_throws DimensionMismatch subtract_bias(ones(500, 1), ones(500, 500))
 end
 
 @testset "overscan subtraction" begin
@@ -22,6 +22,27 @@ end
     frame = ones(500, 600)
     @inferred subtract_overscan!(frame, (:, 540:600))
     @test frame == zeros(500, 600)
+end
+
+@testset "flat correction" begin
+    #testing non-mutating version
+    frame = ones(5, 5)
+    flat = fill(2.0, (5, 5))
+    @test @inferred(flat_correct(frame, flat)) == ones(5, 5)
+    @test @inferred(flat_correct(frame, flat, norm_value = 4.0)) == fill(2.0, (5, 5))
+
+    #testing mutating version
+    frame = ones(5, 5)
+    flat = rand(5, 5)
+    reduced_flat = flat ./ mean(flat)
+    reduced_frame = frame ./ reduced_flat
+
+    @inferred flat_correct!(frame, flat)
+    @test reduced_frame == frame
+
+    #testing error
+    @test_throws DimensionMismatch flat_correct(ones(5, 5), ones(5, 6))
+    @test_throws ErrorException flat_correct(ones(5, 5), ones(5, 5), norm_value = -2)
 end
 
 @testset "helper" begin
