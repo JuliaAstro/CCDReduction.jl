@@ -125,11 +125,11 @@ flat_correct(frame::AbstractArray, flat_frame::AbstractArray; kwargs...) = flat_
 """
     trim(frame::AbstractArray, idxs)
 
-    Trims the frame to remove the region specified by idxs.
+Trims the frame to remove the region specified by idxs.
 
-    This function trims the array in a manner such that final array should be a rectangle.
-    The input for idxs has to be of the form (:, 45:60) or (1:20, :) i.e. containing exactly one colon,
-    the former trims all columns from 45 to 60 whereas the later trims all the rows from 1 to 20.
+This function trims the array in a manner such that final array should be a rectangle.
+The input for idxs has to be of the form (:, 45:60) or (1:20, :) i.e. containing exactly one colon,
+the former trims all columns from 45 to 60 whereas the later trims all the rows from 1 to 20.
 
 !!! note
     This function returns a collected output of the trimmed view of frame, so any
