@@ -52,6 +52,10 @@ end
     @test trim(ones(5, 5), (:, 4:5)) == trim!(ones(5, 5), (:, 4:5))
     @test trim(ones(5, 5), (4:5, :)) == trim!(ones(5, 5), (4:5, :))
 
+    # testing output types
+    @test trim!(ones(5, 5), (:, 3:5)) isa SubArray
+    @test trim(ones(5, 5), (:, 3:5)) isa Array
+
     # testing errors
     @test_throws ErrorException trim(ones(5, 5), (4:5, 1:4))
     @test_throws ErrorException trim(ones(5, 5), (:, :))
