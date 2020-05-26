@@ -145,13 +145,13 @@ julia> trim(frame, (:, 2:5))
 ```
 
 # See Also
-[`trim!`](@ref)
+[`trimview`](@ref)
 """
-trim(frame::AbstractArray, idxs) = collect(trim!(frame, idxs))
+trim(frame::AbstractArray, idxs) = copy(trimview(frame, idxs))
 
 
 """
-    trim!(frame::AbstractArray, idxs)
+    trimview(frame::AbstractArray, idxs)
 
 Trims the frame to remove the region specified by idxs.
 
@@ -164,10 +164,18 @@ This function is same as the [`trim`](@ref) function but returns a view of the f
 # See Also
 [`trim`](@ref)
 """
-function trim!(frame::AbstractArray, idxs)
+function trimview(frame::AbstractArray, idxs)
     # can switch to using `only` for Julia v1.4+
     ds = findall(x -> !isa(x, Colon), idxs)
     length(ds) == 1 || error("invalid trim indices $idxs")
 
-    return selectdim(frame, ds[1], Not(idxs[ds[1]]))
+    d = ds[1]
+    # checking bounds error
+    idxs[d] ⊆ axes(frame, d) || error("out of bound trim indices $idxs")
+
+    # finding the complement indices
+    full_idxs = deepcopy(axes(frame, d))
+    complement_idxs = setdiff(full_idxs, idxs[d])
+
+    return selectdim(frame, d, complement_idxs)
 end

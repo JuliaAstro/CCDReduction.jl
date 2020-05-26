@@ -1,7 +1,6 @@
 module CCDReduction
 
 using Statistics
-using InvertedIndices
 
 export subtract_bias,
        subtract_bias!,
@@ -10,7 +9,7 @@ export subtract_bias,
        flat_correct,
        flat_correct!,
        trim,
-       trim!
+       trimview
 
 include("methods.jl")
 
