@@ -167,14 +167,14 @@ This function is same as the [`trim`](@ref) function but returns a view of the f
 function trimview(frame::AbstractArray, idxs)
     # can switch to using `only` for Julia v1.4+
     ds = findall(x -> !isa(x, Colon), idxs)
-    length(ds) == 1 || error("invalid trim indices $idxs")
+    length(ds) == 1 || error("Invalid trim indices $idxs")
 
     d = ds[1]
+    full_idxs = axes(frame, d)
     # checking bounds error
-    idxs[d] ⊆ axes(frame, d) || error("out of bound trim indices $idxs")
+    idxs[d] ⊆ full_idxs || error("Trim indices $(idxs[d]) out of bounds for frame dimension $d $(full_idxs)")
 
     # finding the complement indices
-    full_idxs = deepcopy(axes(frame, d))
     complement_idxs = setdiff(full_idxs, idxs[d])
 
     return selectdim(frame, d, complement_idxs)
