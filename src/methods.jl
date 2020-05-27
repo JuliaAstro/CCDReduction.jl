@@ -6,6 +6,9 @@ axes_min_length(idxs) = argmin([a isa Colon ? Inf : length(a) for a in idxs])
     subtract_bias!(frame::AbstractArray, bias_frame::AbstractArray)
 
 In-place version of [`subtract_bias`](@ref)
+
+# See Also
+[`subtract_bias`](@ref)
 """
 function subtract_bias!(frame::AbstractArray, bias_frame::AbstractArray)
     frame .-= bias_frame
@@ -31,15 +34,18 @@ julia> subtract_bias(frame, bias)
 ```
 
 # See Also
-* [`subtract_bias!`](@ref)
+[`subtract_bias!`](@ref)
 """
 subtract_bias(frame::AbstractArray, bias_frame::AbstractArray) = subtract_bias!(deepcopy(frame), bias_frame)
 
 
 """
-    subtract_overscan(frame::AbstractArray, idxs; dims = axes_min_length(idxs))
+    subtract_overscan!(frame::AbstractArray, idxs; dims = axes_min_length(idxs))
 
 In-place version of [`subtract_overscan`](@ref)
+
+# See Also
+[`subtract_overscan`](@ref)
 """
 function subtract_overscan!(frame::AbstractArray, idxs; dims = axes_min_length(idxs))
     overscan_region = @view frame[idxs...]
@@ -50,7 +56,7 @@ end
 
 
 """
-    subtract_overscan!(frame::AbstractArray, idxs; dims = axes_min_length(idxs))
+    subtract_overscan(frame::AbstractArray, idxs; dims = axes_min_length(idxs))
 
 Subtract the overscan frame from image.
 
@@ -77,6 +83,9 @@ subtract_overscan(frame::AbstractArray, idxs; dims = axes_min_length(idxs)) = su
     flat_correct!(frame::AbstractArray, flat_frame::AbstractArray; norm_value = mean(flat_frame))
 
 In-place version of [`flat_correct`](@ref)
+
+# See Also
+* [`flat_correct`](@ref)
 """
 function flat_correct!(frame::AbstractArray, flat_frame::AbstractArray; norm_value = mean(flat_frame))
     norm_value <= 0 && error("norm_value must be positive")
@@ -117,7 +126,7 @@ julia> flat_correct(frame, flat)
 ```
 
 # See Also
-* [`flat_correct!`](@ref)
+[`flat_correct!`](@ref)
 """
 flat_correct(frame::AbstractArray, flat_frame::AbstractArray; kwargs...) = flat_correct!(deepcopy(frame), flat_frame; kwargs...)
 
@@ -145,7 +154,7 @@ julia> trim(frame, (:, 2:5))
 ```
 
 # See Also
-* [`trimview`](@ref)
+[`trimview`](@ref)
 """
 trim(frame::AbstractArray, idxs) = copy(trimview(frame, idxs))
 
@@ -162,7 +171,7 @@ This function is same as the [`trim`](@ref) function but returns a view of the f
     array will result in modification of frame.
 
 # See Also
-* [`trim`](@ref)
+[`trim`](@ref)
 """
 function trimview(frame::AbstractArray, idxs)
     # can switch to using `only` for Julia v1.4+
@@ -184,10 +193,9 @@ end
 """
     crop(frame::AbstractArray, shape; force_equal = true)
 
-Crops the image to the shape specified asumming center as the anchor.
+Crops `frame` to the size specified by `shape` anchored by the frame center.
 
-Shape speficies the size of the cropped array, force_equal when set to true forces the cropped rows and columns to be equal on both sides
-otherwise the cropped frame contains one extra column on left and one extra row on top if necessary.
+This will remove rows/cols of the `frame` equally on each side. When there is an uneven difference in sizes (e.g. size 9 -> 6 can't be removed equally) the default is to increase the output size (e.g. 6 -> 7) so there is equal removal on each side. To disable this, set `force_equal=false`, which will remove the extra slice from the end of the axis.
 
 # Examples
 ```jldoctest
@@ -199,10 +207,17 @@ julia> crop(frame, (3, 3))
  8  13  18
  9  14  19
 
+julia> crop(frame, (4, 3), force_equal = false)
+4×3 Array{Int64,2}:
+ 6  11  16
+ 7  12  17
+ 8  13  18
+ 9  14  19
+
 ```
 
 # See Also
-* [`cropview`](@ref)
+[`cropview`](@ref)
 """
 crop(frame::AbstractArray, shape; kwargs...) = copy(cropview(frame, shape; kwargs...))
 
@@ -210,7 +225,7 @@ crop(frame::AbstractArray, shape; kwargs...) = copy(cropview(frame, shape; kwarg
 """
     cropview(frame::AbstractArray, shape; force_equal = true)
 
-Crops the image to the shape specified asumming center as the anchor.
+Crops `frame` to the size specified by `shape` anchored by the frame center.
 
 This function is same as the [`crop`](@ref) function but returns a view of the frame.
 
@@ -219,7 +234,7 @@ This function is same as the [`crop`](@ref) function but returns a view of the f
     array will result in modification of frame.
 
 # See Also
-* [`crop`](@ref)
+[`crop`](@ref)
 """
 function cropview(frame::AbstractArray, shape; force_equal = true)
     # testing error
@@ -229,14 +244,16 @@ function cropview(frame::AbstractArray, shape; force_equal = true)
     # generating idxs for cropped frame
     idxs = map(enumerate(size(frame)), shape) do (d, s1), s2
                 diff = s2 isa Colon ? 0 : s1 - s2
-                lower = iseven(diff) ? (1 + (diff ÷ 2)) : (1 + ((diff - 1) ÷ 2))
+                lower = iseven(diff) ? (diff ÷ 2) : ((diff - 1) ÷ 2)
                 upper = if isodd(diff) && force_equal
                             @warn "dimension $d changed from $s2 to $(s2 + 1)"
-                            (s1 - ((diff - 1) ÷ 2))
+                            (diff - 1) ÷ 2
+                        elseif isodd(diff)
+                            (diff + 1) ÷ 2
                         else
-                            iseven(diff) ? (s1 - (diff ÷ 2)) : (s1 - ((diff + 1) ÷ 2))
+                            diff ÷ 2
                         end
-                lower:upper
+                (1 + lower):(s1 - upper)
             end
 
     # returning the view
