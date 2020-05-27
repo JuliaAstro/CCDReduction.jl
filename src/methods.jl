@@ -120,3 +120,62 @@ julia> flat_correct(frame, flat)
 * [`flat_correct!`](@ref)
 """
 flat_correct(frame::AbstractArray, flat_frame::AbstractArray; kwargs...) = flat_correct!(deepcopy(frame), flat_frame; kwargs...)
+
+
+"""
+    trim(frame::AbstractArray, idxs)
+
+Trims the frame to remove the region specified by idxs.
+
+This function trims the array in a manner such that final array should be rectangular.
+The indices follow standard Julia convention, so `(:, 45:60)` trims all columns from 45 to 60 and `(1:20, :)` trims all the rows from 1 to 20.
+
+# Examples
+```jldoctest
+julia> frame = ones(5, 5);
+
+julia> trim(frame, (:, 2:5))
+5×1 Array{Float64,2}:
+ 1.0
+ 1.0
+ 1.0
+ 1.0
+ 1.0
+
+```
+
+# See Also
+[`trimview`](@ref)
+"""
+trim(frame::AbstractArray, idxs) = copy(trimview(frame, idxs))
+
+
+"""
+    trimview(frame::AbstractArray, idxs)
+
+Trims the frame to remove the region specified by idxs.
+
+This function is same as the [`trim`](@ref) function but returns a view of the frame.
+
+!!! note
+    This function returns a view of the frame, so any modification to output
+    array will result in modification of frame.
+
+# See Also
+[`trim`](@ref)
+"""
+function trimview(frame::AbstractArray, idxs)
+    # can switch to using `only` for Julia v1.4+
+    ds = findall(x -> !isa(x, Colon), idxs)
+    length(ds) == 1 || error("Invalid trim indices $idxs")
+
+    d = ds[1]
+    full_idxs = axes(frame, d)
+    # checking bounds error
+    idxs[d] ⊆ full_idxs || error("Trim indices $(idxs[d]) out of bounds for frame dimension $d $(full_idxs)")
+
+    # finding the complement indices
+    complement_idxs = setdiff(full_idxs, idxs[d])
+
+    return selectdim(frame, d, complement_idxs)
+end

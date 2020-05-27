@@ -22,6 +22,9 @@ end
     frame = ones(500, 600)
     @inferred subtract_overscan!(frame, (:, 540:600))
     @test frame == zeros(500, 600)
+
+    # testing error
+    @test_throws BoundsError subtract_overscan(ones(500, 600), (500:600, :))
 end
 
 @testset "flat correction" begin
@@ -43,6 +46,20 @@ end
     #testing error
     @test_throws DimensionMismatch flat_correct(ones(5, 5), ones(5, 6))
     @test_throws ErrorException flat_correct(ones(5, 5), ones(5, 5), norm_value = -2)
+end
+
+@testset "trim" begin
+    @test trim(reshape(1:25, 5, 5), (:, 4:5)) == trimview(reshape(1:25, 5, 5), (:, 4:5))
+    @test trim(reshape(1:25, 5, 5), (4:5, :)) == trimview(reshape(1:25, 5, 5), (4:5, :))
+
+    # testing output types
+    @test trimview(ones(5, 5), (:, 3:5)) isa SubArray
+    @test trim(ones(5, 5), (:, 3:5)) isa Array
+
+    # testing errors
+    @test_throws ErrorException trim(ones(5, 5), (4:5, 1:4))
+    @test_throws ErrorException trim(ones(5, 5), (:, :))
+    @test_throws ErrorException trim(ones(5, 5), (4:6, :))
 end
 
 @testset "helper" begin
