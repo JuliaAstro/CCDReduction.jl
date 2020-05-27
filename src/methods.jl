@@ -182,9 +182,24 @@ end
 
 
 """
-    crop(frame::AbstractArray, shape; force_odd = true)
+    crop(frame::AbstractArray, shape; force_equal = true)
 
-Crops the image to the size specified asumming center as the anchor.
+Crops the image to the shape specified asumming center as the anchor.
+
+Shape speficies the size of the cropped array, force_equal when set to true forces the cropped rows and columns to be equal on both sides
+otherwise the cropped frame contains one extra column on left and one extra row on top if necessary.
+
+# Examples
+```jldoctest
+julia> frame = reshape(1:25, (5, 5));
+
+julia> crop(frame, (3, 3))
+3×3 Array{Int64,2}:
+ 7  12  17
+ 8  13  18
+ 9  14  19
+
+```
 
 # See Also
 * [`cropview`](@ref)
@@ -193,9 +208,11 @@ crop(frame::AbstractArray, shape; kwargs...) = copy(cropview(frame, shape; kwarg
 
 
 """
-    cropview(frame::AbstractArray, shape; force_odd = true)
+    cropview(frame::AbstractArray, shape; force_equal = true)
 
-Crops the image to the size specified asumming center as the anchor.
+Crops the image to the shape specified asumming center as the anchor.
+
+This function is same as the [`crop`](@ref) function but returns a view of the frame.
 
 !!! note
     This function returns a view of the frame, so any modification to output
@@ -204,38 +221,30 @@ Crops the image to the size specified asumming center as the anchor.
 # See Also
 * [`crop`](@ref)
 """
-function cropview(frame::AbstractArray, shape; force_odd = true)
+function cropview(frame::AbstractArray, shape; force_equal = true)
+    shape_diff = size(frame) .- shape
+
     # testing error
+    any(s -> s < 0, shape_diff) && error("crop size ($shape) can't be larger than frame size ($(size(frame)))")
+    any(s -> s < 0, shape) && error("crop size ($shape) cant't be negative")
 
-
-    # generating the row range in cropped view
-    rows = size(frame, 1)
-    if (rows - shape[1])%2 == 0
-        row_range = 1 + (rows - shape[1]) ÷ 2 : rows - (rows - shape[1]) ÷ 2
-    else
-        if force_odd
-            @warn "Diffence between row dimension of cropped view and frame is odd. Crop row dimension increased by one."
-            mod_x = shape[1] + 1
-            row_range = 1 + (rows - mod_x) ÷ 2 : rows - (rows - mod_x) ÷ 2
+    # calculating range of cropped frame
+    range = []
+    for i = 1:2
+        strip = size(frame, i)
+        if iseven(shape_diff[i])
+            push!(range, 1 + shape_diff[i] ÷ 2 : strip - shape_diff[i] ÷ 2)
         else
-            row_range = 1 + (rows - shape[1] - 1) ÷ 2 : rows - (rows - shape[1] + 1) ÷ 2
-        end
-    end
-
-    # generating the col range in cropped view
-    cols = size(frame, 2)
-    if (cols - shape[2])%2 == 0
-        col_range = 1 + (cols - shape[2]) ÷ 2 : cols - (cols - shape[2]) ÷ 2
-    else
-        if force_odd
-            @warn "Diffence between column dimension of cropped view and frame is odd. Crop column dimension increased by one."
-            mod_y = shape[2] + 1
-            col_range = 1 + (cols - mod_y) ÷ 2 : cols - (cols - mod_y) ÷ 2
-        else
-            col_range = 1 + (cols - shape[2] - 1) ÷ 2 : cols - (cols - shape[2] + 1) ÷ 2
+            if force_equal
+                i == 1 && @warn "Diffence between row dimension of cropped view and frame is odd. Crop row dimension increased by one."
+                i == 2 && @warn "Diffence between column dimension of cropped view and frame is odd. Crop column dimension increased by one."
+                push!(range, 1 + (shape_diff[i] - 1) ÷ 2 : strip - (shape_diff[i] - 1) ÷ 2)
+            else
+                push!(range, 1 + (shape_diff[i] - 1) ÷ 2 : strip - (shape_diff[i] + 1) ÷ 2)
+            end
         end
     end
 
     # returning the view
-    return @view frame[row_range, col_range]
+    return @view frame[range[1], range[2]]
 end
