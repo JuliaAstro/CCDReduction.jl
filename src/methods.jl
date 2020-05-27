@@ -145,7 +145,7 @@ julia> trim(frame, (:, 2:5))
 ```
 
 # See Also
-[`trimview`](@ref)
+* [`trimview`](@ref)
 """
 trim(frame::AbstractArray, idxs) = copy(trimview(frame, idxs))
 
@@ -162,7 +162,7 @@ This function is same as the [`trim`](@ref) function but returns a view of the f
     array will result in modification of frame.
 
 # See Also
-[`trim`](@ref)
+* [`trim`](@ref)
 """
 function trimview(frame::AbstractArray, idxs)
     # can switch to using `only` for Julia v1.4+
@@ -236,8 +236,7 @@ function cropview(frame::AbstractArray, shape; force_equal = true)
             push!(range, 1 + shape_diff[i] ÷ 2 : strip - shape_diff[i] ÷ 2)
         else
             if force_equal
-                i == 1 && @warn "Diffence between row dimension of cropped view and frame is odd. Crop row dimension increased by one."
-                i == 2 && @warn "Diffence between column dimension of cropped view and frame is odd. Crop column dimension increased by one."
+                @warn "Shape was increased to keep equal trim size"
                 push!(range, 1 + (shape_diff[i] - 1) ÷ 2 : strip - (shape_diff[i] - 1) ÷ 2)
             else
                 push!(range, 1 + (shape_diff[i] - 1) ÷ 2 : strip - (shape_diff[i] + 1) ÷ 2)
