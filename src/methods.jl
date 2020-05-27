@@ -222,28 +222,23 @@ This function is same as the [`crop`](@ref) function but returns a view of the f
 * [`crop`](@ref)
 """
 function cropview(frame::AbstractArray, shape; force_equal = true)
-    shape_diff = size(frame) .- shape
-
     # testing error
-    any(s -> s < 0, shape_diff) && error("crop size ($shape) can't be larger than frame size ($(size(frame)))")
-    any(s -> s < 0, shape) && error("crop size ($shape) cant't be negative")
+    ndims(frame) == length(shape) || error("Dimension mismatch between frame and shape")
+    any(s -> !isa(s, Colon) && s < 1, shape) && error("crop size $shape cant't be less than 1")
 
-    # calculating range of cropped frame
-    range = []
-    for i = 1:2
-        strip = size(frame, i)
-        if iseven(shape_diff[i])
-            push!(range, 1 + shape_diff[i] ÷ 2 : strip - shape_diff[i] ÷ 2)
-        else
-            if force_equal
-                @warn "Shape was increased to keep equal trim size"
-                push!(range, 1 + (shape_diff[i] - 1) ÷ 2 : strip - (shape_diff[i] - 1) ÷ 2)
-            else
-                push!(range, 1 + (shape_diff[i] - 1) ÷ 2 : strip - (shape_diff[i] + 1) ÷ 2)
+    # generating idxs for cropped frame
+    idxs = map(enumerate(size(frame)), shape) do (d, s1), s2
+                diff = s2 isa Colon ? 0 : s1 - s2
+                lower = iseven(diff) ? (1 + (diff ÷ 2)) : (1 + ((diff - 1) ÷ 2))
+                upper = if isodd(diff) && force_equal
+                            @warn "dimension $d changed from $s2 to $(s2 + 1)"
+                            (s1 - ((diff - 1) ÷ 2))
+                        else
+                            iseven(diff) ? (s1 - (diff ÷ 2)) : (s1 - ((diff + 1) ÷ 2))
+                        end
+                lower:upper
             end
-        end
-    end
 
     # returning the view
-    return @view frame[range[1], range[2]]
+    return @view frame[idxs...]
 end
