@@ -9,7 +9,9 @@ export subtract_bias,
        flat_correct,
        flat_correct!,
        trim,
-       trimview
+       trimview,
+       crop,
+       cropview
 
 include("methods.jl")
 

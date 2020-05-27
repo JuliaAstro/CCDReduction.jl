@@ -179,3 +179,63 @@ function trimview(frame::AbstractArray, idxs)
 
     return selectdim(frame, d, complement_idxs)
 end
+
+
+"""
+    crop(frame::AbstractArray, shape; force_odd = true)
+
+Crops the image to the size specified asumming center as the anchor.
+
+# See Also
+* [`cropview`](@ref)
+"""
+crop(frame::AbstractArray, shape; kwargs...) = copy(cropview(frame, shape; kwargs...))
+
+
+"""
+    cropview(frame::AbstractArray, shape; force_odd = true)
+
+Crops the image to the size specified asumming center as the anchor.
+
+!!! note
+    This function returns a view of the frame, so any modification to output
+    array will result in modification of frame.
+
+# See Also
+* [`crop`](@ref)
+"""
+function cropview(frame::AbstractArray, shape; force_odd = true)
+    # testing error
+
+
+    # generating the row range in cropped view
+    rows = size(frame, 1)
+    if (rows - shape[1])%2 == 0
+        row_range = 1 + (rows - shape[1]) ÷ 2 : rows - (rows - shape[1]) ÷ 2
+    else
+        if force_odd
+            @warn "Diffence between row dimension of cropped view and frame is odd. Crop row dimension increased by one."
+            mod_x = shape[1] + 1
+            row_range = 1 + (rows - mod_x) ÷ 2 : rows - (rows - mod_x) ÷ 2
+        else
+            row_range = 1 + (rows - shape[1] - 1) ÷ 2 : rows - (rows - shape[1] + 1) ÷ 2
+        end
+    end
+
+    # generating the col range in cropped view
+    cols = size(frame, 2)
+    if (cols - shape[2])%2 == 0
+        col_range = 1 + (cols - shape[2]) ÷ 2 : cols - (cols - shape[2]) ÷ 2
+    else
+        if force_odd
+            @warn "Diffence between column dimension of cropped view and frame is odd. Crop column dimension increased by one."
+            mod_y = shape[2] + 1
+            col_range = 1 + (cols - mod_y) ÷ 2 : cols - (cols - mod_y) ÷ 2
+        else
+            col_range = 1 + (cols - shape[2] - 1) ÷ 2 : cols - (cols - shape[2] + 1) ÷ 2
+        end
+    end
+
+    # returning the view
+    return @view frame[row_range, col_range]
+end
