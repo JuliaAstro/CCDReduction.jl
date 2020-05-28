@@ -1,6 +1,36 @@
 # helper function
 axes_min_length(idxs) = argmin([a isa Colon ? Inf : length(a) for a in idxs])
 
+"""
+    fits_indices(string::String)
+
+Converts FITS based indices to Julian indices.
+
+# Examples
+```jldoctest
+julia> fits_indices("[1024:2048, :]")
+2-element Array{Any,1}:
+ Colon()
+ 1024:2048
+
+```
+"""
+function fits_indices(string::String)
+    str = replace(replace(replace(string, "[" => ""), "]" => ""), " " => "")
+    tokens = split(str, ',')
+
+    idxs = map(tokens) do token
+        t = split(token, ':')
+        if all(i -> i == "", t)
+            Colon()
+        else
+            low, high = parse.(Int, t)
+            low : high
+        end
+    end
+    return reverse(idxs)
+end
+
 #-------------------------------------------------------------------------------
 """
     subtract_bias!(frame::AbstractArray, bias_frame::AbstractArray)

@@ -111,4 +111,10 @@ end
     @test axes_min_length((1:2, :)) == 1
     @test axes_min_length((1:2, 5:12)) == 1
     @test axes_min_length((10:100, 1:5)) == 2
+
+    # testing fits_indices
+    @test fits_indices("[1024:2048, 200:300]") == [200:300, 1024:2048]
+    @test fits_indices("[:, 200:300]") == [200:300, :]
+    @test fits_indices("[1024:2048, :]") == [:, 1024:2048]
+
 end

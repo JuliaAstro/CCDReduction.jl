@@ -11,7 +11,8 @@ export subtract_bias,
        trim,
        trimview,
        crop,
-       cropview
+       cropview,
+       fits_indices
 
 include("methods.jl")
 
