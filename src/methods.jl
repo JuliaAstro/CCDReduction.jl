@@ -195,7 +195,7 @@ end
 
 Crops `frame` to the size specified by `shape` anchored by the frame center.
 
-This will remove rows/cols of the `frame` equally on each side. When there is an uneven difference in sizes (e.g. size 9 -> 6 can't be removed equally) the default is to 
+This will remove rows/cols of the `frame` equally on each side. When there is an uneven difference in sizes (e.g. size 9 -> 6 can't be removed equally) the default is to
 increase the output size (e.g. 6 -> 7) so there is equal removal on each side. To disable this, set `force_equal=false`, which will remove the extra slice from the end of the axis.
 
 # Examples
@@ -245,7 +245,7 @@ function cropview(frame::AbstractArray, shape; force_equal = true)
     # generating idxs for cropped frame
     idxs = map(enumerate(size(frame)), shape) do (d, s1), s2
                 diff = s2 isa Colon ? 0 : s1 - s2
-                lower = iseven(diff) ? (diff ÷ 2) : ((diff - 1) ÷ 2)
+                lower = iseven(diff) ? diff ÷ 2 : (diff - 1) ÷ 2
                 upper = if isodd(diff) && force_equal
                             @warn "dimension $d changed from $s2 to $(s2 + 1)"
                             (diff - 1) ÷ 2
@@ -254,7 +254,7 @@ function cropview(frame::AbstractArray, shape; force_equal = true)
                         else
                             diff ÷ 2
                         end
-                (1 + lower):(s1 - upper)
+                1 + lower:s1 - upper
             end
 
     # returning the view
