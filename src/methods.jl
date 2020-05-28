@@ -6,6 +6,9 @@ axes_min_length(idxs) = argmin([a isa Colon ? Inf : length(a) for a in idxs])
     subtract_bias!(frame::AbstractArray, bias_frame::AbstractArray)
 
 In-place version of [`subtract_bias`](@ref)
+
+# See Also
+[`subtract_bias`](@ref)
 """
 function subtract_bias!(frame::AbstractArray, bias_frame::AbstractArray)
     frame .-= bias_frame
@@ -31,15 +34,18 @@ julia> subtract_bias(frame, bias)
 ```
 
 # See Also
-* [`subtract_bias!`](@ref)
+[`subtract_bias!`](@ref)
 """
 subtract_bias(frame::AbstractArray, bias_frame::AbstractArray) = subtract_bias!(deepcopy(frame), bias_frame)
 
 
 """
-    subtract_overscan(frame::AbstractArray, idxs; dims = axes_min_length(idxs))
+    subtract_overscan!(frame::AbstractArray, idxs; dims = axes_min_length(idxs))
 
 In-place version of [`subtract_overscan`](@ref)
+
+# See Also
+[`subtract_overscan`](@ref)
 """
 function subtract_overscan!(frame::AbstractArray, idxs; dims = axes_min_length(idxs))
     overscan_region = @view frame[idxs...]
@@ -50,7 +56,7 @@ end
 
 
 """
-    subtract_overscan!(frame::AbstractArray, idxs; dims = axes_min_length(idxs))
+    subtract_overscan(frame::AbstractArray, idxs; dims = axes_min_length(idxs))
 
 Subtract the overscan frame from image.
 
@@ -77,6 +83,9 @@ subtract_overscan(frame::AbstractArray, idxs; dims = axes_min_length(idxs)) = su
     flat_correct!(frame::AbstractArray, flat_frame::AbstractArray; norm_value = mean(flat_frame))
 
 In-place version of [`flat_correct`](@ref)
+
+# See Also
+* [`flat_correct`](@ref)
 """
 function flat_correct!(frame::AbstractArray, flat_frame::AbstractArray; norm_value = mean(flat_frame))
     norm_value <= 0 && error("norm_value must be positive")
@@ -117,7 +126,7 @@ julia> flat_correct(frame, flat)
 ```
 
 # See Also
-* [`flat_correct!`](@ref)
+[`flat_correct!`](@ref)
 """
 flat_correct(frame::AbstractArray, flat_frame::AbstractArray; kwargs...) = flat_correct!(deepcopy(frame), flat_frame; kwargs...)
 
@@ -178,4 +187,76 @@ function trimview(frame::AbstractArray, idxs)
     complement_idxs = setdiff(full_idxs, idxs[d])
 
     return selectdim(frame, d, complement_idxs)
+end
+
+
+"""
+    crop(frame::AbstractArray, shape; force_equal = true)
+
+Crops `frame` to the size specified by `shape` anchored by the frame center.
+
+This will remove rows/cols of the `frame` equally on each side. When there is an uneven difference in sizes (e.g. size 9 -> 6 can't be removed equally) the default is to
+increase the output size (e.g. 6 -> 7) so there is equal removal on each side. To disable this, set `force_equal=false`, which will remove the extra slice from the end of the axis.
+
+# Examples
+```jldoctest
+julia> frame = reshape(1:25, (5, 5));
+
+julia> crop(frame, (3, 3))
+3×3 Array{Int64,2}:
+ 7  12  17
+ 8  13  18
+ 9  14  19
+
+julia> crop(frame, (4, 3), force_equal = false)
+4×3 Array{Int64,2}:
+ 6  11  16
+ 7  12  17
+ 8  13  18
+ 9  14  19
+
+```
+
+# See Also
+[`cropview`](@ref)
+"""
+crop(frame::AbstractArray, shape; kwargs...) = copy(cropview(frame, shape; kwargs...))
+
+
+"""
+    cropview(frame::AbstractArray, shape; force_equal = true)
+
+Crops `frame` to the size specified by `shape` anchored by the frame center.
+
+This function is same as the [`crop`](@ref) function but returns a view of the frame.
+
+!!! note
+    This function returns a view of the frame, so any modification to output
+    array will result in modification of frame.
+
+# See Also
+[`crop`](@ref)
+"""
+function cropview(frame::AbstractArray, shape; force_equal = true)
+    # testing error
+    ndims(frame) == length(shape) || error("Dimension mismatch between frame and shape")
+    any(s -> !isa(s, Colon) && s < 1, shape) && error("crop size $shape cant't be less than 1")
+
+    # generating idxs for cropped frame
+    idxs = map(enumerate(size(frame)), shape) do (d, s1), s2
+                diff = s2 isa Colon ? 0 : s1 - s2
+                lower = iseven(diff) ? diff ÷ 2 : (diff - 1) ÷ 2
+                upper = if isodd(diff) && force_equal
+                            @warn "dimension $d changed from $s2 to $(s2 + 1)"
+                            (diff - 1) ÷ 2
+                        elseif isodd(diff)
+                            (diff + 1) ÷ 2
+                        else
+                            diff ÷ 2
+                        end
+                1 + lower:s1 - upper
+            end
+
+    # returning the view
+    return @view frame[idxs...]
 end
