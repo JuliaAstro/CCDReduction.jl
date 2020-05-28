@@ -1,5 +1,6 @@
 # helper function
 axes_min_length(idxs) = argmin([a isa Colon ? Inf : length(a) for a in idxs])
+axes_min_length(idxs::String) = axes_min_length(fits_indices(idxs))
 
 """
     fits_indices(string::String)
@@ -83,6 +84,8 @@ function subtract_overscan!(frame::AbstractArray, idxs; dims = axes_min_length(i
     frame .-= overscan_value
     return frame
 end
+
+subtract_overscan!(frame::AbstractArray, idxs::String; kwargs...) = subtract_overscan!(frame, fits_indices(idxs); kwargs...)
 
 
 """
@@ -218,6 +221,8 @@ function trimview(frame::AbstractArray, idxs)
 
     return selectdim(frame, d, complement_idxs)
 end
+
+trimview(frame::AbstractArray, idxs::String) = trimview(frame, fits_indices(idxs))
 
 
 """

@@ -17,11 +17,15 @@ end
 @testset "overscan subtraction" begin
     # testing non-mutating version
     @test @inferred(subtract_overscan(ones(500, 600), (1:2, :))) == zeros(500, 600)
+    @test @inferred(subtract_overscan(ones(500, 600), "[:, 1:2]")) == zeros(500, 600)
 
     # testing mutating version
     frame = ones(500, 600)
+    frame1 = ones(500, 600)
     @inferred subtract_overscan!(frame, (:, 540:600))
+    @inferred subtract_overscan!(frame1, "[540:600, :]")
     @test frame == zeros(500, 600)
+    @test frame == frame1
 
     # testing error
     @test_throws BoundsError subtract_overscan(ones(500, 600), (500:600, :))
@@ -51,6 +55,10 @@ end
 @testset "trim" begin
     @test trim(reshape(1:25, 5, 5), (:, 4:5)) == trimview(reshape(1:25, 5, 5), (:, 4:5))
     @test trim(reshape(1:25, 5, 5), (4:5, :)) == trimview(reshape(1:25, 5, 5), (4:5, :))
+    @test trim(reshape(1:25, 5, 5), (:, 4:5)) == [1:5 6:10 11:15]
+    @test trim(reshape(1:25, 5, 5), (1:2, :)) == [3:5 8:10 13:15 18:20 23:25]
+    @test trim(reshape(1:25, 5, 5), "[4:5, :]") == trimview(reshape(1:25, 5, 5), (:, 4:5))
+    @test trim(reshape(1:25, 5, 5), "[:, 4:5]") == trimview(reshape(1:25, 5, 5), (4:5, :))
 
     # testing output types
     @test trimview(ones(5, 5), (:, 3:5)) isa SubArray
@@ -116,5 +124,4 @@ end
     @test fits_indices("[1024:2048, 200:300]") == [200:300, 1024:2048]
     @test fits_indices("[:, 200:300]") == [200:300, :]
     @test fits_indices("[1024:2048, :]") == [:, 1024:2048]
-
 end
