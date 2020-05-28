@@ -50,7 +50,7 @@ end
 """
     subtract_bias(frame::AbstractArray, bias_frame::AbstractArray)
 
-Subtract the bias frame from image.
+Subtract the `bias_frame` from `frame`.
 
 # Examples
 ```jldoctest
@@ -94,13 +94,18 @@ subtract_overscan!(frame::AbstractArray, idxs::String; kwargs...) = subtract_ove
 Subtract the overscan frame from image.
 
 `dims` is the dimension along which `overscan_frame` is combined. The default value
-of `dims` is the axis with smaller length in overscan region.
+of `dims` is the axis with smaller length in overscan region. `idxs` is also supported
+as FITS based indices.
 
 # Examples
 ```jldoctest
 julia> frame = [4.0 2.0 3.0 1.0 1.0];
 
 julia> subtract_overscan(frame, (:, 4:5), dims = 2)
+1×5 Array{Float64,2}:
+ 3.0  1.0  2.0  0.0  0.0
+
+julia> subtract_overscan(frame, "[4:5, :]", dims = 2)
 1×5 Array{Float64,2}:
  3.0  1.0  2.0  0.0  0.0
 
@@ -167,16 +172,26 @@ flat_correct(frame::AbstractArray, flat_frame::AbstractArray; kwargs...) = flat_
 """
     trim(frame::AbstractArray, idxs)
 
-Trims the frame to remove the region specified by idxs.
+Trims the `frame` to remove the region specified by idxs.
 
 This function trims the array in a manner such that final array should be rectangular.
 The indices follow standard Julia convention, so `(:, 45:60)` trims all columns from 45 to 60 and `(1:20, :)` trims all the rows from 1 to 20.
+The function also supports FITS convention when indices are passed as strings, so `"[45:60, :]"` works equivalently as `(:, 45:60)` and `"[:, 1:20]"`
+works equivalently as `(1:20, :)`.
 
 # Examples
 ```jldoctest
 julia> frame = ones(5, 5);
 
 julia> trim(frame, (:, 2:5))
+5×1 Array{Float64,2}:
+ 1.0
+ 1.0
+ 1.0
+ 1.0
+ 1.0
+
+julia> trim(frame, "[2:5, :]")
 5×1 Array{Float64,2}:
  1.0
  1.0
@@ -195,7 +210,7 @@ trim(frame::AbstractArray, idxs) = copy(trimview(frame, idxs))
 """
     trimview(frame::AbstractArray, idxs)
 
-Trims the frame to remove the region specified by idxs.
+Trims the `frame` to remove the region specified by idxs.
 
 This function is same as the [`trim`](@ref) function but returns a view of the frame.
 
