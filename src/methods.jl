@@ -191,7 +191,7 @@ julia> trim(frame, (:, 2:5))
  1.0
  1.0
 
-julia> trim(frame, "[2:5, :]")
+julia> trim(frame, "[2:5, 1:5]")
 5×1 Array{Float64,2}:
  1.0
  1.0
@@ -222,17 +222,31 @@ This function is same as the [`trim`](@ref) function but returns a view of the f
 [`trim`](@ref)
 """
 function trimview(frame::AbstractArray, idxs)
+    # this adds the support for input indices of the form (1:size(frame, 1), ...) or (..., 1:size(frame, 2))
+    # It converts 1:size(frame, 1) to : 1and then the same subroutine follows.
+    processed_idxs = map(size(frame), idxs) do s1, s2
+                            if s2 == Colon()
+                                Colon()
+                            else
+                                if length(s2) == s1
+                                    Colon()
+                                else
+                                    s2
+                                end
+                            end
+                        end
+
     # can switch to using `only` for Julia v1.4+
-    ds = findall(x -> !isa(x, Colon), idxs)
+    ds = findall(x -> !isa(x, Colon), processed_idxs)
     length(ds) == 1 || error("Invalid trim indices $idxs")
 
     d = ds[1]
     full_idxs = axes(frame, d)
     # checking bounds error
-    idxs[d] ⊆ full_idxs || error("Trim indices $(idxs[d]) out of bounds for frame dimension $d $(full_idxs)")
+    processed_idxs[d] ⊆ full_idxs || error("Trim indices $(idxs[d]) out of bounds for frame dimension $d $(full_idxs)")
 
     # finding the complement indices
-    complement_idxs = setdiff(full_idxs, idxs[d])
+    complement_idxs = setdiff(full_idxs, processed_idxs[d])
 
     return selectdim(frame, d, complement_idxs)
 end

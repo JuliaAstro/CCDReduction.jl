@@ -59,6 +59,8 @@ end
     @test trim(reshape(1:25, 5, 5), (1:2, :)) == [3:5 8:10 13:15 18:20 23:25]
     @test trim(reshape(1:25, 5, 5), "[4:5, :]") == trimview(reshape(1:25, 5, 5), (:, 4:5))
     @test trim(reshape(1:25, 5, 5), "[:, 4:5]") == trimview(reshape(1:25, 5, 5), (4:5, :))
+    @test trim(reshape(1:25, 5, 5), "[1:5, 4:5]") == trimview(reshape(1:25, 5, 5), (4:5, :))
+    @test trim(reshape(1:25, 5, 5), "[4:5, 1:5]") == trimview(reshape(1:25, 5, 5), (:, 4:5))
 
     # testing output types
     @test trimview(ones(5, 5), (:, 3:5)) isa SubArray
