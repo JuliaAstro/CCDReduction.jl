@@ -9,25 +9,20 @@ Converts FITS based indices to Julian indices.
 
 # Examples
 ```jldoctest
-julia> fits_indices("[1024:2048, :]")
+julia> fits_indices("[1024:2048, 1:2048]")
 2-element Array{Any,1}:
- Colon()
+ 1:2048
  1024:2048
 
 ```
 """
 function fits_indices(string::String)
-    str = replace(replace(replace(string, "[" => ""), "]" => ""), " " => "")
+    str = replace(string, r"[\[\]\s]" => "")
     tokens = split(str, ',')
 
     idxs = map(tokens) do token
-        t = split(token, ':')
-        if all(i -> i == "", t)
-            Colon()
-        else
-            low, high = parse.(Int, t)
-            low : high
-        end
+        t = split(token, ':', keepempty=false)
+        length(t) == 0 ? Colon() : parse(Int, t[1]):parse(Int, t[2])
     end
     return reverse(idxs)
 end
@@ -223,7 +218,7 @@ This function is same as the [`trim`](@ref) function but returns a view of the f
 """
 function trimview(frame::AbstractArray, idxs)
     # this adds the support for input indices of the form (1:size(frame, 1), ...) or (..., 1:size(frame, 2))
-    # It converts 1:size(frame, 1) to : 1and then the same subroutine follows.
+    # It converts 1:size(frame, 1) to : and then the same subroutine follows.
     processed_idxs = map(size(frame), idxs) do s1, s2
                             if s2 == Colon()
                                 Colon()

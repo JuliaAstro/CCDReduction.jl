@@ -1,4 +1,5 @@
-using CCDReduction: axes_min_length
+using CCDReduction: axes_min_length,
+                    fits_indices
 
 @testset "bias subtraction" begin
     # testing non-mutating version
@@ -126,4 +127,5 @@ end
     @test fits_indices("[1024:2048, 200:300]") == [200:300, 1024:2048]
     @test fits_indices("[:, 200:300]") == [200:300, :]
     @test fits_indices("[1024:2048, :]") == [:, 1024:2048]
+    @test fits_indices("[200:300, 1024:2048]") == [1024:2048, 200:300]
 end
