@@ -260,3 +260,35 @@ function cropview(frame::AbstractArray, shape; force_equal = true)
     # returning the view
     return @view frame[idxs...]
 end
+
+
+"""
+    combine(frames::Vararg{<:AbstractArray}; method = median)
+    combine(frames::AbstractVector{<:AbstractArray}; method = median)
+
+Combines multiple frames on the basis of method specified, default method used is median.
+
+# Examples
+```jldoctest
+julia> frame = [reshape(1.0:4.0, (2, 2)) for i = 1:4];
+
+julia> combine(frame)
+2×2 Array{Float64,2}:
+ 1.0  3.0
+ 2.0  4.0
+
+julia> combine(frame, method = sum)
+2×2 Array{Float64,2}:
+ 4.0  12.0
+ 8.0  16.0
+
+```
+"""
+function combine(frames::Vararg{<:AbstractArray}; method = median)
+    firstframe = first(frames)
+    dim = ndims(firstframe) + 1
+    shape = size(firstframe)
+    return reshape(method(stack(frames), dims = dim), shape)
+end
+
+combine(frames::AbstractVector{<:AbstractArray}; method = median) = combine(frames..., method = method)

@@ -1,6 +1,7 @@
 module CCDReduction
 
 using Statistics
+using LazyStack
 
 export subtract_bias,
        subtract_bias!,
@@ -11,7 +12,8 @@ export subtract_bias,
        trim,
        trimview,
        crop,
-       cropview
+       cropview,
+       combine
 
 include("methods.jl")
 
