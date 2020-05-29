@@ -1,6 +1,5 @@
 # helper function
 axes_min_length(idxs) = argmin([a isa Colon ? Inf : length(a) for a in idxs])
-axes_min_length(idxs::String) = axes_min_length(fits_indices(idxs))
 
 # parses FITS indices into standard Julian indices
 function fits_indices(string::String)
