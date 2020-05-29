@@ -75,8 +75,7 @@ subtract_overscan!(frame::AbstractArray, idxs::String; kwargs...) = subtract_ove
 Subtract the overscan frame from image.
 
 `dims` is the dimension along which `overscan_frame` is combined. The default value
-of `dims` is the axis with smaller length in overscan region. `idxs` is also supported
-as FITS based indices.
+of `dims` is the axis with smaller length in overscan region. If `idxs` is a string it will be parsed as FITS-style indices.
 
 # Examples
 ```jldoctest
@@ -157,8 +156,7 @@ Trims the `frame` to remove the region specified by idxs.
 
 This function trims the array in a manner such that final array should be rectangular.
 The indices follow standard Julia convention, so `(:, 45:60)` trims all columns from 45 to 60 and `(1:20, :)` trims all the rows from 1 to 20.
-The function also supports FITS convention when indices are passed as strings, so `"[45:60, :]"` works equivalently as `(:, 45:60)` and `"[:, 1:20]"`
-works equivalently as `(1:20, :)`.
+The function also supports FITS-style indices.
 
 # Examples
 ```jldoctest
