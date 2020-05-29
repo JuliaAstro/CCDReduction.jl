@@ -104,6 +104,17 @@ end
     @test_throws ErrorException cropview(ones(5, 5), (3, 4, 5))
 end
 
+@testset "combining" begin
+    x = [reshape(1:4, (2,2)) for i = 1:10]
+
+    @test combine(x) == [1:2 3:4]
+    @test combine(x, method = sum) == [1:2 3:4] .* 10
+
+    # testing error
+    @test_throws DimensionMismatch combine(rand(5, 5), rand(6, 6))
+    @test_throws ArgumentError combine()
+end
+
 @testset "helper" begin
     # testing axes_min_length
     @test axes_min_length((:, :)) == 1
