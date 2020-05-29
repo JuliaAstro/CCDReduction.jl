@@ -2,20 +2,7 @@
 axes_min_length(idxs) = argmin([a isa Colon ? Inf : length(a) for a in idxs])
 axes_min_length(idxs::String) = axes_min_length(fits_indices(idxs))
 
-"""
-    fits_indices(string::String)
-
-Converts FITS based indices to Julian indices.
-
-# Examples
-```jldoctest
-julia> fits_indices("[1024:2048, 1:2048]")
-2-element Array{Any,1}:
- 1:2048
- 1024:2048
-
-```
-"""
+# parses FITS indices into standard Julian indices
 function fits_indices(string::String)
     str = replace(string, r"[\[\]\s]" => "")
     tokens = split(str, ',')
@@ -100,7 +87,7 @@ julia> subtract_overscan(frame, (:, 4:5), dims = 2)
 1×5 Array{Float64,2}:
  3.0  1.0  2.0  0.0  0.0
 
-julia> subtract_overscan(frame, "[4:5, :]", dims = 2)
+julia> subtract_overscan(frame, "[4:5, 1:1]", dims = 2)
 1×5 Array{Float64,2}:
  3.0  1.0  2.0  0.0  0.0
 
@@ -219,17 +206,9 @@ This function is same as the [`trim`](@ref) function but returns a view of the f
 function trimview(frame::AbstractArray, idxs)
     # this adds the support for input indices of the form (1:size(frame, 1), ...) or (..., 1:size(frame, 2))
     # It converts 1:size(frame, 1) to : and then the same subroutine follows.
-    processed_idxs = map(size(frame), idxs) do s1, s2
-                            if s2 == Colon()
-                                Colon()
-                            else
-                                if length(s2) == s1
-                                    Colon()
-                                else
-                                    s2
-                                end
-                            end
-                        end
+    processed_idxs = map(axes(frame), idxs) do a1, a2
+        (a2 isa Colon || a1 == a2) ? Colon() : a2
+    end
 
     # can switch to using `only` for Julia v1.4+
     ds = findall(x -> !isa(x, Colon), processed_idxs)
