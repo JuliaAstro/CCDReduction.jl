@@ -266,7 +266,9 @@ end
     combine(frames::Vararg{<:AbstractArray}; method = median)
     combine(frames::AbstractVector{<:AbstractArray}; method = median)
 
-Combines multiple frames on the basis of method specified, default method used is median.
+Combine multiple frames using `method`.
+
+To pass a custom method, it must have a signature like `method(::AbstractArray; dims)`.
 
 # Examples
 ```jldoctest
