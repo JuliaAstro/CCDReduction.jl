@@ -329,3 +329,52 @@ function combine(frames::Vararg{<:AbstractArray}; method = median)
 end
 
 combine(frames::AbstractVector{<:AbstractArray}; method = median) = combine(frames..., method = method)
+
+
+"""
+    subtract_dark!(frame::AbstractArray, dark_frame::AbstractArray; data_exposure = 1, dark_exposure = 1, scale = false)
+
+In place version of [`subtract_dark`](@ref)
+
+# See Also
+[`subtract_dark`](@ref)
+"""
+function subtract_dark!(frame::AbstractArray, dark_frame::AbstractArray; data_exposure = 1, dark_exposure = 1, scale = false)
+    if scale
+        frame .-= (dark_frame .* (data_exposure / dark_exposure))
+    else
+        frame .-= dark_frame
+    end
+    return frame
+end
+
+
+"""
+    subtract_dark(frame::AbstractArray, dark_frame::AbstractArray; data_exposure = 1, dark_exposure = 1, scale = false)
+
+Subtract the `dark_frame` from `frame`.
+
+# Examples
+```jldoctest
+julia> frame = ones(3, 3);
+
+julia> dark_frame = ones(3, 3);
+
+julia> subtract_dark(frame, dark_frame)
+3×3 Array{Float64,2}:
+ 0.0  0.0  0.0
+ 0.0  0.0  0.0
+ 0.0  0.0  0.0
+
+julia> subtract_dark(frame, dark_frame, data_exposure = 1, dark_exposure = 4, scale = true)
+3×3 Array{Float64,2}:
+ 0.75  0.75  0.75
+ 0.75  0.75  0.75
+ 0.75  0.75  0.75
+
+```
+
+# See Also
+[`subtract_dark!`](@ref)
+"""
+subtract_dark(frame::AbstractArray, dark_frame::AbstractArray; kwargs...) = subtract_dark!(deepcopy(frame), dark_frame; kwargs...)

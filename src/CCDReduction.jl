@@ -13,7 +13,9 @@ export subtract_bias,
        trimview,
        crop,
        cropview,
-       combine
+       combine,
+       subtract_dark,
+       subtract_dark!
 
 include("methods.jl")
 
