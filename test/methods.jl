@@ -130,7 +130,7 @@ end
     # testing non-mutating version
     @test @inferred(subtract_dark(ones(5, 5), ones(5, 5))) == zeros(5, 5)
     @test @inferred(subtract_dark(ones(5, 5), ones(5, 5), data_exposure = 1, dark_exposure = 4)) == fill(0.75, 5, 5)
-    @test @inferred(subtract_dark(ones(5, 5), ones(5, 5), data_exposure = 13, dark_exposure = 17)) ≈ fill(Float32(4/17), 5, 5)
+    @test @inferred(subtract_dark(ones(Float32, 5, 5), ones(Float32, 5, 5), data_exposure = 13, dark_exposure = 17)) ≈ fill(Float32(4/17), 5, 5)
 
     # testing mutating version
     frame = ones(5, 5)
