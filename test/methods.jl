@@ -129,17 +129,17 @@ end
 @testset "dark subtraction" begin
     # testing non-mutating version
     @test @inferred(subtract_dark(ones(5, 5), ones(5, 5))) == zeros(5, 5)
-    @test @inferred(subtract_dark(ones(5, 5), ones(5, 5), data_exposure = 1, dark_exposure = 4, scale = true)) == fill(0.75, 5, 5)
+    @test @inferred(subtract_dark(ones(5, 5), ones(5, 5), data_exposure = 1, dark_exposure = 4)) == fill(0.75, 5, 5)
 
     # testing mutating version
     frame = ones(5, 5)
     dark_frame = ones(5, 5)
-    subtract_dark!(frame, dark_frame)
-    @test frame ≈ zeros(5, 5)
+    @inferred(subtract_dark!(frame, dark_frame))
+    @test frame == zeros(5, 5)
 
     frame = fill(5.0, 5, 5)
     dark_frame = ones(5, 5)
-    @inferred(subtract_dark!(frame, dark_frame, data_exposure = 2, dark_exposure = 1, scale = true))
+    @inferred(subtract_dark!(frame, dark_frame, data_exposure = 2, dark_exposure = 1))
     @test frame  == fill(3.0, 5, 5)
 
     # testing error
