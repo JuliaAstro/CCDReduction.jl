@@ -130,6 +130,7 @@ end
     # testing non-mutating version
     @test @inferred(subtract_dark(ones(5, 5), ones(5, 5))) == zeros(5, 5)
     @test @inferred(subtract_dark(ones(5, 5), ones(5, 5), data_exposure = 1, dark_exposure = 4)) == fill(0.75, 5, 5)
+    @test @inferred(subtract_dark(ones(5, 5), ones(5, 5), data_exposure = 13, dark_exposure = 17)) ≈ fill(Float32(4/17), 5, 5)
 
     # testing mutating version
     frame = ones(5, 5)
@@ -141,6 +142,11 @@ end
     dark_frame = ones(5, 5)
     @inferred(subtract_dark!(frame, dark_frame, data_exposure = 2, dark_exposure = 1))
     @test frame  == fill(3.0, 5, 5)
+
+    frame = fill(Float32(3), 5, 5)
+    dark_frame = fill(Float32(2), 5, 5)
+    @inferred(subtract_dark!(frame, dark_frame, data_exposure = 11, dark_exposure = 19))
+    @test frame ≈ fill(Float32(35/19), 5, 5)
 
     # testing error
     @test_throws DimensionMismatch subtract_dark!(ones(5,5), ones(6,6))
