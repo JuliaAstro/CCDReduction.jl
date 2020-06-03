@@ -13,6 +13,9 @@ function fits_indices(string::String)
     return reverse(idxs)
 end
 
+# Converts Int to Float and leaves Float to Float itself
+convert_value(x, S) = S <: Integer ? round(S, x) : convert(S, x)
+
 #-------------------------------------------------------------------------------
 """
     subtract_bias!(frame::AbstractArray, bias_frame::AbstractArray)
@@ -59,14 +62,19 @@ In-place version of [`subtract_overscan`](@ref)
 # See Also
 [`subtract_overscan`](@ref)
 """
-function subtract_overscan!(frame::AbstractArray, idxs; dims = axes_min_length(idxs))
+function subtract_overscan!(frame::AbstractArray{T}, idxs; dims = axes_min_length(idxs)) where T
     overscan_region = @view frame[idxs...]
-    overscan_value = median(overscan_region, dims = dims)
+    overscan_value = convert_value.(median(overscan_region, dims = dims), T)
     frame .-= overscan_value
     return frame
 end
 
 subtract_overscan!(frame::AbstractArray, idxs::String; kwargs...) = subtract_overscan!(frame, fits_indices(idxs); kwargs...)
+
+# support for frame as strings(Location of file) and ImageHDU
+subtract_overscan!(frame::ImageHDU, key::Symbol; kwargs...) = subtract_overscan!(read(frame), read_header(frame)[string(key)]; kwargs...)
+subtract_overscan!(frame::ImageHDU, idxs; kwargs...) = subtract_overscan!(read(frame), idxs; kwargs...)
+subtract_overscan!(filename::String, idxs; hdu = 1, kwargs...) = subtract_overscan!(FITS(filename)[hdu], idxs; kwargs...)
 
 
 """
@@ -92,9 +100,9 @@ julia> subtract_overscan(frame, "[4:5, 1:1]", dims = 2)
 ```
 
 # See Also
-* [`subtract_overscan!`](@ref)
+[`subtract_overscan!`](@ref)
 """
-subtract_overscan(frame::AbstractArray, idxs; dims = axes_min_length(idxs)) = subtract_overscan!(deepcopy(frame), idxs, dims = dims)
+subtract_overscan(frame, idxs; kwargs...) = subtract_overscan!(deepcopy(frame), idxs; kwargs...)
 
 
 """
@@ -103,7 +111,7 @@ subtract_overscan(frame::AbstractArray, idxs; dims = axes_min_length(idxs)) = su
 In-place version of [`flat_correct`](@ref)
 
 # See Also
-* [`flat_correct`](@ref)
+[`flat_correct`](@ref)
 """
 function flat_correct!(frame::AbstractArray, flat_frame::AbstractArray; norm_value = mean(flat_frame))
     norm_value <= 0 && error("norm_value must be positive")

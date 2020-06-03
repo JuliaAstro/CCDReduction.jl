@@ -30,6 +30,15 @@ end
 
     # testing error
     @test_throws BoundsError subtract_overscan(ones(500, 600), (500:600, :))
+
+    # testing interface for FITS
+    hdu = M6707HH[1]
+    data = read(hdu)
+    @test subtract_overscan(data, (:, 1050:1059)) == subtract_overscan(test_file_path_M6707HH, (:, 1050:1059))
+    @test subtract_overscan(data, (:, 1050:1059)) == subtract_overscan(test_file_path_M6707HH, "1050:1059, 1:1059")
+    @test subtract_overscan(data, (:, 1050:1059)) == subtract_overscan(hdu, "1050:1059, 1:1059")
+    @test subtract_overscan(data, (1050:1059, :)) == subtract_overscan(hdu, "1:1059, 1050:1059")
+
 end
 
 @testset "flat correction" begin
