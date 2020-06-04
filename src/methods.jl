@@ -13,7 +13,7 @@ function fits_indices(string::String)
     return reverse(idxs)
 end
 
-# Converts Int to Float and leaves Float to Float itself
+# Convert using `round` for integers
 convert_value(S::Type{<:Integer}, x) = round(S, x)
 convert_value(S, x) = convert(S, x)
 
@@ -106,6 +106,13 @@ julia> subtract_overscan(frame, "[4:5, 1:1]", dims = 2)
 [`subtract_overscan!`](@ref)
 """
 subtract_overscan(frame, idxs; kwargs...) = subtract_overscan!(deepcopy(frame), idxs; kwargs...)
+
+"""
+	subtract_overscan(::FITSIO.ImageHDU, idxs; [dims])
+	subtract_overscan(filename, idxs; hdu=1, [dims])
+
+Load a FITS file or HDU before subtracting the overscan region. If `idxs` is a symbol it will be read from the FITS header with that key (case sensitive).
+"""
 subtract_overscan(frame::ImageHDU, idxs; kwargs...) = subtract_overscan!(getdata(frame), idxs; kwargs...)
 subtract_overscan(frame::ImageHDU, key::Symbol; kwargs...) = subtract_overscan(frame, read_header(frame)[string(key)]; kwargs...)
 subtract_overscan(filename::String, idxs; hdu = 1, kwargs...) = subtract_overscan(FITS(filename)[hdu], idxs; kwargs...)
