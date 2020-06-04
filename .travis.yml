@@ -17,6 +17,7 @@ notifications:
 cache:
   directories:
     - $HOME/.julia/artifacts
+    - test/data
 
 branches:
   only:

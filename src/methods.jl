@@ -107,7 +107,7 @@ julia> subtract_overscan(frame, "[4:5, 1:1]", dims = 2)
 """
 subtract_overscan(frame, idxs; kwargs...) = subtract_overscan!(deepcopy(frame), idxs; kwargs...)
 subtract_overscan(frame::ImageHDU, idxs; kwargs...) = subtract_overscan!(getdata(frame), idxs; kwargs...)
-subtract_overscan(frame::ImageHDU, key::Symbol; kwargs...) = subtract_overscan!(getdata(frame), read_header(frame)[string(key)]; kwargs...)
+subtract_overscan(frame::ImageHDU, key::Symbol; kwargs...) = subtract_overscan(frame, read_header(frame)[string(key)]; kwargs...)
 subtract_overscan(filename::String, idxs; hdu = 1, kwargs...) = subtract_overscan(FITS(filename)[hdu], idxs; kwargs...)
 
 
