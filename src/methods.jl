@@ -14,7 +14,8 @@ function fits_indices(string::String)
 end
 
 # Converts Int to Float and leaves Float to Float itself
-convert_value(S, x) = S <: Integer ? round(S, x) : convert(S, x)
+convert_value(S::Type{<:Integer}, x) = round(S, x)
+convert_value(S, x) = convert(S, x)
 
 # Gets the data from hdu
 function getdata(hdu::ImageHDU)
@@ -78,9 +79,6 @@ end
 
 subtract_overscan!(frame::AbstractArray, idxs::String; kwargs...) = subtract_overscan!(frame, fits_indices(idxs); kwargs...)
 
-# support for frame as strings(Location of file)
-subtract_overscan!(filename::String, idxs; hdu = 1, kwargs...) = subtract_overscan!(FITS(filename)[hdu], idxs; kwargs...)
-
 
 """
     subtract_overscan(frame::AbstractArray, idxs; dims = axes_min_length(idxs))
@@ -111,6 +109,7 @@ subtract_overscan(frame, idxs; kwargs...) = subtract_overscan!(deepcopy(frame), 
 subtract_overscan(frame::ImageHDU, idxs; kwargs...) = subtract_overscan!(getdata(frame), idxs; kwargs...)
 subtract_overscan(frame::ImageHDU, key::Symbol; kwargs...) = subtract_overscan!(getdata(frame), read_header(frame)[string(key)]; kwargs...)
 subtract_overscan(filename::String, idxs; hdu = 1, kwargs...) = subtract_overscan(FITS(filename)[hdu], idxs; kwargs...)
+
 
 """
     flat_correct!(frame::AbstractArray, flat_frame::AbstractArray; norm_value = mean(flat_frame))
