@@ -13,6 +13,17 @@ function fits_indices(string::String)
     return reverse(idxs)
 end
 
+# Convert using `round` for integers
+convert_value(S::Type{<:Integer}, x) = round(S, x)
+convert_value(S, x) = convert(S, x)
+
+# Gets the data from hdu
+function getdata(hdu::ImageHDU)
+	data = read(hdu)
+	d = ndims(data)
+	return permutedims(data, d:-1:1)
+end
+
 #-------------------------------------------------------------------------------
 """
     subtract_bias!(frame::AbstractArray, bias_frame::AbstractArray)
@@ -59,9 +70,9 @@ In-place version of [`subtract_overscan`](@ref)
 # See Also
 [`subtract_overscan`](@ref)
 """
-function subtract_overscan!(frame::AbstractArray, idxs; dims = axes_min_length(idxs))
+function subtract_overscan!(frame::AbstractArray{T}, idxs; dims = axes_min_length(idxs)) where T
     overscan_region = @view frame[idxs...]
-    overscan_value = median(overscan_region, dims = dims)
+    overscan_value = convert_value.(T, median(overscan_region, dims = dims))
     frame .-= overscan_value
     return frame
 end
@@ -92,9 +103,19 @@ julia> subtract_overscan(frame, "[4:5, 1:1]", dims = 2)
 ```
 
 # See Also
-* [`subtract_overscan!`](@ref)
+[`subtract_overscan!`](@ref)
 """
-subtract_overscan(frame::AbstractArray, idxs; dims = axes_min_length(idxs)) = subtract_overscan!(deepcopy(frame), idxs, dims = dims)
+subtract_overscan(frame, idxs; kwargs...) = subtract_overscan!(deepcopy(frame), idxs; kwargs...)
+
+"""
+	subtract_overscan(::FITSIO.ImageHDU, idxs; [dims])
+	subtract_overscan(filename, idxs; hdu=1, [dims])
+
+Load a FITS file or HDU before subtracting the overscan region. If `idxs` is a symbol it will be read from the FITS header with that key (case sensitive).
+"""
+subtract_overscan(frame::ImageHDU, idxs; kwargs...) = subtract_overscan!(getdata(frame), idxs; kwargs...)
+subtract_overscan(frame::ImageHDU, key::Symbol; kwargs...) = subtract_overscan(frame, read_header(frame)[string(key)]; kwargs...)
+subtract_overscan(filename::String, idxs; hdu = 1, kwargs...) = subtract_overscan(FITS(filename)[hdu], idxs; kwargs...)
 
 
 """
@@ -103,7 +124,7 @@ subtract_overscan(frame::AbstractArray, idxs; dims = axes_min_length(idxs)) = su
 In-place version of [`flat_correct`](@ref)
 
 # See Also
-* [`flat_correct`](@ref)
+[`flat_correct`](@ref)
 """
 function flat_correct!(frame::AbstractArray, flat_frame::AbstractArray; norm_value = mean(flat_frame))
     norm_value <= 0 && error("norm_value must be positive")

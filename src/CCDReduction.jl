@@ -2,6 +2,7 @@ module CCDReduction
 
 using Statistics
 using LazyStack
+using FITSIO
 
 export subtract_bias,
        subtract_bias!,
