@@ -33,7 +33,7 @@ end
 
     # testing interface for FITS
     hdu = M6707HH[1]
-    data = read(hdu)
+    data = read(hdu)'
     @test subtract_overscan(data, (:, 1050:1059)) == subtract_overscan(test_file_path_M6707HH, (:, 1050:1059))
     @test subtract_overscan(data, (:, 1050:1059)) == subtract_overscan(test_file_path_M6707HH, "1050:1059, 1:1059")
     @test subtract_overscan(data, (:, 1050:1059)) == subtract_overscan(hdu, "1050:1059, 1:1059")

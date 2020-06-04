@@ -14,7 +14,14 @@ function fits_indices(string::String)
 end
 
 # Converts Int to Float and leaves Float to Float itself
-convert_value(x, S) = S <: Integer ? round(S, x) : convert(S, x)
+convert_value(S, x) = S <: Integer ? round(S, x) : convert(S, x)
+
+# Gets the data from hdu
+function getdata(hdu::ImageHDU)
+	data = read(hdu)
+	d = ndims(data)
+	return permutedims(data, d:-1:1)
+end
 
 #-------------------------------------------------------------------------------
 """
@@ -64,16 +71,14 @@ In-place version of [`subtract_overscan`](@ref)
 """
 function subtract_overscan!(frame::AbstractArray{T}, idxs; dims = axes_min_length(idxs)) where T
     overscan_region = @view frame[idxs...]
-    overscan_value = convert_value.(median(overscan_region, dims = dims), T)
+    overscan_value = convert_value.(T, median(overscan_region, dims = dims))
     frame .-= overscan_value
     return frame
 end
 
 subtract_overscan!(frame::AbstractArray, idxs::String; kwargs...) = subtract_overscan!(frame, fits_indices(idxs); kwargs...)
 
-# support for frame as strings(Location of file) and ImageHDU
-subtract_overscan!(frame::ImageHDU, key::Symbol; kwargs...) = subtract_overscan!(read(frame), read_header(frame)[string(key)]; kwargs...)
-subtract_overscan!(frame::ImageHDU, idxs; kwargs...) = subtract_overscan!(read(frame), idxs; kwargs...)
+# support for frame as strings(Location of file)
 subtract_overscan!(filename::String, idxs; hdu = 1, kwargs...) = subtract_overscan!(FITS(filename)[hdu], idxs; kwargs...)
 
 
@@ -103,7 +108,9 @@ julia> subtract_overscan(frame, "[4:5, 1:1]", dims = 2)
 [`subtract_overscan!`](@ref)
 """
 subtract_overscan(frame, idxs; kwargs...) = subtract_overscan!(deepcopy(frame), idxs; kwargs...)
-
+subtract_overscan(frame::ImageHDU, idxs; kwargs...) = subtract_overscan!(getdata(frame), idxs; kwargs...)
+subtract_overscan(frame::ImageHDU, key::Symbol; kwargs...) = subtract_overscan!(getdata(frame), read_header(frame)[string(key)]; kwargs...)
+subtract_overscan(filename::String, idxs; hdu = 1, kwargs...) = subtract_overscan(FITS(filename)[hdu], idxs; kwargs...)
 
 """
     flat_correct!(frame::AbstractArray, flat_frame::AbstractArray; norm_value = mean(flat_frame))
