@@ -132,6 +132,14 @@ end
     @test_throws BoundsError cropview(ones(5, 5), (7, 3))
     @test_throws ErrorException cropview(ones(5, 5), (3, -5))
     @test_throws ErrorException cropview(ones(5, 5), (3, 4, 5))
+
+    # testing FITS interface
+    hdu = M6707HH[1]
+    data = read(hdu)'
+    @test crop(data, (:, 5)) == crop(hdu, (:, 5))
+    @test crop(data, (1000, 5); force_equal = false) == crop(hdu, (1000, 5); force_equal = false)
+    @test crop(data, (348, 226)) == crop(test_file_path_M6707HH, (348, 226))
+    @test crop(data, (348, 226); force_equal = false) == crop(test_file_path_M6707HH, (348, 226); force_equal = false)
 end
 
 @testset "combining" begin
