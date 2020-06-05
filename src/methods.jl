@@ -295,7 +295,7 @@ crop(frame, shape; kwargs...) = copy(cropview(frame, shape; kwargs...))
     crop(::FITSIO.ImageHDU, shape; force_equal = true)
     crop(filename, shape; hdu=1, force_equal = true)
 
-Load a FITS file or HDU before trimming.
+Load a FITS file or HDU before cropping.
 """
 crop(frame::ImageHDU, shape; kwargs...) = crop(getdata(frame), shape; kwargs...)
 crop(filename::String, shape; hdu = 1, kwargs...) = crop(FITS(filename)[hdu], shape; kwargs...)
