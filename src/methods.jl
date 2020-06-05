@@ -212,9 +212,10 @@ trim(frame::AbstractArray, idxs) = copy(trimview(frame, idxs))
     trim(::FITSIO.ImageHDU, idxs)
     trim(filename, idxs; hdu=1)
 
-Load a FITS file or HDU before trimming.
+Load a FITS file or HDU before trimming. If `idxs` is a symbol it will be read from the FITS header with that key (case sensitive).
 """
 trim(frame::ImageHDU, idxs) = trimview(getdata(frame), idxs)
+trim(frame::ImageHDU, idxs::Symbol) = trim(frame, read_header(frame)[string(idxs)])
 trim(frame::String, idxs; hdu = 1) = trim(FITS(frame)[hdu], idxs)
 
 
