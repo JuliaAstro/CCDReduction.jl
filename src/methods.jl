@@ -107,6 +107,7 @@ julia> subtract_overscan(frame, "[4:5, 1:1]", dims = 2)
 """
 subtract_overscan(frame, idxs; kwargs...) = subtract_overscan!(deepcopy(frame), idxs; kwargs...)
 
+
 """
 	subtract_overscan(::FITSIO.ImageHDU, idxs; [dims])
 	subtract_overscan(filename, idxs; hdu=1, [dims])
@@ -205,6 +206,16 @@ julia> trim(frame, "[2:5, 1:5]")
 [`trimview`](@ref)
 """
 trim(frame::AbstractArray, idxs) = copy(trimview(frame, idxs))
+
+
+"""
+    trim(::FITSIO.ImageHDU, idxs)
+    trim(filename, idxs; hdu=1)
+
+Load a FITS file or HDU before trimming.
+"""
+trim(frame::ImageHDU, idxs) = trimview(getdata(frame), idxs)
+trim(frame::String, idxs; hdu = 1) = trim(FITS(frame)[hdu], idxs)
 
 
 """
