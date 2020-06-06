@@ -112,6 +112,15 @@ end
     @test flat_correct(string_frame, hdu_flat_frame; norm_value = 1) == ones(1059, 1059) # testing String ImageHDU case
     @test flat_correct(hdu_frame, string_flat_frame; norm_value = 1) == ones(1059, 1059) # testing ImageHDU String case
     @test flat_correct(string_frame, string_flat_frame; norm_value = 1) == ones(1059, 1059) # testing String String case
+
+    # testing mutating version
+    frame = read(hdu_frame)'
+    @inferred flat_correct!(frame, string_flat_frame)
+    @test frame == mean_flat_frame .* ones(1059, 1059) # testing Array String case
+
+    frame = read(hdu_frame)'
+    @inferred flat_correct!(frame, hdu_flat_frame; norm_value = 1)
+    @test frame == ones(1059, 1059)
 end
 
 
