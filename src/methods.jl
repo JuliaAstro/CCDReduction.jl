@@ -86,7 +86,7 @@ subtract_bias(frame::String, bias_frame; hdu = 1) = subtract_bias(FITS(frame)[hd
 subtract_bias(frame, bias_frame::String; hdu = 1) = subtract_bias(frame, FITS(bias_frame)[hdu])
 function subtract_bias(frame::String, bias_frame::String; hdu = (1, 1))
 	hdus = hdu isa Integer ? (hdu, hdu) : hdu
-	return subtract_bias(FITS(frame)[hdu[1]], FITS(bias_frame)[hdus[2]])
+	return subtract_bias(FITS(frame)[hdus[1]], FITS(bias_frame)[hdus[2]])
 end
 
 
