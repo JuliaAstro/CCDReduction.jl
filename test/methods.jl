@@ -91,7 +91,29 @@ end
     #testing error
     @test_throws DimensionMismatch flat_correct(ones(5, 5), ones(5, 6))
     @test_throws ErrorException flat_correct(ones(5, 5), ones(5, 5), norm_value = -2)
+
+    # testing FITS interface
+    # setting initial data
+    hdu_frame = M6707HH[1]
+    hdu_flat_frame = M6707HH[1]
+    array_frame = read(hdu_frame)'
+    array_flat_frame = read(hdu_flat_frame)'
+    string_flat_frame = test_file_path_M6707HH
+    string_frame = test_file_path_M6707HH
+    mean_flat_frame = round(Int16, mean(array_flat_frame))
+
+    # testing non mutating version
+    @test flat_correct(array_frame, array_flat_frame) == fill(mean_flat_frame, 1059, 1059) # Testing Array Array case
+    @test flat_correct(hdu_frame, hdu_flat_frame; norm_value = 1) == ones(1059, 1059) # testing ImageHDU ImageHDU case
+    @test flat_correct(array_frame, hdu_flat_frame; norm_value = 1) == ones(1059, 1059) # testing Array ImageHDU case
+    @test flat_correct(hdu_frame, array_flat_frame; norm_value = 1) == ones(1059, 1059) # testing ImageHDU Array case
+    @test flat_correct(string_frame, array_flat_frame; norm_value = 1) == ones(1059, 1059) # testing String Array case
+    @test flat_correct(array_frame, string_flat_frame; norm_value = 1) == ones(1059, 1059) # testing Array String case
+    @test flat_correct(string_frame, hdu_flat_frame; norm_value = 1) == ones(1059, 1059) # testing String ImageHDU case
+    @test flat_correct(hdu_frame, string_flat_frame; norm_value = 1) == ones(1059, 1059) # testing ImageHDU String case
+    @test flat_correct(string_frame, string_flat_frame; norm_value = 1) == ones(1059, 1059) # testing String String case
 end
+
 
 @testset "trim" begin
     @test trim(reshape(1:25, 5, 5), (:, 4:5)) == trimview(reshape(1:25, 5, 5), (:, 4:5))
