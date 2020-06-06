@@ -61,6 +61,21 @@ julia> subtract_bias(frame, bias)
 """
 subtract_bias(frame::AbstractArray, bias_frame::AbstractArray) = subtract_bias!(deepcopy(frame), bias_frame)
 
+"""
+    subtract_bias(::Union{FITSIO.ImageHDU, AbstractArray}, ::Union{FITSIO.ImageHDU, AbstractArray})
+	subtract_bias(::Union{FITSIO.ImageHDU, AbstractArray}, ::String; hdu_bias = 1)
+	subtract_bias(::String, ::Union{FITSIO.ImageHDU, AbstractArray}; hdu_frame = 1)
+	subtract_bias(::String, ::String; hdu_frame = 1, hdu_bias = 1)
+
+Load a FITS file or HDU before bias subtraction.
+"""
+subtract_bias(frame::ImageHDU, bias_frame::AbstractArray) = subtract_bias(getdata(frame), bias_frame)
+subtract_bias(frame::AbstractArray, bias_frame::ImageHDU) = subtract_bias(frame, getdata(bias_frame))
+subtract_bias(frame::ImageHDU, bias_frame::ImageHDU) = subtract_bias(getdata(frame), bias_frame)
+subtract_bias(frame::String, bias_frame; hdu_frame = 1) = subtract_bias(FITS(frame)[hdu_frame], bias_frame)
+subtract_bias(frame, bias_frame::String; hdu_bias = 1) = subtract_bias(frame, FITS(bias_frame)[hdu_bias])
+subtract_bias(frame::String, bias_frame::String; hdu_frame = 1, hdu_bias = 1) = subtract_bias(frame, FITS(bias_frame)[hdu_bias]; hdu_frame = hdu_frame)
+
 
 """
     subtract_overscan!(frame::AbstractArray, idxs; dims = axes_min_length(idxs))
