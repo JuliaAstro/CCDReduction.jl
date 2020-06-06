@@ -41,12 +41,12 @@ end
 
 """
     subtract_bias!(frame::AbstractArray, bias_frame::ImageHDU)
-    subtract_bias!(frame::AbstractArray, bias_frame::String; hdu_bias = 1)
+    subtract_bias!(frame::AbstractArray, bias_frame::String; hdu = 1)
 
-Load a FITS file or HDU before mutating bias subtraction. The `frame` must be of the type `AbstractArray`.
+Load a FITS file or HDU for the bias frame before subtracting from `frame` in-place.
 """
 subtract_bias!(frame::AbstractArray, bias_frame::ImageHDU) = subtract_bias!(frame, getdata(bias_frame))
-subtract_bias!(frame::AbstractArray, bias_frame::String; hdu_bias = 1) = subtract_bias!(frame, FITS(bias_frame)[hdu_bias])
+subtract_bias!(frame::AbstractArray, bias_frame::String; hdu = 1) = subtract_bias!(frame, FITS(bias_frame)[hdu])
 
 
 """
@@ -73,19 +73,21 @@ subtract_bias(frame::AbstractArray, bias_frame::AbstractArray) = subtract_bias!(
 
 
 """
-    subtract_bias(::Union{FITSIO.ImageHDU, AbstractArray}, ::Union{FITSIO.ImageHDU, AbstractArray})
-    subtract_bias(::Union{FITSIO.ImageHDU, AbstractArray}, ::String; hdu_bias = 1)
-    subtract_bias(::String, ::Union{FITSIO.ImageHDU, AbstractArray}; hdu_frame = 1)
-    subtract_bias(::String, ::String; hdu_frame = 1, hdu_bias = 1)
+    subtract_bias(frame, bias_frame; [hdu = 1])
 
-Load a FITS file or HDU before bias subtraction.
+Subtract the bias frame from `frame`. If either arguments are `FITSIO.ImageHDU` they will be loaded into memory.
+If either arguments are strings we will attempt to locate a FITS file and open it before loading the data from the given `hdu`.
+If loading multiple files, you can specify the HDU numbers separately (`hdu=(1, 2)`) or simultanesously (`hdu=1`).
 """
 subtract_bias(frame::ImageHDU, bias_frame::AbstractArray) = subtract_bias(getdata(frame), bias_frame)
 subtract_bias(frame::AbstractArray, bias_frame::ImageHDU) = subtract_bias(frame, getdata(bias_frame))
 subtract_bias(frame::ImageHDU, bias_frame::ImageHDU) = subtract_bias(getdata(frame), bias_frame)
-subtract_bias(frame::String, bias_frame; hdu_frame = 1) = subtract_bias(FITS(frame)[hdu_frame], bias_frame)
-subtract_bias(frame, bias_frame::String; hdu_bias = 1) = subtract_bias(frame, FITS(bias_frame)[hdu_bias])
-subtract_bias(frame::String, bias_frame::String; hdu_frame = 1, hdu_bias = 1) = subtract_bias(frame, FITS(bias_frame)[hdu_bias]; hdu_frame = hdu_frame)
+subtract_bias(frame::String, bias_frame; hdu = 1) = subtract_bias(FITS(frame)[hdu], bias_frame)
+subtract_bias(frame, bias_frame::String; hdu = 1) = subtract_bias(frame, FITS(bias_frame)[hdu])
+function subtract_bias(frame::String, bias_frame::String; hdu = (1, 1))
+	hdus = hdu isa Integer ? (hdu, hdu) : hdu
+	return subtract_bias(FITS(frame)[hdu[1]], FITS(bias_frame)[hdus[2]])
+end
 
 
 """
