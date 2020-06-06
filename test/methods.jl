@@ -82,6 +82,14 @@ end
     @test_throws ErrorException trim(ones(5, 5), (4:5, 1:4))
     @test_throws ErrorException trim(ones(5, 5), (:, :))
     @test_throws ErrorException trim(ones(5, 5), (4:6, :))
+
+    # testing interface for FITS
+    hdu = M6707HH[1]
+    data = read(hdu)'
+    @test trim(data, (:, 1050:1059)) == trim(test_file_path_M6707HH, (:, 1050:1059))
+    @test trim(data, (:, 1050:1059)) == trim(test_file_path_M6707HH, "1050:1059, 1:1059")
+    @test trim(data, (:, 1050:1059)) == trim(hdu, "1050:1059, 1:1059")
+    @test trim(data, (1050:1059, :)) == trim(hdu, "1:1059, 1050:1059")
 end
 
 @testset "cropping" begin
@@ -124,6 +132,14 @@ end
     @test_throws BoundsError cropview(ones(5, 5), (7, 3))
     @test_throws ErrorException cropview(ones(5, 5), (3, -5))
     @test_throws ErrorException cropview(ones(5, 5), (3, 4, 5))
+
+    # testing FITS interface
+    hdu = M6707HH[1]
+    data = read(hdu)'
+    @test crop(data, (:, 5)) == crop(hdu, (:, 5))
+    @test crop(data, (1000, 5); force_equal = false) == crop(hdu, (1000, 5); force_equal = false)
+    @test crop(data, (348, 226)) == crop(test_file_path_M6707HH, (348, 226))
+    @test crop(data, (348, 226); force_equal = false) == crop(test_file_path_M6707HH, (348, 226); force_equal = false)
 end
 
 @testset "combining" begin

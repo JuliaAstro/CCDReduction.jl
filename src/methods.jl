@@ -81,7 +81,7 @@ subtract_overscan!(frame::AbstractArray, idxs::String; kwargs...) = subtract_ove
 
 
 """
-    subtract_overscan(frame::AbstractArray, idxs; dims = axes_min_length(idxs))
+    subtract_overscan(frame, idxs; dims = axes_min_length(idxs))
 
 Subtract the overscan frame from image.
 
@@ -106,6 +106,7 @@ julia> subtract_overscan(frame, "[4:5, 1:1]", dims = 2)
 [`subtract_overscan!`](@ref)
 """
 subtract_overscan(frame, idxs; kwargs...) = subtract_overscan!(deepcopy(frame), idxs; kwargs...)
+
 
 """
 	subtract_overscan(::FITSIO.ImageHDU, idxs; [dims])
@@ -171,7 +172,7 @@ flat_correct(frame::AbstractArray, flat_frame::AbstractArray; kwargs...) = flat_
 
 
 """
-    trim(frame::AbstractArray, idxs)
+    trim(frame, idxs)
 
 Trims the `frame` to remove the region specified by idxs.
 
@@ -204,7 +205,18 @@ julia> trim(frame, "[2:5, 1:5]")
 # See Also
 [`trimview`](@ref)
 """
-trim(frame::AbstractArray, idxs) = copy(trimview(frame, idxs))
+trim(frame, idxs) = copy(trimview(frame, idxs))
+
+
+"""
+    trim(::FITSIO.ImageHDU, idxs)
+    trim(filename, idxs; hdu=1)
+
+Load a FITS file or HDU before trimming. If `idxs` is a symbol it will be read from the FITS header with that key (case sensitive).
+"""
+trim(frame::ImageHDU, idxs) = trim(getdata(frame), idxs)
+trim(frame::ImageHDU, idxs::Symbol) = trim(frame, read_header(frame)[string(idxs)])
+trim(filename::String, idxs; hdu = 1) = trim(FITS(filename)[hdu], idxs)
 
 
 """
@@ -276,7 +288,17 @@ julia> crop(frame, (4, 3), force_equal = false)
 # See Also
 [`cropview`](@ref)
 """
-crop(frame::AbstractArray, shape; kwargs...) = copy(cropview(frame, shape; kwargs...))
+crop(frame, shape; kwargs...) = copy(cropview(frame, shape; kwargs...))
+
+
+"""
+    crop(::FITSIO.ImageHDU, shape; force_equal = true)
+    crop(filename, shape; hdu=1, force_equal = true)
+
+Load a FITS file or HDU before cropping.
+"""
+crop(frame::ImageHDU, shape; kwargs...) = crop(getdata(frame), shape; kwargs...)
+crop(filename::String, shape; hdu = 1, kwargs...) = crop(FITS(filename)[hdu], shape; kwargs...)
 
 
 """
