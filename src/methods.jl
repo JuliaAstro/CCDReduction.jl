@@ -40,6 +40,16 @@ end
 
 
 """
+    subtract_bias!(frame::AbstractArray, bias_frame::ImageHDU)
+	subtract_bias!(frame::AbstractArray, bias_frame::String; hdu_bias = 1)
+
+Load a FITS file or HDU before mutating bias subtraction. The `frame` must be of the type `AbstractArray`.
+"""
+subtract_bias!(frame::AbstractArray, bias_frame::ImageHDU) = subtract_bias!(frame, getdata(bias_frame))
+subtract_bias!(frame::AbstractArray, bias_frame::String; hdu_bias = 1) = subtract_bias!(frame, FITS(bias_frame)[hdu_bias])
+
+
+"""
     subtract_bias(frame::AbstractArray, bias_frame::AbstractArray)
 
 Subtract the `bias_frame` from `frame`.
@@ -60,6 +70,7 @@ julia> subtract_bias(frame, bias)
 [`subtract_bias!`](@ref)
 """
 subtract_bias(frame::AbstractArray, bias_frame::AbstractArray) = subtract_bias!(deepcopy(frame), bias_frame)
+
 
 """
     subtract_bias(::Union{FITSIO.ImageHDU, AbstractArray}, ::Union{FITSIO.ImageHDU, AbstractArray})

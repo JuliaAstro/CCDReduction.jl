@@ -17,6 +17,7 @@ using CCDReduction: axes_min_length,
     @test_throws DimensionMismatch subtract_bias(ones(500, 1), ones(500, 500))
 
     # testing FITS interface
+    # setting initial data
     hdu_frame = M6707HH[1]
     hdu_bias_frame = M6707HH[1]
     array_frame = read(hdu_frame)'
@@ -24,6 +25,7 @@ using CCDReduction: axes_min_length,
     string_bias_frame = test_file_path_M6707HH
     string_frame = test_file_path_M6707HH
 
+    # non-mutating version
     @test subtract_bias(array_frame, array_bias_frame) == zeros(1059, 1059) # Testing Array Array case
     @test subtract_bias(hdu_frame, hdu_bias_frame) == zeros(1059, 1059) # testing ImageHDU ImageHDU case
     @test subtract_bias(array_frame, hdu_bias_frame) == zeros(1059, 1059) # testing Array ImageHDU case
@@ -33,6 +35,15 @@ using CCDReduction: axes_min_length,
     @test subtract_bias(string_frame, hdu_bias_frame) == zeros(1059, 1059) # testing String ImageHDU case
     @test subtract_bias(hdu_frame, string_bias_frame) == zeros(1059, 1059) # testing ImageHDU String case
     @test subtract_bias(string_frame, string_bias_frame) == zeros(1059, 1059) # testing String String case
+
+    # mutating version
+    frame = read(hdu_frame)'
+    @inferred subtract_bias!(frame, string_bias_frame)
+    @test frame == zeros(1059, 1059) # testing Array String case
+
+    frame = read(hdu_frame)'
+    @inferred subtract_bias!(frame, hdu_bias_frame)
+    @test frame == zeros(1059, 1059) # testing Array ImageHDU case
 end
 
 @testset "overscan subtraction" begin
