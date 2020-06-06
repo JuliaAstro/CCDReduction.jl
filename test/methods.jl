@@ -120,7 +120,7 @@ end
 
     frame = read(hdu_frame)'
     @inferred flat_correct!(frame, hdu_flat_frame; norm_value = 1)
-    @test frame == ones(1059, 1059)
+    @test frame == ones(1059, 1059) # testing Array ImageHDU case
 end
 
 
