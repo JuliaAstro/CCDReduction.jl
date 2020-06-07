@@ -155,9 +155,9 @@ In-place version of [`flat_correct`](@ref)
 # See Also
 [`flat_correct`](@ref)
 """
-function flat_correct!(frame::AbstractArray{T}, flat_frame::AbstractArray; norm_value = mean(flat_frame)) where T
+function flat_correct!(frame::AbstractArray, flat_frame::AbstractArray; norm_value = mean(flat_frame))
     norm_value <= 0 && error("norm_value must be positive")
-    @. frame = convert_value(T, frame / (flat_frame / norm_value))
+    frame ./= (flat_frame / norm_value)
     return frame
 end
 
@@ -166,7 +166,7 @@ end
     flat_correct!(frame::AbstractArray, flat_frame::ImageHDU; norm_value = mean(flat_frame))
     flat_correct!(frame::AbstractArray, flat_frame::String; hdu = 1, norm_value = mean(flat_frame))
 
-Load a FITS file or HDU for the flat frame before correcting from `frame` in-place.
+Load a FITS file or HDU for the flat frame before correcting `frame` in-place.
 """
 flat_correct!(frame::AbstractArray, flat_frame::ImageHDU; kwargs...) = flat_correct!(frame, getdata(flat_frame); kwargs...)
 flat_correct!(frame::AbstractArray, flat_frame::String; hdu = 1, kwargs...) = flat_correct!(frame, FITS(flat_frame)[hdu]; kwargs...)
@@ -206,7 +206,10 @@ julia> flat_correct(frame, flat)
 # See Also
 [`flat_correct!`](@ref)
 """
-flat_correct(frame::AbstractArray, flat_frame::AbstractArray; kwargs...) = flat_correct!(deepcopy(frame), flat_frame; kwargs...)
+function flat_correct(frame::AbstractArray{T}, flat_frame::AbstractArray{S}; kwargs...) where {T, S}
+	V = float(promote_type(T, S))
+	return flat_correct!(V.(frame), flat_frame; kwargs...)
+end
 
 
 """
@@ -349,7 +352,7 @@ crop(frame, shape; kwargs...) = copy(cropview(frame, shape; kwargs...))
 
 """
     crop(::FITSIO.ImageHDU, shape; force_equal = true)
-    crop(filename, shape; hdu=1; force_equal = true)
+    crop(filename, shape; hdu=1, force_equal = true)
 
 Load a FITS file or HDU before cropping.
 """

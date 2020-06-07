@@ -100,27 +100,25 @@ end
     array_flat_frame = read(hdu_flat_frame)'
     string_flat_frame = test_file_path_M6707HH
     string_frame = test_file_path_M6707HH
-    mean_flat_frame = round(Int16, mean(array_flat_frame))
+    mean_flat_frame = mean(array_flat_frame)
 
     # testing non mutating version
-    @test flat_correct(array_frame, array_flat_frame) == fill(mean_flat_frame, 1059, 1059) # Testing Array Array case
-    @test flat_correct(hdu_frame, hdu_flat_frame; norm_value = 1) == ones(1059, 1059) # testing ImageHDU ImageHDU case
-    @test flat_correct(array_frame, hdu_flat_frame; norm_value = 1) == ones(1059, 1059) # testing Array ImageHDU case
-    @test flat_correct(hdu_frame, array_flat_frame; norm_value = 1) == ones(1059, 1059) # testing ImageHDU Array case
-    @test flat_correct(string_frame, array_flat_frame; norm_value = 1) == ones(1059, 1059) # testing String Array case
-    @test flat_correct(array_frame, string_flat_frame; norm_value = 1) == ones(1059, 1059) # testing Array String case
-    @test flat_correct(string_frame, hdu_flat_frame; norm_value = 1) == ones(1059, 1059) # testing String ImageHDU case
-    @test flat_correct(hdu_frame, string_flat_frame; norm_value = 1) == ones(1059, 1059) # testing ImageHDU String case
-    @test flat_correct(string_frame, string_flat_frame; norm_value = 1) == ones(1059, 1059) # testing String String case
+    @test flat_correct(array_frame, array_flat_frame) ≈ fill(mean_flat_frame, 1059, 1059) # Testing Array Array case
+    @test flat_correct(hdu_frame, hdu_flat_frame; norm_value = 1) ≈ ones(1059, 1059) # testing ImageHDU ImageHDU case
+    @test flat_correct(array_frame, hdu_flat_frame; norm_value = 1) ≈ ones(1059, 1059) # testing Array ImageHDU case
+    @test flat_correct(hdu_frame, array_flat_frame; norm_value = 1) ≈ ones(1059, 1059) # testing ImageHDU Array case
+    @test flat_correct(string_frame, array_flat_frame; norm_value = 1) ≈ ones(1059, 1059) # testing String Array case
+    @test flat_correct(array_frame, string_flat_frame; norm_value = 1) ≈ ones(1059, 1059) # testing Array String case
+    @test flat_correct(string_frame, hdu_flat_frame; norm_value = 1) ≈ ones(1059, 1059) # testing String ImageHDU case
+    @test flat_correct(hdu_frame, string_flat_frame; norm_value = 1) ≈ ones(1059, 1059) # testing ImageHDU String case
+    @test flat_correct(string_frame, string_flat_frame; norm_value = 1) ≈ ones(1059, 1059) # testing String String case
 
     # testing mutating version
     frame = read(hdu_frame)'
-    @inferred flat_correct!(frame, string_flat_frame)
-    @test frame == mean_flat_frame .* ones(1059, 1059) # testing Array String case
+    @test_throws InexactError flat_correct!(frame, string_flat_frame) # errors due to type mutation
 
     frame = read(hdu_frame)'
-    @inferred flat_correct!(frame, hdu_flat_frame; norm_value = 1)
-    @test frame == ones(1059, 1059) # testing Array ImageHDU case
+    @test_throws InexactError flat_correct!(frame, hdu_flat_frame) # errors due to type mutation
 end
 
 
