@@ -157,7 +157,7 @@ In-place version of [`flat_correct`](@ref)
 """
 function flat_correct!(frame::AbstractArray, flat_frame::AbstractArray; norm_value = mean(flat_frame))
     norm_value <= 0 && error("norm_value must be positive")
-    frame ./= (flat_frame / norm_value)
+    frame ./= (flat_frame ./ norm_value)
     return frame
 end
 
