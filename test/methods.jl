@@ -15,6 +15,35 @@ using CCDReduction: axes_min_length,
 
     # testing error
     @test_throws DimensionMismatch subtract_bias(ones(500, 1), ones(500, 500))
+
+    # testing FITS interface
+    # setting initial data
+    hdu_frame = M6707HH[1]
+    hdu_bias_frame = M6707HH[1]
+    array_frame = read(hdu_frame)'
+    array_bias_frame = read(hdu_bias_frame)'
+    string_bias_frame = test_file_path_M6707HH
+    string_frame = test_file_path_M6707HH
+
+    # non-mutating version
+    @test subtract_bias(array_frame, array_bias_frame) == zeros(1059, 1059) # Testing Array Array case
+    @test subtract_bias(hdu_frame, hdu_bias_frame) == zeros(1059, 1059) # testing ImageHDU ImageHDU case
+    @test subtract_bias(array_frame, hdu_bias_frame) == zeros(1059, 1059) # testing Array ImageHDU case
+    @test subtract_bias(hdu_frame, array_bias_frame) == zeros(1059, 1059) # testing ImageHDU Array case
+    @test subtract_bias(string_frame, array_bias_frame) == zeros(1059, 1059) # testing String Array case
+    @test subtract_bias(array_frame, string_bias_frame) == zeros(1059, 1059) # testing Array String case
+    @test subtract_bias(string_frame, hdu_bias_frame) == zeros(1059, 1059) # testing String ImageHDU case
+    @test subtract_bias(hdu_frame, string_bias_frame) == zeros(1059, 1059) # testing ImageHDU String case
+    @test subtract_bias(string_frame, string_bias_frame) == zeros(1059, 1059) # testing String String case
+
+    # mutating version
+    frame = read(hdu_frame)'
+    @inferred subtract_bias!(frame, string_bias_frame)
+    @test frame == zeros(1059, 1059) # testing Array String case
+
+    frame = read(hdu_frame)'
+    @inferred subtract_bias!(frame, hdu_bias_frame)
+    @test frame == zeros(1059, 1059) # testing Array ImageHDU case
 end
 
 @testset "overscan subtraction" begin
@@ -62,7 +91,36 @@ end
     #testing error
     @test_throws DimensionMismatch flat_correct(ones(5, 5), ones(5, 6))
     @test_throws ErrorException flat_correct(ones(5, 5), ones(5, 5), norm_value = -2)
+
+    # testing FITS interface
+    # setting initial data
+    hdu_frame = M6707HH[1]
+    hdu_flat_frame = M6707HH[1]
+    array_frame = read(hdu_frame)'
+    array_flat_frame = read(hdu_flat_frame)'
+    string_flat_frame = test_file_path_M6707HH
+    string_frame = test_file_path_M6707HH
+    mean_flat_frame = mean(array_flat_frame)
+
+    # testing non mutating version
+    @test flat_correct(array_frame, array_flat_frame) ≈ fill(mean_flat_frame, 1059, 1059) # Testing Array Array case
+    @test flat_correct(hdu_frame, hdu_flat_frame; norm_value = 1) ≈ ones(1059, 1059) # testing ImageHDU ImageHDU case
+    @test flat_correct(array_frame, hdu_flat_frame; norm_value = 1) ≈ ones(1059, 1059) # testing Array ImageHDU case
+    @test flat_correct(hdu_frame, array_flat_frame; norm_value = 1) ≈ ones(1059, 1059) # testing ImageHDU Array case
+    @test flat_correct(string_frame, array_flat_frame; norm_value = 1) ≈ ones(1059, 1059) # testing String Array case
+    @test flat_correct(array_frame, string_flat_frame; norm_value = 1) ≈ ones(1059, 1059) # testing Array String case
+    @test flat_correct(string_frame, hdu_flat_frame; norm_value = 1) ≈ ones(1059, 1059) # testing String ImageHDU case
+    @test flat_correct(hdu_frame, string_flat_frame; norm_value = 1) ≈ ones(1059, 1059) # testing ImageHDU String case
+    @test flat_correct(string_frame, string_flat_frame; norm_value = 1) ≈ ones(1059, 1059) # testing String String case
+
+    # testing mutating version
+    frame = read(hdu_frame)'
+    @test_throws InexactError flat_correct!(frame, string_flat_frame) # errors due to type mutation
+
+    frame = read(hdu_frame)'
+    @test_throws InexactError flat_correct!(frame, hdu_flat_frame) # errors due to type mutation
 end
+
 
 @testset "trim" begin
     @test trim(reshape(1:25, 5, 5), (:, 4:5)) == trimview(reshape(1:25, 5, 5), (:, 4:5))

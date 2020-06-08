@@ -40,6 +40,16 @@ end
 
 
 """
+    subtract_bias!(frame::AbstractArray, bias_frame::ImageHDU)
+    subtract_bias!(frame::AbstractArray, bias_frame::String; hdu = 1)
+
+Load a FITS file or HDU for the bias frame before subtracting from `frame` in-place.
+"""
+subtract_bias!(frame::AbstractArray, bias_frame::ImageHDU) = subtract_bias!(frame, getdata(bias_frame))
+subtract_bias!(frame::AbstractArray, bias_frame::String; hdu = 1) = subtract_bias!(frame, FITS(bias_frame)[hdu])
+
+
+"""
     subtract_bias(frame::AbstractArray, bias_frame::AbstractArray)
 
 Subtract the `bias_frame` from `frame`.
@@ -60,6 +70,24 @@ julia> subtract_bias(frame, bias)
 [`subtract_bias!`](@ref)
 """
 subtract_bias(frame::AbstractArray, bias_frame::AbstractArray) = subtract_bias!(deepcopy(frame), bias_frame)
+
+
+"""
+    subtract_bias(frame, bias_frame; [hdu = 1])
+
+Subtract the bias frame from `frame`. If either arguments are `FITSIO.ImageHDU` they will be loaded into memory.
+If either arguments are strings we will attempt to locate a FITS file and open it before loading the data from the given `hdu`.
+If loading multiple files, you can specify the HDU numbers separately (`hdu=(1, 2)`) or simultanesously (`hdu=1`).
+"""
+subtract_bias(frame::ImageHDU, bias_frame::AbstractArray) = subtract_bias(getdata(frame), bias_frame)
+subtract_bias(frame::AbstractArray, bias_frame::ImageHDU) = subtract_bias(frame, getdata(bias_frame))
+subtract_bias(frame::ImageHDU, bias_frame::ImageHDU) = subtract_bias(getdata(frame), bias_frame)
+subtract_bias(frame::String, bias_frame; hdu = 1) = subtract_bias(FITS(frame)[hdu], bias_frame)
+subtract_bias(frame, bias_frame::String; hdu = 1) = subtract_bias(frame, FITS(bias_frame)[hdu])
+function subtract_bias(frame::String, bias_frame::String; hdu = (1, 1))
+	hdus = hdu isa Integer ? (hdu, hdu) : hdu
+	return subtract_bias(FITS(frame)[hdus[1]], FITS(bias_frame)[hdus[2]])
+end
 
 
 """
@@ -109,8 +137,8 @@ subtract_overscan(frame, idxs; kwargs...) = subtract_overscan!(deepcopy(frame), 
 
 
 """
-	subtract_overscan(::FITSIO.ImageHDU, idxs; [dims])
-	subtract_overscan(filename, idxs; hdu=1, [dims])
+    subtract_overscan(::FITSIO.ImageHDU, idxs; [dims])
+    subtract_overscan(filename, idxs; hdu=1, [dims])
 
 Load a FITS file or HDU before subtracting the overscan region. If `idxs` is a symbol it will be read from the FITS header with that key (case sensitive).
 """
@@ -132,6 +160,16 @@ function flat_correct!(frame::AbstractArray, flat_frame::AbstractArray; norm_val
     frame ./= (flat_frame ./ norm_value)
     return frame
 end
+
+
+"""
+    flat_correct!(frame::AbstractArray, flat_frame::ImageHDU; norm_value = mean(flat_frame))
+    flat_correct!(frame::AbstractArray, flat_frame::String; hdu = 1, norm_value = mean(flat_frame))
+
+Load a FITS file or HDU for the flat frame before correcting `frame` in-place.
+"""
+flat_correct!(frame::AbstractArray, flat_frame::ImageHDU; kwargs...) = flat_correct!(frame, getdata(flat_frame); kwargs...)
+flat_correct!(frame::AbstractArray, flat_frame::String; hdu = 1, kwargs...) = flat_correct!(frame, FITS(flat_frame)[hdu]; kwargs...)
 
 
 """
@@ -168,7 +206,28 @@ julia> flat_correct(frame, flat)
 # See Also
 [`flat_correct!`](@ref)
 """
-flat_correct(frame::AbstractArray, flat_frame::AbstractArray; kwargs...) = flat_correct!(deepcopy(frame), flat_frame; kwargs...)
+function flat_correct(frame::AbstractArray{T}, flat_frame::AbstractArray{S}; kwargs...) where {T, S}
+	V = float(promote_type(T, S))
+	return flat_correct!(V.(frame), flat_frame; kwargs...)
+end
+
+
+"""
+    flat_correct(frame, flat_frame; [hdu = 1], norm_value = mean(flat_frame))
+
+Correct the `flat_frame` from `frame`. If either arguments are `FITSIO.ImageHDU` they will be loaded into memory.
+If either arguments are strings we will attempt to locate a FITS file and open it before loading the data from the given `hdu`.
+If loading multiple files, you can specify the HDU numbers separately (`hdu=(1, 2)`) or simultanesously (`hdu=1`).
+"""
+flat_correct(frame::ImageHDU, flat_frame::AbstractArray; kwargs...) = flat_correct(getdata(frame), flat_frame; kwargs...)
+flat_correct(frame::AbstractArray, flat_frame::ImageHDU; kwargs...) =  flat_correct(frame, getdata(flat_frame); kwargs...)
+flat_correct(frame::ImageHDU, flat_frame::ImageHDU; kwargs...) = flat_correct(getdata(frame), flat_frame; kwargs...)
+flat_correct(frame::String, flat_frame; hdu = 1, kwargs...) = flat_correct(FITS(frame)[hdu], flat_frame; kwargs...)
+flat_correct(frame, flat_frame::String; hdu = 1, kwargs...) = flat_correct(frame, FITS(flat_frame)[hdu]; kwargs...)
+function flat_correct(frame::String, flat_frame::String; hdu = (1, 1), kwargs...)
+	hdus = hdu isa Integer ? (hdu, hdu) : hdu
+	return flat_correct(FITS(frame)[hdus[1]], FITS(flat_frame)[hdus[2]]; kwargs...)
+end
 
 
 """
