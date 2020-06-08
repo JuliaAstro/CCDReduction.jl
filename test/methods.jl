@@ -198,6 +198,11 @@ end
     @test subtract_dark(string_frame, hdu_bias_frame; data_exposure = 2, dark_exposure = 2) == zeros(1059, 1059) # testing String ImageHDU case
     @test subtract_dark(hdu_frame, string_bias_frame; data_exposure = 2, dark_exposure = 2) == zeros(1059, 1059) # testing ImageHDU String case
 
+    # testing with Symbols
+    @test subtract_dark(hdu_frame, hdu_bias_frame; data_exposure = :EXPOSURE, dark_exposure = :EXPOSURE) == zeros(1059, 1059)
+    @test subtract_dark(string_frame, string_bias_frame; data_exposure = :EXPOSURE, dark_exposure = :EXPOSURE) == zeros(1059, 1059)
+    @test subtract_dark(array_frame, hdu_bias_frame; dark_exposure = :EXPOSURE) ≈ (49 / 50) .* array_frame
+
     #testing mutating version
     frame = read(hdu_frame)'
     subtract_dark!(frame, string_bias_frame; hdu = 1, data_exposure = 1, dark_exposure = 1)
