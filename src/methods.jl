@@ -393,7 +393,7 @@ end
     subtract_dark!(frame::AbstractArray, dark_frame::FITSIO.ImageHDU; data_exposure = 1, dark_exposure = 1)
     subtract_dark!(frame::AbstractArray, dark_frame::String; hdu = 1, data_exposure = 1, dark_exposure = 1)
 
-Load a FITS file or HDU for the dark frame before subtracting from `frame` in-place.
+Load a FITS file or HDU for the dark frame before subtracting from `frame` in-place. If `dark_exposure` is a symbol it will be parsed from the FITS header (case sensitive).
 """
 function subtract_dark!(frame::AbstractArray, dark_frame::ImageHDU; dark_exposure = 1, kwargs...)
 	if dark_exposure isa Symbol
