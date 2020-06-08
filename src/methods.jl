@@ -396,9 +396,7 @@ end
 Load a FITS file or HDU for the dark frame before subtracting from `frame` in-place. If `dark_exposure` is a symbol it will be parsed from the FITS header (case sensitive).
 """
 function subtract_dark!(frame::AbstractArray, dark_frame::ImageHDU; dark_exposure = 1, kwargs...)
-	if dark_exposure isa Symbol
-		dark_exposure = read_header(dark_frame)[string(dark_exposure)]
-	end
+	dark_exposure = dark_exposure isa Symbol ? read_header(dark_frame)[string(dark_exposure)] : dark_exposure
 	return subtract_dark!(frame, getdata(dark_frame); dark_exposure = dark_exposure, kwargs...)
 end
 
@@ -448,20 +446,20 @@ If loading multiple files, you can specify the HDU numbers separately (`hdu=(1, 
 If `data_exposure` or `dark_exposure` is a symbol it will be read from the FITS header with that key (case sensitive).
 """
 function subtract_dark(frame::ImageHDU, dark_frame::AbstractArray; data_exposure = 1, kwargs...)
-	if data_exposure isa Symbol
-		data_exposure = read_header(frame)[string(data_exposure)]
-	end
+	data_exposure = data_exposure isa Symbol ? read_header(frame)[string(data_exposure)] : data_exposure
 	return subtract_dark(getdata(frame), dark_frame; data_exposure = data_exposure, kwargs...)
 end
 
 function subtract_dark(frame::AbstractArray, dark_frame::ImageHDU; dark_exposure = 1, kwargs...)
-	if dark_exposure isa Symbol
-		dark_exposure = read_header(frame)[string(dark_exposure)]
-	end
+	dark_exposure = dark_exposure isa Symbol ? read_header(dark_frame)[string(dark_exposure)] : dark_exposure
 	return subtract_dark(frame, getdata(dark_frame); dark_exposure = dark_exposure, kwargs...)
 end
 
-subtract_dark(frame::ImageHDU, dark_frame::ImageHDU; kwargs...) = subtract_dark(getdata(frame), dark_frame; kwargs...)
+function subtract_dark(frame::ImageHDU, dark_frame::ImageHDU; data_exposure = 1, kwargs...)
+	data_exposure = data_exposure isa Symbol ? read_header(frame)[string(data_exposure)] : data_exposure
+	return subtract_dark(getdata(frame), dark_frame; data_exposure = data_exposure, kwargs...)
+end
+
 subtract_dark(frame::String, dark_frame; hdu = 1, kwargs...) = subtract_dark(FITS(frame)[hdu], dark_frame; kwargs...)
 subtract_dark(frame, dark_frame::String; hdu = 1, kwargs...) = subtract_dark(frame, FITS(dark_frame)[hdu]; kwargs...)
 
