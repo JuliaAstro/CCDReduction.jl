@@ -1,6 +1,7 @@
 # CCDReduction.jl
 
 [![Build Status](https://travis-ci.com/juliaastro/CCDReduction.jl.svg?branch=master)](https://travis-ci.com/juliaastro/CCDReduction.jl)
+[![PkgEval](https://juliaci.github.io/NanosoldierReports/pkgeval_badges/C/CCDReduction.svg)](https://juliaci.github.io/NanosoldierReports/pkgeval_badges/report.html)
 [![Codecov](https://codecov.io/gh/juliaastro/CCDReduction.jl/branch/master/graph/badge.svg)](https://codecov.io/gh/juliaastro/CCDReduction.jl)
 [![License](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
@@ -9,36 +10,54 @@
 
 A package for performing CCD data reduction and processing.
 
-## Roadmap
 
-### Data Structures
 
-* `Collection` (name TBD?) type
+## Usage
 
-Some kind of container for holding the different images. I think a good idea would be to have something that can be given data directly as arrays, or can be given as filenames, or can even be given by directories/globs. The data should be accessed lazily (unless loaded in directly).
+For in-depth API infromation and usage examples, please see the [documentation](https://juliaastro.github.io/CCDReduction.jl/dev). You'll recognize most of the familiar reduction operations allow us to quickly and easily operate on data.
 
-This will be what is passed to the high-level routines for reduction
+```julia
+using CCDReduction
 
-* `Pipeline` (name TBD) type
+noise = randn(512, 512)
+bias_frame = reshape(1:262144, 512, 512) |> collect
+img = reshape(1:262144, 512, 512) .+ noise
 
-Having some way of storing/serializing a processing pipeline. This should be something that can be created independently of data and then run on a `Collection`
+subtract_bias(img, bias_frame)
+```
 
-### Algorithms
+In addition to working on array-like data, we can directly load from a `FITSIO.ImageHDU` or from a filename
 
-* Statistical: lots of image statistics will need to be calculated. For now those may already exist, or might be in a different package, might need to be added here, or might need to be added somewhere like `AstroBase.jl`
-* Cosmic-Ray Detection
-* Background Subtraction
-* Flat-Fielding
-* Bias Subtraction
-* Non-linearity correction
-* Image Registration (not in here, should make a separate package)
-* Stacking
-* Overscan subtraction
-* Morphological changes (trim, pad, ... probably already in Images.jl)
+```julia
+using FITSIO
 
-### Other
+# make fits file
+bias_frame = reshape(1:262144, 512, 512) |> collect
+FITS("master_bias.fits", "w") do f
+    write(f, bias_frame)
+end
+img = 10 .* randn(512, 512)
+debiased = subtract_bias(img, "master_bias.fits")
+```
 
-* Offer many ways to output
-* Full integration with Unitful
-* Variance calculations
-* Good mix of low-level, high granularity functions and high-level methods for chaining processing together. I would love to see something where you can denote `bias |> dark |> register |> median_stack` or seomthing where it sees `bias` and will automatically debias the darks and the science frames, without specifying for each type.
+Finally, we can use function chaining (or tools like [Underscores.jl](https://github.com/c42f/Underscores.jl)) for creating a simple processing pipeline!
+
+```julia
+using Underscores
+
+# 5 science frames
+imgs = (10 .* randn(512, 524) for _ in 1:5)
+
+# create pipeline using Underscores.jl
+pipeline(img) = @_ img |>
+    subtract_overscan(__, (:, 513:524)) |>
+    trim(__, (:, 513:524)) |>
+    subtract_bias(__, "master_bias.fits")
+
+# apply pipeline to images using broadcast syntax
+calib_imgs = pipeline.(imgs)
+```
+
+## License
+
+This work is distributed under the MIT license. See [LICENSE](LICENSE) for more information.
