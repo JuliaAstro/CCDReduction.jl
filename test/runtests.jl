@@ -5,3 +5,4 @@ using FITSIO
 
 include("data.jl")
 include("methods.jl")
+include("fits.jl")

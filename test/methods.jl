@@ -1,7 +1,5 @@
 using CCDReduction: axes_min_length,
-                    fits_indices,
-                    convert_value,
-                    getdata
+                    fits_indices
 
 @testset "bias subtraction" begin
     # testing non-mutating version
@@ -15,35 +13,6 @@ using CCDReduction: axes_min_length,
 
     # testing error
     @test_throws DimensionMismatch subtract_bias(ones(500, 1), ones(500, 500))
-
-    # testing FITS interface
-    # setting initial data
-    hdu_frame = M6707HH[1]
-    hdu_bias_frame = M6707HH[1]
-    array_frame = read(hdu_frame)'
-    array_bias_frame = read(hdu_bias_frame)'
-    string_bias_frame = test_file_path_M6707HH
-    string_frame = test_file_path_M6707HH
-
-    # non-mutating version
-    @test subtract_bias(array_frame, array_bias_frame) == zeros(1059, 1059) # Testing Array Array case
-    @test subtract_bias(hdu_frame, hdu_bias_frame) == zeros(1059, 1059) # testing ImageHDU ImageHDU case
-    @test subtract_bias(array_frame, hdu_bias_frame) == zeros(1059, 1059) # testing Array ImageHDU case
-    @test subtract_bias(hdu_frame, array_bias_frame) == zeros(1059, 1059) # testing ImageHDU Array case
-    @test subtract_bias(string_frame, array_bias_frame) == zeros(1059, 1059) # testing String Array case
-    @test subtract_bias(array_frame, string_bias_frame) == zeros(1059, 1059) # testing Array String case
-    @test subtract_bias(string_frame, hdu_bias_frame) == zeros(1059, 1059) # testing String ImageHDU case
-    @test subtract_bias(hdu_frame, string_bias_frame) == zeros(1059, 1059) # testing ImageHDU String case
-    @test subtract_bias(string_frame, string_bias_frame) == zeros(1059, 1059) # testing String String case
-
-    # mutating version
-    frame = read(hdu_frame)'
-    @inferred subtract_bias!(frame, string_bias_frame)
-    @test frame == zeros(1059, 1059) # testing Array String case
-
-    frame = read(hdu_frame)'
-    @inferred subtract_bias!(frame, hdu_bias_frame)
-    @test frame == zeros(1059, 1059) # testing Array ImageHDU case
 end
 
 @testset "overscan subtraction" begin
@@ -61,15 +30,6 @@ end
 
     # testing error
     @test_throws BoundsError subtract_overscan(ones(500, 600), (500:600, :))
-
-    # testing interface for FITS
-    hdu = M6707HH[1]
-    data = read(hdu)'
-    @test subtract_overscan(data, (:, 1050:1059)) == subtract_overscan(test_file_path_M6707HH, (:, 1050:1059))
-    @test subtract_overscan(data, (:, 1050:1059)) == subtract_overscan(test_file_path_M6707HH, "1050:1059, 1:1059")
-    @test subtract_overscan(data, (:, 1050:1059)) == subtract_overscan(hdu, "1050:1059, 1:1059")
-    @test subtract_overscan(data, (1050:1059, :)) == subtract_overscan(hdu, "1:1059, 1050:1059")
-
 end
 
 @testset "flat correction" begin
@@ -91,34 +51,6 @@ end
     #testing error
     @test_throws DimensionMismatch flat_correct(ones(5, 5), ones(5, 6))
     @test_throws ErrorException flat_correct(ones(5, 5), ones(5, 5), norm_value = -2)
-
-    # testing FITS interface
-    # setting initial data
-    hdu_frame = M6707HH[1]
-    hdu_flat_frame = M6707HH[1]
-    array_frame = read(hdu_frame)'
-    array_flat_frame = read(hdu_flat_frame)'
-    string_flat_frame = test_file_path_M6707HH
-    string_frame = test_file_path_M6707HH
-    mean_flat_frame = mean(array_flat_frame)
-
-    # testing non mutating version
-    @test flat_correct(array_frame, array_flat_frame) ≈ fill(mean_flat_frame, 1059, 1059) # Testing Array Array case
-    @test flat_correct(hdu_frame, hdu_flat_frame; norm_value = 1) ≈ ones(1059, 1059) # testing ImageHDU ImageHDU case
-    @test flat_correct(array_frame, hdu_flat_frame; norm_value = 1) ≈ ones(1059, 1059) # testing Array ImageHDU case
-    @test flat_correct(hdu_frame, array_flat_frame; norm_value = 1) ≈ ones(1059, 1059) # testing ImageHDU Array case
-    @test flat_correct(string_frame, array_flat_frame; norm_value = 1) ≈ ones(1059, 1059) # testing String Array case
-    @test flat_correct(array_frame, string_flat_frame; norm_value = 1) ≈ ones(1059, 1059) # testing Array String case
-    @test flat_correct(string_frame, hdu_flat_frame; norm_value = 1) ≈ ones(1059, 1059) # testing String ImageHDU case
-    @test flat_correct(hdu_frame, string_flat_frame; norm_value = 1) ≈ ones(1059, 1059) # testing ImageHDU String case
-    @test flat_correct(string_frame, string_flat_frame; norm_value = 1) ≈ ones(1059, 1059) # testing String String case
-
-    # testing mutating version
-    frame = read(hdu_frame)'
-    @test_throws InexactError flat_correct!(frame, string_flat_frame) # errors due to type mutation
-
-    frame = read(hdu_frame)'
-    @test_throws InexactError flat_correct!(frame, hdu_flat_frame) # errors due to type mutation
 end
 
 
@@ -140,14 +72,6 @@ end
     @test_throws ErrorException trim(ones(5, 5), (4:5, 1:4))
     @test_throws ErrorException trim(ones(5, 5), (:, :))
     @test_throws ErrorException trim(ones(5, 5), (4:6, :))
-
-    # testing interface for FITS
-    hdu = M6707HH[1]
-    data = read(hdu)'
-    @test trim(data, (:, 1050:1059)) == trim(test_file_path_M6707HH, (:, 1050:1059))
-    @test trim(data, (:, 1050:1059)) == trim(test_file_path_M6707HH, "1050:1059, 1:1059")
-    @test trim(data, (:, 1050:1059)) == trim(hdu, "1050:1059, 1:1059")
-    @test trim(data, (1050:1059, :)) == trim(hdu, "1:1059, 1050:1059")
 end
 
 @testset "cropping" begin
@@ -190,14 +114,6 @@ end
     @test_throws BoundsError cropview(ones(5, 5), (7, 3))
     @test_throws ErrorException cropview(ones(5, 5), (3, -5))
     @test_throws ErrorException cropview(ones(5, 5), (3, 4, 5))
-
-    # testing FITS interface
-    hdu = M6707HH[1]
-    data = read(hdu)'
-    @test crop(data, (:, 5)) == crop(hdu, (:, 5))
-    @test crop(data, (1000, 5); force_equal = false) == crop(hdu, (1000, 5); force_equal = false)
-    @test crop(data, (348, 226)) == crop(test_file_path_M6707HH, (348, 226))
-    @test crop(data, (348, 226); force_equal = false) == crop(test_file_path_M6707HH, (348, 226); force_equal = false)
 end
 
 @testset "combining" begin
@@ -235,40 +151,6 @@ end
 
     # testing error
     @test_throws DimensionMismatch subtract_dark!(ones(5,5), ones(6,6))
-
-    # testing FITS interface
-    # setting initial data
-    hdu_frame = M6707HH[1]
-    hdu_bias_frame = M6707HH[1]
-    array_frame = read(hdu_frame)'
-    array_bias_frame = read(hdu_bias_frame)'
-    string_bias_frame = test_file_path_M6707HH
-    string_frame = test_file_path_M6707HH
-
-    # testing non-mutating version
-    @test subtract_dark(array_frame, array_bias_frame; dark_exposure = 0.5) == (-1).* array_frame # testing Array Array case
-    @test subtract_dark(array_frame, hdu_bias_frame; data_exposure = 2, dark_exposure = 2) == zeros(1059, 1059) # testing Array ImageHDU case
-    @test subtract_dark(hdu_frame, hdu_bias_frame; data_exposure = 2, dark_exposure = 2) == zeros(1059, 1059) # testing ImageHDU ImageHDU case
-    @test subtract_dark(hdu_frame, array_bias_frame; data_exposure = 2, dark_exposure = 2) == zeros(1059, 1059) # testing ImageHDU Array case
-    @test subtract_dark(array_frame, string_bias_frame; data_exposure = 2, dark_exposure = 2) == zeros(1059, 1059) # testing Array String case
-    @test subtract_dark(string_frame, array_bias_frame; data_exposure = 2, dark_exposure = 2) == zeros(1059, 1059) # testing String Array case
-    @test subtract_dark(string_frame, string_bias_frame; data_exposure = 2, dark_exposure = 2) == zeros(1059, 1059) # testsing String String case
-    @test subtract_dark(string_frame, hdu_bias_frame; data_exposure = 2, dark_exposure = 2) == zeros(1059, 1059) # testing String ImageHDU case
-    @test subtract_dark(hdu_frame, string_bias_frame; data_exposure = 2, dark_exposure = 2) == zeros(1059, 1059) # testing ImageHDU String case
-
-    # testing with Symbols
-    @test subtract_dark(hdu_frame, hdu_bias_frame; data_exposure = :EXPOSURE, dark_exposure = :EXPOSURE) == zeros(1059, 1059)
-    @test subtract_dark(string_frame, string_bias_frame; data_exposure = :EXPOSURE, dark_exposure = :EXPOSURE) == zeros(1059, 1059)
-    @test subtract_dark(array_frame, hdu_bias_frame; dark_exposure = :EXPOSURE) ≈ (49 / 50) .* array_frame
-
-    #testing mutating version
-    frame = read(hdu_frame)'
-    subtract_dark!(frame, string_bias_frame; hdu = 1, data_exposure = 1, dark_exposure = 1)
-    @test frame == zeros(1059, 1059) # testing Array String Case
-
-    frame = read(hdu_frame)'
-    subtract_dark!(frame, hdu_bias_frame; data_exposure = 2, dark_exposure = 2)
-    @test frame == zeros(1059, 1059)
 end
 
 @testset "helper" begin
@@ -284,17 +166,4 @@ end
     @test fits_indices("[:, 200:300]") == [200:300, :]
     @test fits_indices("[1024:2048, :]") == [:, 1024:2048]
     @test fits_indices("[200:300, 1024:2048]") == [1024:2048, 200:300]
-
-    # testing convert_value
-    @test convert_value(Int16, 5.4) == 5
-    @test convert_value(Int32, 5.4) == 5
-    @test convert_value(Int64, -5.4) == -5
-    @test convert_value(Float64, -5.4) ≈ -5.4
-    @test convert_value(Float32, -5.4) ≈ -5.4
-    @test convert_value(Float32, -5.4) ≈ -5.4
-
-    # testing getdata
-    hdu = M6707HH[1]
-    data = read(hdu)'
-    @test data == getdata(hdu)
 end
