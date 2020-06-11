@@ -51,7 +51,7 @@ debiased = subtract_bias(img, "master_bias.fits")
 nothing; # hide
 ```
 
-finally, we can use function chaining (or tools like [Underscores.jl](https://github.com/c42f/Underscores.jl)) for creating a simple processing pipeline!
+Finally, we can use function chaining (or tools like [Underscores.jl](https://github.com/c42f/Underscores.jl)) for creating a simple processing pipeline!
 
 ```@example usage
 using Underscores
