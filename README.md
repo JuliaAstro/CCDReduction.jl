@@ -40,7 +40,7 @@ img = 10 .* randn(512, 512)
 debiased = subtract_bias(img, "master_bias.fits")
 ```
 
-finally, we can use function chaining (or tools like [Underscores.jl](https://github.com/c42f/Underscores.jl)) for creating a simple processing pipeline!
+Finally, we can use function chaining (or tools like [Underscores.jl](https://github.com/c42f/Underscores.jl)) for creating a simple processing pipeline!
 
 ```julia
 using Underscores
