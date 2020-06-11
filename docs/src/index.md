@@ -32,7 +32,8 @@ noise = randn(512, 512)
 bias_frame = reshape(1:262144, 512, 512) |> collect
 img = reshape(1:262144, 512, 512) .+ noise
 
-subtract_bias(img, bias_frame) ≈ noise
+subtract_bias(img, bias_frame)
+nothing; # hide
 ```
 
 In addition to working on array-like data, we can directly load from a `FITSIO.ImageHDU` or from a filename
@@ -47,7 +48,7 @@ FITS("master_bias.fits", "w") do f
 end
 img = 10 .* randn(512, 512)
 debiased = subtract_bias(img, "master_bias.fits")
-nothing; # hidden
+nothing; # hide
 ```
 
 finally, we can use function chaining (or tools like [Underscores.jl](https://github.com/c42f/Underscores.jl)) for creating a simple processing pipeline!
@@ -55,13 +56,17 @@ finally, we can use function chaining (or tools like [Underscores.jl](https://gi
 ```@example usage
 using Underscores
 
-img = 10 .* randn(512, 524)
+# 5 science frames
+imgs = (10 .* randn(512, 524) for _ in 1:5)
 
-@_ img |> 
-    subtract_overscan(_, (:, 513:524)) |>
-    trim(_, (:, 513:524)) |>
-    subtract_bias(_, "master_bias.fits")
-nothing; # hidden
+# create pipeline using Underscores.jl
+pipeline(img) = @_ img |>
+    subtract_overscan(__, (:, 513:524)) |>
+    trim(__, (:, 513:524)) |>
+    subtract_bias(__, "master_bias.fits")
+
+calib_imgs = pipeline.(imgs)
+nothing; # hide
 ```
 
 ## License
