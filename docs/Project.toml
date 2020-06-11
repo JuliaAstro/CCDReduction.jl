@@ -1,5 +1,9 @@
 [deps]
 Documenter = "e30172f5-a6a5-5a46-863b-614d45cd2de4"
+FITSIO = "525bcba6-941b-5504-bd06-fd0dc1a4d2eb"
+Underscores = "d9a01c3f-67ce-4d8c-9b55-35f6e4050bb1"
 
 [compat]
 Documenter = "0.24"
+FITSIO = "0.14"
+Underscores = "2"
