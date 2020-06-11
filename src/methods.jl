@@ -13,6 +13,10 @@ function fits_indices(string::String)
     return reverse(idxs)
 end
 
+# Convert using `round` for integers
+convert_value(S::Type{<:Integer}, x) = round(S, x)
+convert_value(S, x) = convert(S, x)
+
 #-------------------------------------------------------------------------------
 """
     subtract_bias!(frame::AbstractArray, bias_frame::AbstractArray)

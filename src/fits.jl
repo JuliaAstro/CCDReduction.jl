@@ -1,9 +1,5 @@
 # helper functions
 
-# Convert using `round` for integers
-convert_value(S::Type{<:Integer}, x) = round(S, x)
-convert_value(S, x) = convert(S, x)
-
 # Gets the data from hdu
 function getdata(hdu::ImageHDU)
     data = read(hdu)

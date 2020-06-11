@@ -1,5 +1,4 @@
-using CCDReduction: convert_value,
-                    getdata
+using CCDReduction: getdata
 
 @testset "bias subtraction(FITS)" begin
     # setting initial data
@@ -134,14 +133,6 @@ end
 end
 
 @testset "helper(FITS)" begin
-    # testing convert_value
-    @test convert_value(Int16, 5.4) == 5
-    @test convert_value(Int32, 5.4) == 5
-    @test convert_value(Int64, -5.4) == -5
-    @test convert_value(Float64, -5.4) ≈ -5.4
-    @test convert_value(Float32, -5.4) ≈ -5.4
-    @test convert_value(Float32, -5.4) ≈ -5.4
-
     # testing getdata
     hdu = M6707HH[1]
     data = read(hdu)'

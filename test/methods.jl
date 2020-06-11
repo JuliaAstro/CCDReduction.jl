@@ -1,5 +1,6 @@
 using CCDReduction: axes_min_length,
-                    fits_indices
+                    fits_indices,
+                    convert_value
 
 @testset "bias subtraction" begin
     # testing non-mutating version
@@ -166,4 +167,12 @@ end
     @test fits_indices("[:, 200:300]") == [200:300, :]
     @test fits_indices("[1024:2048, :]") == [:, 1024:2048]
     @test fits_indices("[200:300, 1024:2048]") == [1024:2048, 200:300]
+
+    # testing convert_value
+    @test convert_value(Int16, 5.4) == 5
+    @test convert_value(Int32, 5.4) == 5
+    @test convert_value(Int64, -5.4) == -5
+    @test convert_value(Float64, -5.4) ≈ -5.4
+    @test convert_value(Float32, -5.4) ≈ -5.4
+    @test convert_value(Float32, -5.4) ≈ -5.4
 end
