@@ -80,20 +80,20 @@ end
     x = reshape(1:25, (5, 5))
 
     @test crop(x, (3, 3)) == [7:9 12:14 17:19]
-    @test crop(x, (4, 3)) == [6:10 11:15 16:20]
+    @test_logs (:warn, "dimension 1 changed from 4 to 5") @test crop(x, (4, 3)) == [6:10 11:15 16:20]
     @test crop(x, (4, 3), force_equal = false) == [6:9 11:14 16:19]
     @test crop(x, (1, 1)) == fill(13, (1, 1))
-    @test crop(x, (3, 4)) == [2:4 7:9 12:14 17:19 22:24]
+    @test_logs (:warn, "dimension 2 changed from 4 to 5") @test crop(x, (3, 4)) == [2:4 7:9 12:14 17:19 22:24]
     @test crop(x, (3, 4), force_equal = false) == [2:4 7:9 12:14 17:19]
 
     # testing on even dimension array
     x = reshape(1:16, (4, 4))
 
     @test cropview(x, (2, 2))  == [6:7 10:11]
-    @test cropview(x, (3, 2)) == [5:8 9:12]
+    @test_logs (:warn, "dimension 1 changed from 3 to 4") @test cropview(x, (3, 2)) == [5:8 9:12]
     @test cropview(x, (3, 2), force_equal = false) == [5:7 9:11]
     @test cropview(x, (1, 1), force_equal = false) == fill(6, (1, 1))
-    @test cropview(x, (2, 3)) == [2:3 6:7 10:11 14:15]
+    @test_logs (:warn, "dimension 2 changed from 3 to 4") @test cropview(x, (2, 3)) == [2:3 6:7 10:11 14:15]
     @test cropview(x, (2, 3), force_equal = false) == [2:3 6:7 10:11]
 
     # testing with colon
@@ -102,9 +102,9 @@ end
     @test cropview(x, (:, :)) == x
     @test cropview(x, (:, 3)) == [6:10 11:15 16:20]
     @test cropview(x, (3, :)) == [2:4 7:9 12:14 17:19 22:24]
-    @test cropview(x, (2, :)) == [2:4 7:9 12:14 17:19 22:24]
+    @test_logs (:warn, "dimension 1 changed from 2 to 3") @test cropview(x, (2, :)) == [2:4 7:9 12:14 17:19 22:24]
     @test cropview(x, (2, :), force_equal = false) == [2:3 7:8 12:13 17:18 22:23]
-    @test cropview(x, (:, 2)) == [6:10 11:15 16:20]
+    @test_logs (:warn, "dimension 2 changed from 2 to 3") @test cropview(x, (:, 2)) == [6:10 11:15 16:20]
     @test cropview(x, (:, 2), force_equal = false) == [6:10 11:15]
 
     # testing output types

@@ -93,7 +93,7 @@ end
     # testing non-mutating version
     @test crop(data, (:, 5)) == crop(hdu, (:, 5))
     @test crop(data, (1000, 5); force_equal = false) == crop(hdu, (1000, 5); force_equal = false)
-    @test crop(data, (348, 226)) == crop(test_file_path_M6707HH, (348, 226))
+    @test_logs (:warn, "dimension 1 changed from 348 to 349") (:warn, "dimension 2 changed from 226 to 227") (:warn, "dimension 1 changed from 348 to 349") (:warn, "dimension 2 changed from 226 to 227") @test crop(data, (348, 226)) == crop(test_file_path_M6707HH, (348, 226))
     @test crop(data, (348, 226); force_equal = false) == crop(test_file_path_M6707HH, (348, 226); force_equal = false)
 end
 
