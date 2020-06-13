@@ -56,15 +56,6 @@ subtract_bias(frame::AbstractArray, bias_frame::AbstractArray) = subtract_bias!(
 
 
 """
-    subtract_bias(frame, bias_frame; [hdu = 1])
-
-Subtract the bias frame from `frame`. If either arguments are `FITSIO.ImageHDU` they will be loaded into memory.
-If either arguments are strings we will attempt to locate a FITS file and open it before loading the data from the given `hdu`.
-If loading multiple files, you can specify the HDU numbers separately (`hdu=(1, 2)`) or simultanesously (`hdu=1`).
-"""
-
-
-"""
     subtract_overscan!(frame::AbstractArray, idxs; dims = axes_min_length(idxs))
 
 In-place version of [`subtract_overscan`](@ref)
