@@ -1,6 +1,11 @@
 # helper functions
 
-# Gets the data from hdu
+#=
+FITSIO.jl takes over memory read in by cfitsio, which reads in row-major form,
+whereas when Julia takes that memory, it is assumed as column major.
+Therefore all data read by `read` is transposed.
+Related comment: https://github.com/JuliaAstro/CCDReduction.jl/pull/16#issuecomment-638492572
+=#
 function getdata(hdu::ImageHDU)
     data = read(hdu)
     d = ndims(data)
@@ -12,6 +17,13 @@ end
 # FITS interface for basic reduction methods
 
 # code generated with codegen
+#=
+This loop has more constructors compared to the next one because for methods like
+subtract_bias and flat_correct, there are two input frames (and they can be Strings and ImageHDU as well).
+So there are a lot of constructors here to tackle all cases.
+subtract_dark was not kept here because of the fields data_exposure and dark_exposure. These fields can also
+be read from the ImageHDU and hence would have complicated the code generation
+=#
 for func in (:flat_correct, :subtract_bias)
     @eval $func(frame::ImageHDU, correction::AbstractArray; kwargs...) = $func(getdata(frame), correction; kwargs...)
     @eval $func(frame::AbstractArray, correction::ImageHDU; kwargs...) = $func(frame, getdata(correction); kwargs...)
@@ -26,17 +38,23 @@ for func in (:flat_correct, :subtract_bias)
     end
 end
 
+
+# The mutating version of these functions only support frame as AbstractArray
 for func in (:flat_correct!, :subtract_bias!)
     @eval $func(frame::AbstractArray, correction::ImageHDU; kwargs...) = $func(frame, getdata(correction); kwargs...)
     @eval $func(frame::AbstractArray, correction::String; hdu = 1, kwargs...) = $func(frame, FITS(correction)[hdu]; kwargs...)
 end
 
+# The non-mutating version returns finally an array with desired operations on frame (frame can be ImageHDU, String and AbstractArray)
 for func in (:crop, :trim, :subtract_overscan)
     @eval $func(frame::ImageHDU, args...; kwargs...) = $func(getdata(frame), args...; kwargs...)
     @eval $func(filename::String, args...; hdu = 1, kwargs...) = $func(FITS(filename)[hdu], args...; kwargs...)
 end
 
+# Tackles the case when idxs is a symbol, i.e. reading trimming dimensions from header of ImageHDU
 trim(frame::ImageHDU, idxs::Symbol) = trim(frame, read_header(frame)[string(idxs)])
+
+# Tackles the case when overscan region has to be read from header of ImageHDU
 subtract_overscan(frame::ImageHDU, key::Symbol; kwargs...) = subtract_overscan(frame, read_header(frame)[string(key)]; kwargs...)
 
 
