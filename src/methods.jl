@@ -335,7 +335,7 @@ function combine(frames::Vararg{<:AbstractArray}; method = median)
     return reshape(method(stack(frames), dims = dim), shape)
 end
 
-combine(frames::AbstractVector{<:AbstractArray}; method = median) = combine(frames..., method = method)
+combine(frames::AbstractVector; method = median) = combine(frames..., method = method)
 
 
 """
