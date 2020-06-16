@@ -19,5 +19,6 @@ export subtract_bias,
        subtract_dark!
 
 include("methods.jl")
+include("fits.jl")
 
 end
