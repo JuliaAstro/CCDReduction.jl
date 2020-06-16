@@ -170,8 +170,9 @@ subtract_dark!(frame::AbstractArray, dark_frame::String; hdu = 1, kwargs...) = s
 
 
 """
-    combine(frames::Vararg{<:FITSIO.ImageHDU}; kwargs...)
-    combine(filename::Vararg{<:String, N}; hdu = ntuple(one, N),  kwargs...)
+	combine(frames...; hdu=1, kwargs...)
+	
+Load multiple FITS files or HDUs before combining. If loading from filenames, the HDU number can be specified with `hdu` as either an integer or a tuple corresponding to each file.
 
 Load multiple FITS files or HDUs before combining. Filenames or HDUs can also be passed as vectors for loading before combining.
 """
