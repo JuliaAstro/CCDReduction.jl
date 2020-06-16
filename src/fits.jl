@@ -171,7 +171,7 @@ subtract_dark!(frame::AbstractArray, dark_frame::String; hdu = 1, kwargs...) = s
 
 """
 	combine(frames...; hdu=1, kwargs...)
-	
+
 Load multiple FITS files or HDUs before combining. If loading from filenames, the HDU number can be specified with `hdu` as either an integer or a tuple corresponding to each file.
 
 Load multiple FITS files or HDUs before combining. Filenames or HDUs can also be passed as vectors for loading before combining.
@@ -179,6 +179,6 @@ Load multiple FITS files or HDUs before combining. Filenames or HDUs can also be
 combine(frames::Vararg{<:ImageHDU}; kwargs...) = combine(getdata.(frames)...; kwargs...)
 
 function combine(frames::Vararg{<:String, N}; hdu = ntuple(one, N), kwargs...) where N
-    frames = (FITS(frame)[idx] for (frame, idx) in zip(frames, hdu))
-    combine(frames...; kwargs...)
+    processedFrames = @. getindex(FITS(frames), hdu)
+    combine(processedFrames...; kwargs...)
 end

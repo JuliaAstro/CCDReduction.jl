@@ -112,6 +112,10 @@ end
     # testing the varargs version
     @test combine(M6707HH[1], M6707HH[1], M6707HH[1]) == combine(vector_frames)
     @test combine(test_file_path_M6707HH, test_file_path_M6707HH, test_file_path_M6707HH) == combine(vector_frames)
+
+    # testing with kwargs
+    @test combine(vector_frames_dir; hdu = 1, method = sum) == combine(vector_frames_dir; hdu = (1, 1, 1), method = sum)
+    @test combine(test_file_path_M6707HH, test_file_path_M6707HH; hdu = 1) == combine(test_file_path_M6707HH, test_file_path_M6707HH)
 end
 
 
