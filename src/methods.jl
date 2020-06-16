@@ -305,10 +305,9 @@ end
 
 
 """
-    combine(frames::Vararg{<:AbstractArray}; method = median)
-    combine(frames::AbstractVector{<:AbstractArray}; method = median)
+    combine(frames::Vararg{<:AbstractArray{<:Number}}; method = median)
 
-Combine multiple frames using `method`.
+Combine multiple frames using `method`. Multiple frames can also be passed in a vector or as generators for combining.
 
 To pass a custom method, it must have a signature like `method(::AbstractArray; dims)`.
 
