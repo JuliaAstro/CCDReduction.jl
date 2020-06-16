@@ -60,8 +60,8 @@ subtract_overscan(frame::ImageHDU, key::Symbol; kwargs...) = subtract_overscan(f
 
 # Documentation for code generated with codegen
 """
-    crop(::FITSIO.ImageHDU, shape; force_equal = true)
-    crop(filename, shape; hdu=1, force_equal = true)
+    crop(frame::FITSIO.ImageHDU, shape; force_equal = true)
+    crop(filename::String, shape; hdu=1, force_equal = true)
 
 Load a FITS file or HDU before cropping.
 """
@@ -69,8 +69,8 @@ function crop end
 
 
 """
-    trim(::FITSIO.ImageHDU, idxs)
-    trim(filename, idxs; hdu=1)
+    trim(frame::FITSIO.ImageHDU, idxs)
+    trim(filename::String, idxs; hdu=1)
 
 Load a FITS file or HDU before trimming. If `idxs` is a symbol it will be read from the FITS header with that key (case sensitive).
 """
@@ -78,18 +78,17 @@ function trim end
 
 
 """
-    flat_correct(frame, flat_frame; [hdu = 1], norm_value = mean(flat_frame))
+    flat_correct(frame, flat_frame; hdu=1, kwargs...)
 
-Correct the `flat_frame` from `frame`. If either arguments are `FITSIO.ImageHDU` they will be loaded into memory.
-If either arguments are strings we will attempt to locate a FITS file and open it before loading the data from the given `hdu`.
-If loading multiple files, you can specify the HDU numbers separately (`hdu=(1, 2)`) or simultanesously (`hdu=1`).
+Load `frame` and/or `flat_frame` from a given filename or `FITSIO.ImageHDU`. If loading from a file, you can specify the appropriate header using the `hdu` keyword,
+ which can be given as an integer or a tuple (if multiple files are being loaded). All keyword arguments will be passed to the [`flat_correct!`](@ref) function after loading the data.
 """
 function flat_correct end
 
 
 """
-    flat_correct!(frame::AbstractArray, flat_frame::ImageHDU; norm_value = mean(flat_frame))
-    flat_correct!(frame::AbstractArray, flat_frame::String; hdu = 1, norm_value = mean(flat_frame))
+    flat_correct!(frame::AbstractArray, flat_frame::FITSIO.ImageHDU; kwargs...)
+    flat_correct!(frame::AbstractArray, flat_frame::String; hdu = 1, kwargs...)
 
 Load a FITS file or HDU for the flat frame before correcting `frame` in-place.
 """
@@ -97,8 +96,8 @@ function flat_correct! end
 
 
 """
-    subtract_overscan(::FITSIO.ImageHDU, idxs; [dims])
-    subtract_overscan(filename, idxs; hdu=1, [dims])
+    subtract_overscan(frame::FITSIO.ImageHDU, idxs; [dims])
+    subtract_overscan(filename::String, idxs; hdu=1, [dims])
 
 Load a FITS file or HDU before subtracting the overscan region. If `idxs` is a symbol it will be read from the FITS header with that key (case sensitive).
 """
@@ -108,15 +107,14 @@ function subtract_overscan end
 """
     subtract_bias(frame, bias_frame; [hdu = 1])
 
-Subtract the bias frame from `frame`. If either arguments are `FITSIO.ImageHDU` they will be loaded into memory.
-If either arguments are strings we will attempt to locate a FITS file and open it before loading the data from the given `hdu`.
-If loading multiple files, you can specify the HDU numbers separately (`hdu=(1, 2)`) or simultanesously (`hdu=1`).
+Load `frame` and/or `bias_frame` from a given filename or `FITSIO.ImageHDU`. If loading from a file, you can specify the appropriate header using the `hdu` keyword,
+ which can be given as an integer or a tuple (if multiple files are being loaded). All keyword arguments will be passed to the [`subtract_bias!`](@ref) function after loading the data.
 """
 function subtract_bias end
 
 
 """
-    subtract_bias!(frame::AbstractArray, bias_frame::ImageHDU)
+    subtract_bias!(frame::AbstractArray, bias_frame::FITSIO.ImageHDU)
     subtract_bias!(frame::AbstractArray, bias_frame::String; hdu = 1)
 
 Load a FITS file or HDU for the bias frame before subtracting from `frame` in-place.
