@@ -78,7 +78,7 @@ function trim end
 
 
 """
-    flat_correct(frame, flat_frame; hdu=1, kwargs...)
+    flat_correct(frame, flat_frame; [hdu=1], kwargs...)
 
 Load `frame` and/or `flat_frame` from a given filename or `FITSIO.ImageHDU`. If loading from a file, you can specify the appropriate header using the `hdu` keyword,
  which can be given as an integer or a tuple (if multiple files are being loaded). All keyword arguments will be passed to the [`flat_correct!`](@ref) function after loading the data.
