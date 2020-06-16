@@ -328,14 +328,14 @@ julia> combine(frame, method = sum)
 
 ```
 """
-function combine(frames::Vararg{<:AbstractArray}; method = median)
+function combine(frames::Vararg{<:AbstractArray{<:Number}}; method = median)
     firstframe = first(frames)
     dim = ndims(firstframe) + 1
     shape = size(firstframe)
     return reshape(method(stack(frames), dims = dim), shape)
 end
 
-combine(frames::AbstractVector; method = median, kwargs...) = combine(frames...; method = method, kwargs...)
+combine(frames; method = median, kwargs...) = combine(frames...; method = method, kwargs...)
 
 
 """
