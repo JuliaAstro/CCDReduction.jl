@@ -305,7 +305,8 @@ end
 
 
 """
-    combine(frames::Vararg{<:AbstractArray{<:Number}}; method = median)
+    combine(frames...; method = median)
+    combine(frames; method = median)
 
 Combine multiple frames using `method`. Multiple frames can also be passed in a vector or as generators for combining.
 
