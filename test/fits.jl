@@ -97,6 +97,28 @@ end
     @test crop(data, (348, 226); force_equal = false) == crop(test_file_path_M6707HH, (348, 226); force_equal = false)
 end
 
+
+@testset "combine(FITS)" begin
+    # setting initial data
+    frame = M6707HH[1] |> getdata
+    vector_hdu = [M6707HH[1] for i in 1:3]
+    vector_frames = [frame for i in 1:3]
+    vector_frames_dir = [test_file_path_M6707HH for i in 1:3]
+
+    # testing the vector version
+    @test combine(vector_hdu) == combine(vector_frames)
+    @test combine(vector_frames_dir) == combine(vector_frames)
+
+    # testing the varargs version
+    @test combine(M6707HH[1], M6707HH[1], M6707HH[1]) == combine(vector_frames)
+    @test combine(test_file_path_M6707HH, test_file_path_M6707HH, test_file_path_M6707HH) == combine(vector_frames)
+
+    # testing with kwargs
+    @test combine(vector_frames_dir; hdu = 1, method = sum) == combine(vector_frames_dir; hdu = (1, 1, 1), method = sum)
+    @test combine(test_file_path_M6707HH, test_file_path_M6707HH; hdu = 1) == combine(test_file_path_M6707HH, test_file_path_M6707HH)
+end
+
+
 @testset "dark subtraction(FITS)" begin
     # setting initial data
     hdu_frame = M6707HH[1]
