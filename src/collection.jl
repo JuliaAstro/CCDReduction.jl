@@ -1,4 +1,4 @@
-"""
+raw"""
     filecollection(dir; walk=true, abspath=true, keepext=true, ext=r"fits(\.tar\.gz)?", exclude=nothing, dir_exclude=nothing)
 
 Walk through `dir` collecting FITS files, scanning their headers, and culminating into a `DataFrame` that can be used with the [generators](@ref gens) for iterating over many files and processing them. If `walk` is false, no subdirectories will be walked through.
