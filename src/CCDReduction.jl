@@ -3,6 +3,7 @@ module CCDReduction
 using Statistics
 using LazyStack
 using FITSIO
+using DataFrames
 
 export subtract_bias,
        subtract_bias!,
@@ -16,9 +17,11 @@ export subtract_bias,
        cropview,
        combine,
        subtract_dark,
-       subtract_dark!
+       subtract_dark!,
+       fitscollection
 
 include("methods.jl")
 include("fits.jl")
+include("collection.jl")
 
 end
