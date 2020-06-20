@@ -39,10 +39,12 @@ Here is an example of a file path and how it would be parsed
 
 If `keepext` is `true`, `name=base * ext`, otherwise it is just `base`. If `abspath` is `true`, the path will be `root * dir * base * ext`, otherwise it will be `dir * base * ext`. These options allow flexility in creating a table that can be easily saved and loaded to avoid having to manually filter files. Especially consider how `abspath` can allow keeping tables that will transfer easily between computers or between data sources with common structures.
 """
-function fitscollection(basedir::String; abspath = true, keepext = true, ext = r"fits(\.tar\.gz)?"i, exclude = nothing, dir_exclude = nothing, recursive = true)
+function fitscollection(basedir::String; recursive = true, abspath = true, keepext = true, ext = r"fits(\.tar\.gz)?"i, exclude = nothing, dir_exclude = nothing)
     df = DataFrame()
 
     for (root, dirs, files) in walkdir(basedir)
+        # recursive searching functionality
+        recursive || root == basedir || continue
         # To exclude certain directories
         if dir_exclude !== nothing
             occursin(dir_exclude, root) && continue
@@ -60,9 +62,9 @@ function fitscollection(basedir::String; abspath = true, keepext = true, ext = r
             for (index, hdu) in enumerate(fits_data)
                 hdu isa ImageHDU || continue
                 header_data = read_header(hdu)
-                path = abspath ? abspath(location) : location
+                path = abspath ? Base.abspath(location) : location
                 name = keepext ? filename : first(split(filename, "." * ext))
-                push!(df, (path=path, name=name, hdu = index, zip(Symbol.(keys(header_data)), values(header_data))...); cols = :union)
+                push!(df, (path = path, name = name, hdu = index, zip(Symbol.(keys(header_data)), values(header_data))...); cols = :union)
             end
             close(fits_data)
         end
