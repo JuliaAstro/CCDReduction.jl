@@ -1,5 +1,5 @@
 @doc raw"""
-    fitscollection(dir; recursive=true, abspath=true, keepext=true, ext=r"fits(\.tar\.gz)?", exclude=nothing, dir_exclude=nothing)
+    fitscollection(dir; recursive=true, abspath=true, keepext=true, ext=r"fits(\.tar\.gz)?", exclude=nothing, exclude_dir=nothing, exclude_key = ("", "HISTORY"))
 
 Walk through `dir` collecting FITS files, scanning their headers, and culminating into a `DataFrame` that can be used with the generators for iterating over many files and processing them. If `recursive` is false, no subdirectories will be walked through.
 
@@ -18,7 +18,7 @@ finally, using external tools like [Glob.jl](https://github.com/vtjnash/Glob.jl)
 using Glob
 fitscollection(...; exclude=fn"tek001*.fits") # same as regex match above
 ```
-Similarly, `dir_exclude` allows excluding entire folders using pattern matching (e.g. skipping a backup folder `dir_exclude="backup"`).
+Similarly, `exclude_dir` allows excluding entire folders using pattern matching (e.g. skipping a backup folder `exclude_dir="backup"`).
 
 For more information about the file matching and path deconstruction, see the extended help (`??fitscollection`)
 # Extended Help
@@ -40,20 +40,21 @@ Here is an example of a file path and how it would be parsed
 If `keepext` is `true`, `name=base * ext`, otherwise it is just `base`. If `abspath` is `true`, the path will be `root * dir * base * ext`, otherwise it will be `dir * base * ext`. These options allow flexility in creating a table that can be easily saved and loaded to avoid having to manually filter files. Especially consider how `abspath` can allow keeping tables that will transfer easily between computers or between data sources with common structures.
 """
 function fitscollection(basedir::String;
-		recursive = true,
-		abspath = true,
-		keepext = true,
-		ext = r"fits(\.tar\.gz)?"i,
-		exclude = nothing,
-		dir_exclude = nothing)
+                        recursive = true,
+                        abspath = true,
+                        keepext = true,
+                        ext = r"fits(\.tar\.gz)?"i,
+                        exclude = nothing,
+                        exclude_dir = nothing,
+                        exclude_key = ("", "HISTORY"))
     df = DataFrame()
 
     for (root, dirs, files) in walkdir(basedir)
         # recursive searching functionality
         recursive || root == basedir || continue
         # To exclude certain directories
-        if dir_exclude !== nothing
-            occursin(dir_exclude, root) && continue
+        if exclude_dir !== nothing
+            occursin(exclude_dir, root) && continue
         end
         for filename in files
             # accept file if .fits or .fits.tar.gz
@@ -70,7 +71,13 @@ function fitscollection(basedir::String;
                 header_data = read_header(hdu)
                 path = abspath ? Base.abspath(location) : location
                 name = keepext ? filename : first(split(filename, "." * ext))
-                push!(df, (path = path, name = name, hdu = index, zip(Symbol.(keys(header_data)), values(header_data))...); cols = :union)
+
+                # filtering out comment columns
+                _keys = filter(k -> k ∉ exclude_key, keys(header_data))
+                _values = map(_keys) do k
+                    header_data[k]
+                end
+                push!(df, (path = path, name = name, hdu = index, zip(Symbol.(_keys), _values)...); cols = :union)
             end
             close(fits_data)
         end
