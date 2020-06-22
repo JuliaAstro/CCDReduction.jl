@@ -1,3 +1,13 @@
+# We will remove this helper after some versions
+# This is to use endswith in Julia < 1.2
+checkfileending(filename, suffix) = endswith(filename, suffix)
+function checkfileending(filename, suffix::Regex)
+    VERSION ≥ v"1.2" && return endswith(filename, suffix)
+    m = match(suffix, filename)
+    return m !== nothing
+end
+
+#-----------------------------------------------------
 @doc raw"""
     fitscollection(dir; recursive=true, abspath=true, keepext=true, ext=r"fits(\.tar\.gz)?", exclude=nothing, exclude_dir=nothing, exclude_key = ("", "HISTORY"))
 
@@ -58,7 +68,7 @@ function fitscollection(basedir::String;
         end
         for filename in files
             # accept file if .fits or .fits.tar.gz
-            endswith(filename, ext) || continue
+            checkfileending(filename, ext) || continue
             # excluding the files specified by user
             if exclude !== nothing
                 occursin(exclude, filename) && continue
