@@ -3,7 +3,7 @@ module CCDReduction
 using Statistics
 using LazyStack
 using FITSIO
-using DataFrames
+using DataFrames: DataFrame
 
 export subtract_bias,
        subtract_bias!,

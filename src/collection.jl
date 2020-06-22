@@ -80,7 +80,7 @@ function fitscollection(basedir::String;
                 hdu isa ImageHDU || continue
                 header_data = read_header(hdu)
                 path = abspath ? Base.abspath(location) : location
-                name = keepext ? filename : first(split(filename, "." * ext))
+                name = keepext ? filename : first(split(filename, ext))[1:end-1]
 
                 # filtering out comment columns
                 _keys = filter(k -> k ∉ exclude_key, keys(header_data))
