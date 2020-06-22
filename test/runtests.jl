@@ -12,3 +12,7 @@ end
 @testset "FITS interface" begin
     include("fits.jl")
 end
+
+@testset "collection" begin
+    include("collection.jl")
+end
