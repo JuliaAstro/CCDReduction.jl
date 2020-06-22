@@ -39,7 +39,13 @@ Here is an example of a file path and how it would be parsed
 
 If `keepext` is `true`, `name=base * ext`, otherwise it is just `base`. If `abspath` is `true`, the path will be `root * dir * base * ext`, otherwise it will be `dir * base * ext`. These options allow flexility in creating a table that can be easily saved and loaded to avoid having to manually filter files. Especially consider how `abspath` can allow keeping tables that will transfer easily between computers or between data sources with common structures.
 """
-function fitscollection(basedir::String; recursive = true, abspath = true, keepext = true, ext = r"fits(\.tar\.gz)?"i, exclude = nothing, dir_exclude = nothing)
+function fitscollection(basedir::String;
+		recursive = true,
+		abspath = true,
+		keepext = true,
+		ext = r"fits(\.tar\.gz)?"i,
+		exclude = nothing,
+		dir_exclude = nothing)
     df = DataFrame()
 
     for (root, dirs, files) in walkdir(basedir)
