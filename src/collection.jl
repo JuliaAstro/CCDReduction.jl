@@ -32,6 +32,7 @@ using Glob
 fitscollection(...; exclude=fn"tek001*.fits") # same as regex match above
 ```
 Similarly, `exclude_dir` allows excluding entire folders using pattern matching (e.g. skipping a backup folder `exclude_dir="backup"`).
+`exclude_key` allows excluding certain entries in the header unit of `ImageHDU` in FITS files (e.g. skipping `"HISTORY"` and `""` `exclude_key = ("HISTORY", "")`).
 
 For more information about the file matching and path deconstruction, see the extended help (`??fitscollection`)
 # Extended Help
