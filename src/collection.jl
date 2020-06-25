@@ -1,3 +1,16 @@
+# helper function to match extension
+# this will be removed when there is a compat entry of endswith with regex compatibility
+function match_extension(str::String, ext::Regex)
+    r = deepcopy(ext)
+    if !endswith(r.pattern, "\$")
+        r = Regex(r.pattern * "\$", r.compile_options, r.match_options)
+    end
+    return occursin(r, str)
+end
+
+match_extension(str::String, ext::String) = endswith(str, ext)
+
+#------------------------------------------------------------------------------------------------
 @doc raw"""
     fitscollection(dir; recursive=true, abspath=true, keepext=true, ext=r"fits(\.tar\.gz)?", exclude=nothing, exclude_dir=nothing, exclude_key = ("", "HISTORY"))
 
@@ -58,7 +71,7 @@ function fitscollection(basedir::String;
         end
         for filename in files
             # accept file if .fits or .fits.tar.gz
-            endswith(filename, ext) || continue
+            match_extension(filename, ext) || continue
             # excluding the files specified by user
             if exclude !== nothing
                 occursin(exclude, filename) && continue
