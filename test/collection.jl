@@ -1,5 +1,3 @@
-using CCDReduction: checkfileending
-
 @testset "fitscollection" begin
     # setting initial data
     dir = joinpath(@__DIR__, "data")
@@ -35,11 +33,4 @@ using CCDReduction: checkfileending
     ##exclude_dir
     df = fitscollection(dir; exclude_dir = "data")
     @test size(df) == (0, 0)
-end
-
-@testset "helper" begin
-    @test checkfileending("abcd", "cd") == true
-    @test checkfileending("abcd.FITS", r"fits(\.tar\.gz)?"i) == true
-    @test checkfileending("abcd.fits.tar.gz", r"fits(\.tar\.gz)?"i) == true
-    @test checkfileending("abcd.fits.tar.gz", r"fits(\.gz)?"i) == false
 end
