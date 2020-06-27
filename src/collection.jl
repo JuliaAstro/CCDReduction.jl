@@ -1,14 +1,18 @@
 # helper function to match extension
 # this will be removed when there is a compat entry of endswith with regex compatibility
 function match_extension(str::String, ext::Regex)
-    r = deepcopy(ext)
-    if !endswith(r.pattern, "\$")
-        r = Regex(r.pattern * "\$", r.compile_options, r.match_options)
+    if VERSION < v"1.2"
+        r = deepcopy(ext)
+        if !endswith(r.pattern, "\$")
+            r = Regex(r.pattern * "\$", r.compile_options, r.match_options)
+        end
+        return occursin(r, str)
+    else
+        endswith(str, ext)
     end
-    return occursin(r, str)
 end
 
-match_extension(str::String, ext::String) = endswith(str, ext)
+match_extension(str::String, ext) = endswith(str, ext)
 
 #------------------------------------------------------------------------------------------------
 @doc raw"""
@@ -39,16 +43,16 @@ For more information about the file matching and path deconstruction, see the ex
 
 ## Parts of a path
 
-Here is an example of a file path and how it would be parsed
+Let's look at some file paths starting from `"/data"`. Here are examples of how they would be parsed
 
 ```
-     root         dir   base   ext
-[---------------][----][-----][----]
-\Users\miles\data\test\tek0001.fits
+ root  dir   base   ext
+[----][---][------][---]
+/data/test/tek0001.fits
 
-     root          dir     base    ext
-[---------------][--------][-----][----]
-\Users\miles\data\test\sci\tek0001.fits
+ root    dir     base   ext
+[----][-------][------][---]
+/data/test/sci/tek0001.fits
 ```
 
 If `keepext` is `true`, `name=base * ext`, otherwise it is just `base`. If `abspath` is `true`, the path will be `root * dir * base * ext`, otherwise it will be `dir * base * ext`. These options allow flexility in creating a table that can be easily saved and loaded to avoid having to manually filter files. Especially consider how `abspath` can allow keeping tables that will transfer easily between computers or between data sources with common structures.
@@ -88,9 +92,7 @@ function fitscollection(basedir::String;
 
                 # filtering out comment columns
                 _keys = filter(k -> k ∉ exclude_key, keys(header_data))
-                _values = map(_keys) do k
-                    header_data[k]
-                end
+                _values = (header_data[k] for k in _keys)
                 push!(df, (path = path, name = name, hdu = index, zip(Symbol.(_keys), _values)...); cols = :union)
             end
             close(fits_data)
