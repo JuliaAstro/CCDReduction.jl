@@ -3,7 +3,7 @@
 parse_name(filename, ext::AbstractString, ::Val{false}) = first(rsplit(filename, ext, limit=2))
 
 function parse_name(filename, ext::Regex, ::Val{false})
-	idxs = findall(ext, filename)
+    idxs = findall(ext, filename)
     return filename[1:first(last(idxs)) - 1]
 end
 
@@ -120,7 +120,7 @@ end
 
 # generator for ImageHDU specified by data frame (i.e. path of file, hdu etc.)
 @resumable function images(df::DataFrame)
-	for row in eachrow(df)
-		@yield FITS(row.path)[row.hdu]
-	end
+    for row in eachrow(df)
+        @yield FITS(row.path)[row.hdu]
+    end
 end
