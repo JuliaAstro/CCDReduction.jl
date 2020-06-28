@@ -21,7 +21,8 @@ export subtract_bias,
        subtract_dark!,
        fitscollection,
        array,
-       filename
+       filename,
+       images
 
 include("methods.jl")
 include("fits.jl")

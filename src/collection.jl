@@ -116,3 +116,11 @@ end
         @yield row.path
     end
 end
+
+
+# generator for ImageHDU specified by data frame (i.e. path of file, hdu etc.)
+@resumable function images(df::DataFrame)
+	for row in eachrow(df)
+		@yield FITS(row.path)[row.hdu]
+	end
+end
