@@ -45,6 +45,17 @@ using CCDReduction: parse_name
     @test size(df) == (0, 0)
 end
 
+@testset "array-generators" begin
+    # setting initial data
+    dir = joinpath(@__DIR__, "data")
+    df = fitscollection(dir)
+    arr1 = map(x -> x, array(df))
+    arr2 = map(eachrow(df)) do row
+        getdata(FITS(row.path)[row.hdu])
+    end
+    @test arr1 == arr2
+end
+
 @testset "helper" begin
     @test parse_name("abc.fits", "."*"fits", Val(true)) == "abc.fits"
     @test parse_name("abc.fits.tar.gz", "."*"fits.tar.gz", Val(false)) == "abc"

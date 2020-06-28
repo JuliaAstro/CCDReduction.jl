@@ -4,6 +4,7 @@ using Statistics
 using LazyStack
 using FITSIO
 using DataFrames: DataFrame
+using ResumableFunctions
 
 export subtract_bias,
        subtract_bias!,
@@ -18,7 +19,8 @@ export subtract_bias,
        combine,
        subtract_dark,
        subtract_dark!,
-       fitscollection
+       fitscollection,
+       array
 
 include("methods.jl")
 include("fits.jl")
