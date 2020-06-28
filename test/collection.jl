@@ -1,3 +1,5 @@
+using CCDReduction: parse_name
+
 @testset "fitscollection" begin
     # setting initial data
     dir = joinpath(@__DIR__, "data")
@@ -41,4 +43,12 @@
     ##exclude_dir
     df = fitscollection(dir; exclude_dir = "data")
     @test size(df) == (0, 0)
+end
+
+@testset "helper" begin
+    @test parse_name("abc.fits", "."*"fits", Val(true)) == "abc.fits"
+    @test parse_name("abc.fits.tar.gz", "."*"fits.tar.gz", Val(false)) == "abc"
+    @test parse_name("foo.fits.fits", "."*"fits", Val(false)) == "foo.fits"
+    @test parse_name("foo.fits.fits", "."*r"fits(\.tar\.gz)?"i, Val(false)) == "foo.fits"
+    @test parse_name("foo.fits", "."*r"fits(\.tar\.gz)?"i, Val(false)) == "foo"
 end

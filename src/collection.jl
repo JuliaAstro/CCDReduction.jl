@@ -1,3 +1,15 @@
+# helper function
+# parses the name and returns it with or without extension
+parse_name(filename, ext::AbstractString, ::Val{false}) = first(rsplit(filename, ext, limit=2))
+
+function parse_name(filename, ext::Regex, ::Val{false})
+	idxs = findall(ext, filename)
+    return filename[1:first(last(idxs)) - 1]
+end
+
+parse_name(filename, ext, ::Val{true}) = filename
+
+#---------------------------------------------------------------------------------------
 @doc raw"""
     fitscollection(dir; recursive=true, abspath=true, keepext=true, ext=r"fits(\.tar\.gz)?", exclude=nothing, exclude_dir=nothing, exclude_key = ("", "HISTORY"))
 
@@ -71,7 +83,7 @@ function fitscollection(basedir::String;
                 hdu isa ImageHDU || continue
                 header_data = read_header(hdu)
                 path = abspath ? Base.abspath(location) : location
-                name = keepext ? filename : first(split(filename, "." * ext))
+                name = parse_name(filename, "." * ext, Val(keepext))
 
                 # filtering out comment columns
                 _keys = filter(k -> k ∉ exclude_key, keys(header_data))
