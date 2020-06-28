@@ -1,4 +1,4 @@
-using CCDReduction: match_extension
+using CCDReduction: parse_name
 
 @testset "fitscollection" begin
     # setting initial data
@@ -46,8 +46,9 @@ using CCDReduction: match_extension
 end
 
 @testset "helper" begin
-    @test match_extension("abcd", "cd")
-    @test match_extension("abcd.FITS", r"fits(\.tar\.gz)?"i)
-    @test match_extension("abcd.fits.tar.gz", r"fits(\.tar\.gz)?"i)
-    @test !match_extension("abcd.fits.tar.gz", r"fits(\.gz)?"i)
+    @test parse_name("abc.fits", "."*"fits", Val(true)) == "abc.fits"
+    @test parse_name("abc.fits.tar.gz", "."*"fits.tar.gz", Val(false)) == "abc"
+    @test parse_name("foo.fits.fits", "."*"fits", Val(false)) == "foo.fits"
+    @test parse_name("foo.fits.fits", "."*r"fits(\.tar\.gz)?"i, Val(false)) == "foo.fits"
+    @test parse_name("foo.fits", "."*r"fits(\.tar\.gz)?"i, Val(false)) == "foo"
 end
