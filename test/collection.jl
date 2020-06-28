@@ -1,5 +1,3 @@
-using CCDReduction: match_extension
-
 @testset "fitscollection" begin
     # setting initial data
     dir = joinpath(@__DIR__, "data")
@@ -43,11 +41,4 @@ using CCDReduction: match_extension
     ##exclude_dir
     df = fitscollection(dir; exclude_dir = "data")
     @test size(df) == (0, 0)
-end
-
-@testset "helper" begin
-    @test match_extension("abcd", "cd")
-    @test match_extension("abcd.FITS", r"fits(\.tar\.gz)?"i)
-    @test match_extension("abcd.fits.tar.gz", r"fits(\.tar\.gz)?"i)
-    @test !match_extension("abcd.fits.tar.gz", r"fits(\.gz)?"i)
 end
