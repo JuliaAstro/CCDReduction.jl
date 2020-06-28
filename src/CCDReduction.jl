@@ -20,7 +20,8 @@ export subtract_bias,
        subtract_dark,
        subtract_dark!,
        fitscollection,
-       array
+       array,
+       filename
 
 include("methods.jl")
 include("fits.jl")

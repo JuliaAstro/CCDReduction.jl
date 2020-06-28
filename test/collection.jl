@@ -56,6 +56,17 @@ end
     @test arr1 == arr2
 end
 
+@testset "filename-generators" begin
+    # setting initial data
+    dir = joinpath(@__DIR__, "data")
+    df = fitscollection(dir)
+    arr1 = map(x -> x, filename(df))
+    arr2 = map(eachrow(df)) do row
+        row.path
+    end
+    @test arr1 == arr2
+end
+
 @testset "helper" begin
     @test parse_name("abc.fits", "."*"fits", Val(true)) == "abc.fits"
     @test parse_name("abc.fits.tar.gz", "."*"fits.tar.gz", Val(false)) == "abc"

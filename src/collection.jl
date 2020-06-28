@@ -96,7 +96,8 @@ function fitscollection(basedir::String;
     return df
 end
 
-# generator for image arrays that specified by data frames (i.e. path of file, hdu)
+
+# generator for image arrays specified by data frames (i.e. path of file, hdu etc.)
 @resumable function array(df::DataFrame)
     for row in eachrow(df)
         fh = FITS(row.path)
@@ -105,5 +106,13 @@ end
         finally
             close(fh)
         end
+    end
+end
+
+
+# generator for filenames specified by data frame (i.e. path of file, hdu etc.)
+@resumable function filename(df::DataFrame)
+    for row in eachrow(df)
+        @yield row.path
     end
 end
