@@ -98,7 +98,7 @@ end
 
 
 # generator for image arrays specified by data frames (i.e. path of file, hdu etc.)
-@resumable function array(df::DataFrame)
+@resumable function arrays(df::DataFrame)
     for row in eachrow(df)
         fh = FITS(row.path)
         try
@@ -111,7 +111,7 @@ end
 
 
 # generator for filenames specified by data frame (i.e. path of file, hdu etc.)
-@resumable function filename(df::DataFrame)
+@resumable function filenames(df::DataFrame)
     for row in eachrow(df)
         @yield row.path
     end

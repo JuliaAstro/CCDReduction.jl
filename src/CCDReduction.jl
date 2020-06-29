@@ -20,8 +20,8 @@ export subtract_bias,
        subtract_dark,
        subtract_dark!,
        fitscollection,
-       array,
-       filename,
+       arrays,
+       filenames,
        images
 
 include("methods.jl")

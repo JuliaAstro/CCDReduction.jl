@@ -49,7 +49,7 @@ end
     # setting initial data
     dir = joinpath(@__DIR__, "data")
     df = fitscollection(dir)
-    arr1 = map(x -> x, array(df))
+    arr1 = arrays(df) |> collect
     arr2 = map(eachrow(df)) do row
         getdata(FITS(row.path)[row.hdu])
     end
@@ -60,7 +60,7 @@ end
     # setting initial data
     dir = joinpath(@__DIR__, "data")
     df = fitscollection(dir)
-    arr1 = map(x -> x, filename(df))
+    arr1 = filenames(df) |> collect
     arr2 = map(eachrow(df)) do row
         row.path
     end
@@ -71,7 +71,7 @@ end
     # setting initial data
     dir = joinpath(@__DIR__, "data")
     df = fitscollection(dir)
-    arr1 = map(x->x, images(df))
+    arr1 = images(df) |> collect
     arr2 = map(eachrow(df)) do row
         FITS(row.path)[row.hdu]
     end
