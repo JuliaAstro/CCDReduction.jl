@@ -75,7 +75,18 @@ end
     arr2 = map(eachrow(df)) do row
         FITS(row.path)[row.hdu]
     end
-    @test arr1 == arr2
+
+    for (hdu1, hdu2) in zip(arr1, arr2)
+        @test getdata(hdu1) == getdata(hdu2)
+        header1 = read_header(hdu1)
+        header2 = read_header(hdu2)
+        keys1 = keys(header1)
+        keys2 = keys(header2)
+        @test keys1 == keys2
+        for (k1, k2) in zip(keys1, keys2)
+            @test header1[k1] == header2[k2]
+        end
+    end
 end
 
 @testset "helper" begin
