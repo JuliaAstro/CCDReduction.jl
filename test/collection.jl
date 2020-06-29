@@ -80,10 +80,8 @@ end
         @test getdata(hdu1) == getdata(hdu2)
         header1 = read_header(hdu1)
         header2 = read_header(hdu2)
-        keys1 = keys(header1)
-        keys2 = keys(header2)
-        @test keys1 == keys2
-        for (k1, k2) in zip(keys1, keys2)
+        @test keys(header1) == keys(header2)
+        for (k1, k2) in zip(keys(header1), keys(header2))
             @test header1[k1] == header2[k2]
         end
     end
