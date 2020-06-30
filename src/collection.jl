@@ -108,11 +108,8 @@ function arrays end
 @resumable function arrays(df::DataFrame)
     for row in eachrow(df)
         fh = FITS(row.path)
-        try
-            @yield getdata(fh[row.hdu])
-        finally
-            close(fh)
-        end
+        @yield getdata(fh[row.hdu])
+        close(fh)
     end
 end
 
