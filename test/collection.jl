@@ -45,6 +45,48 @@ using CCDReduction: parse_name
     @test size(df) == (0, 0)
 end
 
+@testset "array-generators" begin
+    # setting initial data
+    dir = joinpath(@__DIR__, "data")
+    df = fitscollection(dir)
+    arr1 = arrays(df) |> collect
+    arr2 = map(eachrow(df)) do row
+        getdata(FITS(row.path)[row.hdu])
+    end
+    @test arr1 == arr2
+end
+
+@testset "filename-generators" begin
+    # setting initial data
+    dir = joinpath(@__DIR__, "data")
+    df = fitscollection(dir)
+    arr1 = filenames(df) |> collect
+    arr2 = map(eachrow(df)) do row
+        row.path
+    end
+    @test arr1 == arr2
+end
+
+@testset "image-generators" begin
+    # setting initial data
+    dir = joinpath(@__DIR__, "data")
+    df = fitscollection(dir)
+    arr1 = images(df) |> collect
+    arr2 = map(eachrow(df)) do row
+        FITS(row.path)[row.hdu]
+    end
+
+    for (hdu1, hdu2) in zip(arr1, arr2)
+        @test getdata(hdu1) == getdata(hdu2)
+        header1 = read_header(hdu1)
+        header2 = read_header(hdu2)
+        @test keys(header1) == keys(header2)
+        for (k1, k2) in zip(keys(header1), keys(header2))
+            @test header1[k1] == header2[k2]
+        end
+    end
+end
+
 @testset "helper" begin
     @test parse_name("abc.fits", "."*"fits", Val(true)) == "abc.fits"
     @test parse_name("abc.fits.tar.gz", "."*"fits.tar.gz", Val(false)) == "abc"

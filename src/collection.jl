@@ -3,7 +3,7 @@
 parse_name(filename, ext::AbstractString, ::Val{false}) = first(rsplit(filename, ext, limit=2))
 
 function parse_name(filename, ext::Regex, ::Val{false})
-	idxs = findall(ext, filename)
+    idxs = findall(ext, filename)
     return filename[1:first(last(idxs)) - 1]
 end
 
@@ -94,4 +94,51 @@ function fitscollection(basedir::String;
         end
     end
     return df
+end
+
+
+"""
+    arrays(df::DataFrame)
+
+Generator for arrays of images of entries in data frame.
+"""
+function arrays end
+
+# generator for image arrays specified by data frames (i.e. path of file, hdu etc.)
+@resumable function arrays(df::DataFrame)
+    for row in eachrow(df)
+        fh = FITS(row.path)
+        @yield getdata(fh[row.hdu])
+        close(fh)
+    end
+end
+
+
+"""
+    filenames(df::DataFrame)
+
+Generator for filenames of entries in data frame.
+"""
+function filenames end
+
+# generator for filenames specified by data frame (i.e. path of file, hdu etc.)
+@resumable function filenames(df::DataFrame)
+    for row in eachrow(df)
+        @yield row.path
+    end
+end
+
+
+"""
+    images(df::DataFrame)
+
+Generator for `ImageHDU`s of entries in data frame.
+"""
+function images end
+
+# generator for ImageHDU specified by data frame (i.e. path of file, hdu etc.)
+@resumable function images(df::DataFrame)
+    for row in eachrow(df)
+        @yield FITS(row.path)[row.hdu]
+    end
 end
