@@ -87,6 +87,19 @@ end
     end
 end
 
+@testset "process" begin
+    # setting initial data
+    dir = joinpath(@__DIR__, "data")
+    df = fitscollection(dir)
+
+    final = process(df) do img
+        trim(img, (:, 1040:1059))
+    end
+
+    @test final[1] == trim(M35070V[1], (:, 1040:1059))
+    @test final[2] == trim(M6707HH[1], (:, 1040:1059))
+end
+
 @testset "helper" begin
     @test parse_name("abc.fits", "."*"fits", Val(true)) == "abc.fits"
     @test parse_name("abc.fits.tar.gz", "."*"fits.tar.gz", Val(false)) == "abc"
