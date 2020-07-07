@@ -153,8 +153,8 @@ function images end
     end
 end
 
-"""
-    process(f, df::DataFrame; path = nothing, save_prefix = nothing, save_suffix = nothing, save_delim = "_")
+@doc raw"""
+    process(f, df::DataFrame; path = nothing, save_prefix = nothing, save_suffix = nothing, save_delim = "_", ext = r"fits(\.tar\.gz)?"i)
 
 This is a function to apply multiple function `f` on all elements of data frame and then save it.
 If `path = nothing`, then save function does not execute. This returns an array of array which contains final returned values of function.
