@@ -179,7 +179,7 @@ function make_file(data, filename, save_location, save_prefix, save_suffix, save
     modified_name = parse_name(filename, "." * ext, Val(false))
 
     if !(save_prefix isa Nothing)
-        modified_name = string(save_prefix, save_delim, filename)
+        modified_name = string(save_prefix, save_delim, modified_name)
     end
     if !(save_suffix isa Nothing)
         modified_name = string(modified_name, save_delim, save_suffix)

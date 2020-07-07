@@ -93,17 +93,23 @@ end
     savedir = @__DIR__
     df = fitscollection(dir)
 
-    final = process(df; path = savedir) do img
+    final = process(df; path = savedir, save_prefix = "test1", save_suffix = "test2") do img
         trim(img, (:, 1040:1059))
     end
 
+    # testing function outputs
     @test final[1] == trim(M35070V[1], (:, 1040:1059))
     @test final[2] == trim(M6707HH[1], (:, 1040:1059))
 
     df1 = fitscollection(savedir; recursive = false)
 
+    # testing saved data
     @test final[1] == getdata(FITS(df1[1, :path])[df1[1, :hdu]])
     @test final[2] == getdata(FITS(df1[2, :path])[df1[2, :hdu]])
+
+    # testing saved filenames
+    @test df1[1, :name] == "test1_M35070V_test2.fits"
+    @test df1[2, :name] == "test1_M6707HH_test2.fits"
 end
 
 @testset "helper" begin
