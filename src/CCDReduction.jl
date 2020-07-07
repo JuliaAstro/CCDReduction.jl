@@ -22,7 +22,8 @@ export subtract_bias,
        fitscollection,
        arrays,
        filenames,
-       images
+       images,
+       process
 
 include("methods.jl")
 include("fits.jl")

@@ -9,6 +9,16 @@ end
 
 parse_name(filename, ext, ::Val{true}) = filename
 
+
+# transposes the data and saves it, the reason is same as that for getdata
+function setdata(file_path, data)
+    d = ndims(data)
+    transposed_data = permutedims(data, d:-1:1)
+    FITS(file_path, "w") do fh
+        write(fh, transposed_data)
+    end
+end
+
 #---------------------------------------------------------------------------------------
 @doc raw"""
     fitscollection(dir; recursive=true, abspath=true, keepext=true, ext=r"fits(\.tar\.gz)?", exclude=nothing, exclude_dir=nothing, exclude_key = ("", "HISTORY"))
@@ -141,4 +151,42 @@ function images end
     for row in eachrow(df)
         @yield FITS(row.path)[row.hdu]
     end
+end
+
+
+"""
+    process(f, df::DataFrame; path = nothing, save_prefix = nothing, save_suffix = nothing, save_delim = "_", ext = "." * r"fits(\.tar\.gz)?"i)
+
+This is a function to apply multiple function `f` on all elements of data frame and then save it.
+If `path = nothing`, then save function does not execute. This returns an array of array which contains final returned values of function.
+"""
+function process(f, df::DataFrame; path = nothing, save_prefix = nothing, save_suffix = nothing, save_delim = "_", ext = "." * r"fits(\.tar\.gz)?"i)
+    final_value = Vector{Array}(undef, first(size(df)))
+    for (i,x) in enumerate(eachrow(df))
+        processed_value = f(FITS(x.path)[x.hdu])
+        final_value[i] = processed_value
+        # if path is not nothing then we save
+        if !(path isa Nothing)
+            make_file(processed_value, x.name, path; save_prefix = save_prefix, save_suffix = save_suffix, save_delim = save_delim, ext = ext)
+        end
+    end
+    return final_value
+end
+
+# utility function to generate file name and then save the given data
+function make_file(data, filename, save_location; save_prefix = nothing, save_suffix = nothing, save_delim = "_", ext = "." * r"fits(\.tar\.gz)?"i)
+    # removing the extension from filename
+    modified_name = parse_name(filename, "." * r"fits(\.tar\.gz)?"i, Val(false))
+
+    if !(save_prefix isa Nothing)
+        modified_name = string(save_prefix, save_delim, filename)
+    end
+    if !(save_suffix isa Nothing)
+        modified_name = string(modified_name, save_delim, save_suffix)
+    end
+
+    file_path = joinpath(save_location, modified_name)
+
+    # writing file
+    setdata(file_path, data)
 end
