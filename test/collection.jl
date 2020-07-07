@@ -90,14 +90,20 @@ end
 @testset "process" begin
     # setting initial data
     dir = joinpath(@__DIR__, "data")
+    savedir = joinpath(@__DIR__, "generated_data")
     df = fitscollection(dir)
 
-    final = process(df) do img
+    final = process(df; path = savedir) do img
         trim(img, (:, 1040:1059))
     end
 
     @test final[1] == trim(M35070V[1], (:, 1040:1059))
     @test final[2] == trim(M6707HH[1], (:, 1040:1059))
+
+    df1 = fitscollection(savedir)
+
+    @test final[1] == getdata(FITS(df1[1, :path])[df1[1, :hdu]])
+    @test final[2] == getdata(FITS(df1[2, :path])[df1[2, :hdu]])
 end
 
 @testset "helper" begin

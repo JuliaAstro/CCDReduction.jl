@@ -167,7 +167,7 @@ function process(f, df::DataFrame; path = nothing, save_prefix = nothing, save_s
         final_value[i] = processed_value
         # if path is not nothing then we save
         if !(path isa Nothing)
-            make_file(processed_value, x.name, path, save_prefix = save_prefix, save_suffix = save_suffix, save_delim = save_delim, ext = ext)
+            make_file(processed_value, x.name, path, save_prefix, save_suffix, save_delim, ext)
         end
     end
     return final_value
@@ -185,7 +185,7 @@ function make_file(data, filename, save_location, save_prefix, save_suffix, save
         modified_name = string(modified_name, save_delim, save_suffix)
     end
 
-    file_path = joinpath(save_location, modified_name)
+    file_path = joinpath(save_location, modified_name * ".fits")
 
     # writing file
     setdata(file_path, data)
