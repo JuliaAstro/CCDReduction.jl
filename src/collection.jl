@@ -153,30 +153,29 @@ function images end
     end
 end
 
-
 """
-    process(f, df::DataFrame; path = nothing, save_prefix = nothing, save_suffix = nothing, save_delim = "_", ext = "." * r"fits(\.tar\.gz)?"i)
+    process(f, df::DataFrame; path = nothing, save_prefix = nothing, save_suffix = nothing, save_delim = "_")
 
 This is a function to apply multiple function `f` on all elements of data frame and then save it.
 If `path = nothing`, then save function does not execute. This returns an array of array which contains final returned values of function.
 """
-function process(f, df::DataFrame; path = nothing, save_prefix = nothing, save_suffix = nothing, save_delim = "_", ext = "." * r"fits(\.tar\.gz)?"i)
+function process(f, df::DataFrame; path = nothing, save_prefix = nothing, save_suffix = nothing, save_delim = "_", ext = r"fits(\.tar\.gz)?"i)
     final_value = Vector{Array}(undef, first(size(df)))
     for (i,x) in enumerate(eachrow(df))
         processed_value = f(FITS(x.path)[x.hdu])
         final_value[i] = processed_value
         # if path is not nothing then we save
         if !(path isa Nothing)
-            make_file(processed_value, x.name, path; save_prefix = save_prefix, save_suffix = save_suffix, save_delim = save_delim, ext = ext)
+            make_file(processed_value, x.name, path, save_prefix = save_prefix, save_suffix = save_suffix, save_delim = save_delim, ext = ext)
         end
     end
     return final_value
 end
 
 # utility function to generate file name and then save the given data
-function make_file(data, filename, save_location; save_prefix = nothing, save_suffix = nothing, save_delim = "_", ext = "." * r"fits(\.tar\.gz)?"i)
+function make_file(data, filename, save_location, save_prefix, save_suffix, save_delim, ext)
     # removing the extension from filename
-    modified_name = parse_name(filename, "." * r"fits(\.tar\.gz)?"i, Val(false))
+    modified_name = parse_name(filename, "." * ext, Val(false))
 
     if !(save_prefix isa Nothing)
         modified_name = string(save_prefix, save_delim, filename)
