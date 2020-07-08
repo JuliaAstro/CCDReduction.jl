@@ -154,11 +154,14 @@ function images end
 end
 
 
-@doc raw"""
-    process(f, df::DataFrame; path = nothing, save_prefix = nothing, save_suffix = nothing, save_delim = "_", ext = r"fits(\.tar\.gz)?"i)
+"""
+    process(f, df::DataFrame; path = nothing, save_prefix = nothing, save_suffix = nothing, save_delim = "_", ext = r"fits(\\.tar\\.gz)?"i)
 
-This is a function to apply multiple function `f` on all elements of data frame and then save it.
-If `path = nothing`, then save function does not execute. This returns an array of array which contains final returned values of function.
+Applies function `f` on all elements of data frame and saves it in FITS file.
+
+If `path = nothing`, then save functionality does not execute. It returns an array of arrays which contains final returned values of function.
+A suffix and prefix can be added to filename of newly created files by modifying `save_suffix` and `save_prefix`, `save_delim` is used as delimiter.
+`ext` is the extension of files to be taken into consideration for applying function, by default it is set to `r"fits(\\.tar\\.gz)?"i`.
 """
 function process(f, df::DataFrame; path = nothing, save_prefix = nothing, save_suffix = nothing, save_delim = "_", ext = r"fits(\.tar\.gz)?"i)
     final_value = Vector{Array}(undef, first(size(df)))
