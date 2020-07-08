@@ -163,7 +163,9 @@ If `path = nothing`, then save function does not execute. This returns an array 
 function process(f, df::DataFrame; path = nothing, save_prefix = nothing, save_suffix = nothing, save_delim = "_", ext = r"fits(\.tar\.gz)?"i)
     final_value = Vector{Array}(undef, first(size(df)))
     for (i,x) in enumerate(eachrow(df))
-        processed_value = f(FITS(x.path)[x.hdu])
+        fh = FITS(x.path)
+        processed_value = f(fh[x.hdu])
+        close(fh)
         final_value[i] = processed_value
         # if path is not nothing then we save
         if !(path isa Nothing)
