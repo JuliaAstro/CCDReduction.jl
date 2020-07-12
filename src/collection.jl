@@ -155,19 +155,67 @@ end
 
 
 """
-    process(f, df::DataFrame; path = nothing, save_prefix = nothing, save_suffix = nothing, save_delim = "_", ext = r"fits(\\.tar\\.gz)?"i)
+    images(f, df::DataFrame; path = nothing, save_prefix = nothing, save_suffix = nothing, save_delim = "_", ext = r"fits(\\.tar\\.gz)?"i)
 
-Applies function `f` on all elements of data frame and saves it in FITS file.
+Applies function `f` on all ImageHDUs present in data frame and saves it in FITS file.
 
 If `path = nothing`, then save functionality does not execute. It returns an array of arrays which contains final returned values of function.
 A suffix and prefix can be added to filename of newly created files by modifying `save_suffix` and `save_prefix`, `save_delim` is used as delimiter.
 `ext` is the extension of files to be taken into consideration for applying function, by default it is set to `r"fits(\\.tar\\.gz)?"i`.
 """
-function process(f, df::DataFrame; path = nothing, save_prefix = nothing, save_suffix = nothing, save_delim = "_", ext = r"fits(\.tar\.gz)?"i)
+function images(f, df::DataFrame; path = nothing, save_prefix = nothing, save_suffix = nothing, save_delim = "_", ext = r"fits(\.tar\.gz)?"i)
     final_value = Vector{Array}(undef, first(size(df)))
     for (i,x) in enumerate(eachrow(df))
         fh = FITS(x.path)
         processed_value = f(fh[x.hdu])
+        close(fh)
+        final_value[i] = processed_value
+        # if path is not nothing then we save
+        if !(path isa Nothing)
+            make_file(processed_value, x.name, path, save_prefix, save_suffix, save_delim, ext)
+        end
+    end
+    return final_value
+end
+
+# will uncomment/remove after discussion
+# """
+#     filenames(f, df::DataFrame; path = nothing, save_prefix = nothing, save_suffix = nothing, save_delim = "_", ext = r"fits(\\.tar\\.gz)?"i)
+#
+# Applies function `f` on all filenames present in data frame and saves it in FITS file.
+#
+# If `path = nothing`, then save functionality does not execute. It returns an array of arrays which contains final returned values of function.
+# A suffix and prefix can be added to filename of newly created files by modifying `save_suffix` and `save_prefix`, `save_delim` is used as delimiter.
+# `ext` is the extension of files to be taken into consideration for applying function, by default it is set to `r"fits(\\.tar\\.gz)?"i`.
+# """
+# function filenames(f, df::DataFrame; path = nothing, save_prefix = nothing, save_suffix = nothing, save_delim = "_", ext = r"fits(\.tar\.gz)?"i)
+#     final_value = Vector{Array}(undef, first(size(df)))
+#     for (i,x) in enumerate(eachrow(df))
+#         processed_value = f(x.path)
+#         final_value[i] = processed_value
+#         # if path is not nothing then we save
+#         if !(path isa Nothing)
+#             make_file(processed_value, x.name, path, save_prefix, save_suffix, save_delim, ext)
+#         end
+#     end
+#     return final_value
+# end
+
+
+"""
+    arrays(f, df::DataFrame; path = nothing, save_prefix = nothing, save_suffix = nothing, save_delim = "_", ext = r"fits(\\.tar\\.gz)?"i)
+
+Applies function `f` on all image arrays present in data frame and saves it in FITS file.
+
+If `path = nothing`, then save functionality does not execute. It returns an array of arrays which contains final returned values of function.
+A suffix and prefix can be added to filename of newly created files by modifying `save_suffix` and `save_prefix`, `save_delim` is used as delimiter.
+`ext` is the extension of files to be taken into consideration for applying function, by default it is set to `r"fits(\\.tar\\.gz)?"i`.
+"""
+function arrays(f, df::DataFrame; path = nothing, save_prefix = nothing, save_suffix = nothing, save_delim = "_", ext = r"fits(\.tar\.gz)?"i)
+    final_value = Vector{Array}(undef, first(size(df)))
+    for (i,x) in enumerate(eachrow(df))
+        fh = FITS(x.path)
+        processed_value = f(getdata(fh[x.hdu]))
         close(fh)
         final_value[i] = processed_value
         # if path is not nothing then we save
