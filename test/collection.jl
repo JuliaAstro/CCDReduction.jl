@@ -1,4 +1,5 @@
-using CCDReduction: parse_name
+using CCDReduction: parse_name,
+                    getdata
 
 @testset "fitscollection" begin
     # setting initial data
@@ -89,6 +90,30 @@ end
         row.path
     end
     @test arr1 == arr2
+end
+
+@testset "saving-filename" begin
+    dir = joinpath(@__DIR__, "data")
+    savedir = @__DIR__
+    df = fitscollection(dir)
+
+    final = filenames(df; path = savedir, save_prefix = "test1", save_suffix = "test2") do img
+        getdata(FITS(img)[1])
+    end
+
+    # testing function outputs
+    @test final[1] == getdata(M35070V[1])
+    @test final[2] == getdata(M6707HH[1])
+
+    df1 = fitscollection(savedir; recursive = false)
+
+    # testing saved data
+    @test final[1] == getdata(FITS(df1[1, :path])[df1[1, :hdu]])
+    @test final[2] == getdata(FITS(df1[2, :path])[df1[2, :hdu]])
+
+    # testing saved filenames
+    @test df1[1, :name] == "test1_M35070V_test2.fits"
+    @test df1[2, :name] == "test1_M6707HH_test2.fits"
 end
 
 @testset "image-generators" begin
