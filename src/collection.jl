@@ -97,7 +97,7 @@ function fitscollection(basedir::String;
                         exclude = nothing,
                         exclude_dir = nothing,
                         exclude_key = ("", "HISTORY"))
-    df = DataFrame()
+    collection = DataFrame()
 
     for (root, dirs, files) in walkdir(basedir)
         # recursive searching functionality
@@ -125,25 +125,25 @@ function fitscollection(basedir::String;
                 # filtering out comment columns
                 _keys = filter(k -> k ∉ exclude_key, keys(header_data))
                 _values = (header_data[k] for k in _keys)
-                push!(df, (path = path, name = name, hdu = index, zip(Symbol.(_keys), _values)...); cols = :union)
+                push!(collection, (path = path, name = name, hdu = index, zip(Symbol.(_keys), _values)...); cols = :union)
             end
             close(fits_data)
         end
     end
-    return df
+    return collection
 end
 
 
 """
-    arrays(df::DataFrame)
+    arrays(collection::DataFrame)
 
 Generator for arrays of images of entries in data frame.
 """
 function arrays end
 
 # generator for image arrays specified by data frames (i.e. path of file, hdu etc.)
-@resumable function arrays(df::DataFrame)
-    for row in eachrow(df)
+@resumable function arrays(collection::DataFrame)
+    for row in eachrow(collection)
         fh = FITS(row.path)
         @yield getdata(fh[row.hdu])
         close(fh)
@@ -152,37 +152,37 @@ end
 
 
 """
-    filenames(df::DataFrame)
+    filenames(collection::DataFrame)
 
 Generator for filenames of entries in data frame.
 """
 function filenames end
 
 # generator for filenames specified by data frame (i.e. path of file, hdu etc.)
-@resumable function filenames(df::DataFrame)
-    for row in eachrow(df)
+@resumable function filenames(collection::DataFrame)
+    for row in eachrow(collection)
         @yield row.path
     end
 end
 
 
 """
-    images(df::DataFrame)
+    images(collection::DataFrame)
 
 Generator for `ImageHDU`s of entries in data frame.
 """
 function images end
 
 # generator for ImageHDU specified by data frame (i.e. path of file, hdu etc.)
-@resumable function images(df::DataFrame)
-    for row in eachrow(df)
+@resumable function images(collection::DataFrame)
+    for row in eachrow(collection)
         @yield FITS(row.path)[row.hdu]
     end
 end
 
 
 """
-    images(f, df::DataFrame; path = nothing, save_prefix = nothing, save_suffix = nothing, save_delim = "_", ext = r"fits(\\.tar\\.gz)?"i)
+    images(f, collection::DataFrame; path = nothing, save_prefix = nothing, save_suffix = nothing, save_delim = "_", ext = r"fits(\\.tar\\.gz)?"i)
 
 Applies function `f` on all ImageHDUs present in data frame and saves it in FITS file.
 
@@ -190,9 +190,9 @@ If `path = nothing`, then save functionality does not execute. It returns an arr
 A suffix and prefix can be added to filename of newly created files by modifying `save_suffix` and `save_prefix`, `save_delim` is used as delimiter.
 `ext` is the extension of files to be taken into consideration for applying function, by default it is set to `r"fits(\\.tar\\.gz)?"i`.
 """
-function images(f, df::DataFrame; path = nothing, save_prefix = nothing, save_suffix = nothing, save_delim = "_", ext = r"fits(\.tar\.gz)?"i)
-    final_value = Vector{Array}(undef, first(size(df)))
-    for (i,x) in enumerate(eachrow(df))
+function images(f, collection::DataFrame; path = nothing, save_prefix = nothing, save_suffix = nothing, save_delim = "_", ext = r"fits(\.tar\.gz)?"i)
+    final_value = Vector{Array}(undef, first(size(collection)))
+    for (i,x) in enumerate(eachrow(collection))
         fh = FITS(x.path)
         processed_value = f(fh[x.hdu])
         close(fh)
@@ -208,7 +208,7 @@ end
 
 
 """
-    filenames(f, df::DataFrame; path = nothing, save_prefix = nothing, save_suffix = nothing, save_delim = "_", ext = r"fits(\\.tar\\.gz)?"i)
+    filenames(f, collection::DataFrame; path = nothing, save_prefix = nothing, save_suffix = nothing, save_delim = "_", ext = r"fits(\\.tar\\.gz)?"i)
 
 Applies function `f` on all filenames present in data frame and saves it in FITS file.
 
@@ -216,9 +216,9 @@ If `path = nothing`, then save functionality does not execute. It returns an arr
 A suffix and prefix can be added to filename of newly created files by modifying `save_suffix` and `save_prefix`, `save_delim` is used as delimiter.
 `ext` is the extension of files to be taken into consideration for applying function, by default it is set to `r"fits(\\.tar\\.gz)?"i`.
 """
-function filenames(f, df::DataFrame; path = nothing, save_prefix = nothing, save_suffix = nothing, save_delim = "_", ext = r"fits(\.tar\.gz)?"i)
-    final_value = Vector{Array}(undef, first(size(df)))
-    for (i,x) in enumerate(eachrow(df))
+function filenames(f, collection::DataFrame; path = nothing, save_prefix = nothing, save_suffix = nothing, save_delim = "_", ext = r"fits(\.tar\.gz)?"i)
+    final_value = Vector{Array}(undef, first(size(collection)))
+    for (i,x) in enumerate(eachrow(collection))
         processed_value = f(x.path)
         final_value[i] = processed_value
         # if path is not nothing then we save
@@ -232,7 +232,7 @@ end
 
 
 """
-    arrays(f, df::DataFrame; path = nothing, save_prefix = nothing, save_suffix = nothing, save_delim = "_", ext = r"fits(\\.tar\\.gz)?"i)
+    arrays(f, collection::DataFrame; path = nothing, save_prefix = nothing, save_suffix = nothing, save_delim = "_", ext = r"fits(\\.tar\\.gz)?"i)
 
 Applies function `f` on all image arrays present in data frame and saves it in FITS file.
 
@@ -240,9 +240,9 @@ If `path = nothing`, then save functionality does not execute. It returns an arr
 A suffix and prefix can be added to filename of newly created files by modifying `save_suffix` and `save_prefix`, `save_delim` is used as delimiter.
 `ext` is the extension of files to be taken into consideration for applying function, by default it is set to `r"fits(\\.tar\\.gz)?"i`.
 """
-function arrays(f, df::DataFrame; path = nothing, save_prefix = nothing, save_suffix = nothing, save_delim = "_", ext = r"fits(\.tar\.gz)?"i)
-    final_value = Vector{Array}(undef, first(size(df)))
-    for (i,x) in enumerate(eachrow(df))
+function arrays(f, collection::DataFrame; path = nothing, save_prefix = nothing, save_suffix = nothing, save_delim = "_", ext = r"fits(\.tar\.gz)?"i)
+    final_value = Vector{Array}(undef, first(size(collection)))
+    for (i,x) in enumerate(eachrow(collection))
         fh = FITS(x.path)
         processed_value = f(getdata(fh[x.hdu]))
         close(fh)

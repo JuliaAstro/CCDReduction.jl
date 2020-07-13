@@ -7,7 +7,7 @@ using CCDReduction: parse_name,
     dir = joinpath(@__DIR__, "data")
 
     # the two fits file used for testing have identical header keys
-    df = fitscollection(dir)
+    collection = fitscollection(dir)
     relevant_keys = filter(i -> i ∉ ("", "HISTORY"), keys(read_header(M6707HH[1])))
 
     header_M6707HH = read_header(M6707HH[1])
@@ -21,38 +21,38 @@ using CCDReduction: parse_name,
     end
     # testing rows columns
     # an additional 3 columns are present because of varibles path, name and hdu
-    @test size(df) == (2, length(relevant_keys) + 3)
+    @test size(collection) == (2, length(relevant_keys) + 3)
 
     # testing each element in rows and columns
-    @test copy(df[1, :]) == (path = joinpath(dir, "M35070V.fits"),
+    @test copy(collection[1, :]) == (path = joinpath(dir, "M35070V.fits"),
                              name = "M35070V.fits", hdu = 1,
                              zip(Symbol.(relevant_keys), relevant_values_M35070V)...)
-    @test copy(df[2, :]) == (path = joinpath(dir, "M6707HH.fits"),
+    @test copy(collection[2, :]) == (path = joinpath(dir, "M6707HH.fits"),
                              name = "M6707HH.fits", hdu = 1,
                              zip(Symbol.(relevant_keys), relevant_values_M6707HH)...)
 
     # testing special cases
     ## drop extension
-    df = fitscollection(dir; keepext = false)
-    @test df[1, :name] == "M35070V"
-    @test df[2, :name] == "M6707HH"
+    collection = fitscollection(dir; keepext = false)
+    @test collection[1, :name] == "M35070V"
+    @test collection[2, :name] == "M6707HH"
 
     ## exclude
-    df = fitscollection(dir; exclude = "M35070V.fits")
-    @test df[1, :name] == "M6707HH.fits"
-    @test size(df) == (1, length(relevant_keys) + 3)
+    collection = fitscollection(dir; exclude = "M35070V.fits")
+    @test collection[1, :name] == "M6707HH.fits"
+    @test size(collection) == (1, length(relevant_keys) + 3)
 
     ##exclude_dir
-    df = fitscollection(dir; exclude_dir = "data")
-    @test size(df) == (0, 0)
+    collection = fitscollection(dir; exclude_dir = "data")
+    @test size(collection) == (0, 0)
 end
 
 @testset "array-generators" begin
     # setting initial data
     dir = joinpath(@__DIR__, "data")
-    df = fitscollection(dir)
-    arr1 = arrays(df) |> collect
-    arr2 = map(eachrow(df)) do row
+    collection = fitscollection(dir)
+    arr1 = arrays(collection) |> collect
+    arr2 = map(eachrow(collection)) do row
         getdata(FITS(row.path)[row.hdu])
     end
     @test arr1 == arr2
@@ -61,9 +61,9 @@ end
 @testset "saving-arrays" begin
     dir = joinpath(@__DIR__, "data")
     savedir = @__DIR__
-    df = fitscollection(dir)
+    collection = fitscollection(dir)
 
-    final = arrays(df; path = savedir, save_prefix = "test1", save_suffix = "test2") do img
+    final = arrays(collection; path = savedir, save_prefix = "test1", save_suffix = "test2") do img
         trim(img, (:, 1040:1059))
     end
 
@@ -71,23 +71,23 @@ end
     @test final[1] == trim(M35070V[1], (:, 1040:1059))
     @test final[2] == trim(M6707HH[1], (:, 1040:1059))
 
-    df1 = fitscollection(savedir; recursive = false)
+    collection1 = fitscollection(savedir; recursive = false)
 
     # testing saved data
-    @test final[1] == getdata(FITS(df1[1, :path])[df1[1, :hdu]])
-    @test final[2] == getdata(FITS(df1[2, :path])[df1[2, :hdu]])
+    @test final[1] == getdata(FITS(collection1[1, :path])[collection1[1, :hdu]])
+    @test final[2] == getdata(FITS(collection1[2, :path])[collection1[2, :hdu]])
 
     # testing saved filenames
-    @test df1[1, :name] == "test1_M35070V_test2.fits"
-    @test df1[2, :name] == "test1_M6707HH_test2.fits"
+    @test collection1[1, :name] == "test1_M35070V_test2.fits"
+    @test collection1[2, :name] == "test1_M6707HH_test2.fits"
 end
 
 @testset "filename-generators" begin
     # setting initial data
     dir = joinpath(@__DIR__, "data")
-    df = fitscollection(dir)
-    arr1 = filenames(df) |> collect
-    arr2 = map(eachrow(df)) do row
+    collection = fitscollection(dir)
+    arr1 = filenames(collection) |> collect
+    arr2 = map(eachrow(collection)) do row
         row.path
     end
     @test arr1 == arr2
@@ -96,9 +96,9 @@ end
 @testset "saving-filename" begin
     dir = joinpath(@__DIR__, "data")
     savedir = @__DIR__
-    df = fitscollection(dir)
+    collection = fitscollection(dir)
 
-    final = filenames(df; path = savedir, save_prefix = "test1", save_suffix = "test2") do img
+    final = filenames(collection; path = savedir, save_prefix = "test1", save_suffix = "test2") do img
         getdata(FITS(img)[1])
     end
 
@@ -106,23 +106,23 @@ end
     @test final[1] == getdata(M35070V[1])
     @test final[2] == getdata(M6707HH[1])
 
-    df1 = fitscollection(savedir; recursive = false)
+    collection1 = fitscollection(savedir; recursive = false)
 
     # testing saved data
-    @test final[1] == getdata(FITS(df1[1, :path])[df1[1, :hdu]])
-    @test final[2] == getdata(FITS(df1[2, :path])[df1[2, :hdu]])
+    @test final[1] == getdata(FITS(collection1[1, :path])[collection1[1, :hdu]])
+    @test final[2] == getdata(FITS(collection1[2, :path])[collection1[2, :hdu]])
 
     # testing saved filenames
-    @test df1[1, :name] == "test1_M35070V_test2.fits"
-    @test df1[2, :name] == "test1_M6707HH_test2.fits"
+    @test collection1[1, :name] == "test1_M35070V_test2.fits"
+    @test collection1[2, :name] == "test1_M6707HH_test2.fits"
 end
 
 @testset "image-generators" begin
     # setting initial data
     dir = joinpath(@__DIR__, "data")
-    df = fitscollection(dir)
-    arr1 = images(df) |> collect
-    arr2 = map(eachrow(df)) do row
+    collection = fitscollection(dir)
+    arr1 = images(collection) |> collect
+    arr2 = map(eachrow(collection)) do row
         FITS(row.path)[row.hdu]
     end
 
@@ -140,9 +140,9 @@ end
 @testset "saving-image" begin
     dir = joinpath(@__DIR__, "data")
     savedir = @__DIR__
-    df = fitscollection(dir)
+    collection = fitscollection(dir)
 
-    final = images(df; path = savedir, save_prefix = "test1", save_suffix = "test2") do img
+    final = images(collection; path = savedir, save_prefix = "test1", save_suffix = "test2") do img
         trim(img, (:, 1040:1059))
     end
 
@@ -150,15 +150,15 @@ end
     @test final[1] == trim(M35070V[1], (:, 1040:1059))
     @test final[2] == trim(M6707HH[1], (:, 1040:1059))
 
-    df1 = fitscollection(savedir; recursive = false)
+    collection1 = fitscollection(savedir; recursive = false)
 
     # testing saved data
-    @test final[1] == getdata(FITS(df1[1, :path])[df1[1, :hdu]])
-    @test final[2] == getdata(FITS(df1[2, :path])[df1[2, :hdu]])
+    @test final[1] == getdata(FITS(collection1[1, :path])[collection1[1, :hdu]])
+    @test final[2] == getdata(FITS(collection1[2, :path])[collection1[2, :hdu]])
 
     # testing saved filenames
-    @test df1[1, :name] == "test1_M35070V_test2.fits"
-    @test df1[2, :name] == "test1_M6707HH_test2.fits"
+    @test collection1[1, :name] == "test1_M35070V_test2.fits"
+    @test collection1[2, :name] == "test1_M6707HH_test2.fits"
 end
 
 @testset "helper" begin
