@@ -10,8 +10,28 @@ end
 parse_name(filename, ext, ::Val{true}) = filename
 
 
-# transposes the data and saves it, the reason is same as that for getdata
-function setdata(file_path, data)
+# utility function for generating filename
+function generate_filename(filename, save_location, save_prefix, save_suffix, save_delim, ext)
+    modified_name = parse_name(filename, "." * ext, Val(false))
+
+    if !(save_prefix isa Nothing)
+        modified_name = string(save_prefix, save_delim, modified_name)
+    end
+    if !(save_suffix isa Nothing)
+        modified_name = string(modified_name, save_delim, save_suffix)
+    end
+
+    file_path = joinpath(save_location, modified_name * ".fits")
+    return file_path
+end
+
+
+"""
+    write_fits(file_path, data)
+
+Writes `data` in FITS format at `file_path`.
+"""
+function write_fits(file_path, data)
     d = ndims(data)
     transposed_data = permutedims(data, d:-1:1)
     FITS(file_path, "w") do fh
@@ -178,8 +198,9 @@ function images(f, df::DataFrame; path = nothing, save_prefix = nothing, save_su
         close(fh)
         final_value[i] = processed_value
         # if path is not nothing then we save
-        if !(path isa Nothing)
-            make_file(processed_value, x.name, path, save_prefix, save_suffix, save_delim, ext)
+        if !isnothing(path)
+            save_path = generate_filename(x.name, path, save_prefix, save_suffix, save_delim, ext)
+            write_fits(save_path, processed_value)
         end
     end
     return final_value
@@ -201,8 +222,9 @@ function filenames(f, df::DataFrame; path = nothing, save_prefix = nothing, save
         processed_value = f(x.path)
         final_value[i] = processed_value
         # if path is not nothing then we save
-        if !(path isa Nothing)
-            make_file(processed_value, x.name, path, save_prefix, save_suffix, save_delim, ext)
+        if !isnothing(path)
+            save_path = generate_filename(x.name, path, save_prefix, save_suffix, save_delim, ext)
+            write_fits(save_path, processed_value)
         end
     end
     return final_value
@@ -226,27 +248,10 @@ function arrays(f, df::DataFrame; path = nothing, save_prefix = nothing, save_su
         close(fh)
         final_value[i] = processed_value
         # if path is not nothing then we save
-        if !(path isa Nothing)
-            make_file(processed_value, x.name, path, save_prefix, save_suffix, save_delim, ext)
+        if !isnothing(path)
+            save_path = generate_filename(x.name, path, save_prefix, save_suffix, save_delim, ext)
+            write_fits(save_path, processed_value)
         end
     end
     return final_value
-end
-
-# utility function to generate file name and then save the given data
-function make_file(data, filename, save_location, save_prefix, save_suffix, save_delim, ext)
-    # removing the extension from filename
-    modified_name = parse_name(filename, "." * ext, Val(false))
-
-    if !(save_prefix isa Nothing)
-        modified_name = string(save_prefix, save_delim, modified_name)
-    end
-    if !(save_suffix isa Nothing)
-        modified_name = string(modified_name, save_delim, save_suffix)
-    end
-
-    file_path = joinpath(save_location, modified_name * ".fits")
-
-    # writing file
-    setdata(file_path, data)
 end

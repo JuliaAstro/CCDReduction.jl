@@ -1,5 +1,6 @@
 using CCDReduction: parse_name,
-                    getdata
+                    generate_filename,
+                    write_fits
 
 @testset "fitscollection" begin
     # setting initial data
@@ -161,9 +162,24 @@ end
 end
 
 @testset "helper" begin
+    # testing parse_name
     @test parse_name("abc.fits", "."*"fits", Val(true)) == "abc.fits"
     @test parse_name("abc.fits.tar.gz", "."*"fits.tar.gz", Val(false)) == "abc"
     @test parse_name("foo.fits.fits", "."*"fits", Val(false)) == "foo.fits"
     @test parse_name("foo.fits.fits", "."*r"fits(\.tar\.gz)?"i, Val(false)) == "foo.fits"
     @test parse_name("foo.fits", "."*r"fits(\.tar\.gz)?"i, Val(false)) == "foo"
+
+    # testing generate_filename
+    @test generate_filename("abcd.fits", @__DIR__, "test1", "test2", "_", r"fits(\.tar\.gz)?"i) == joinpath(@__DIR__, "test1_abcd_test2.fits")
+    @test generate_filename("abcd.fits", @__DIR__, nothing, "test2", "_", r"fits(\.tar\.gz)?"i) == joinpath(@__DIR__, "abcd_test2.fits")
+    @test generate_filename("abcd.fits", @__DIR__, "test1", nothing, "_", r"fits(\.tar\.gz)?"i) == joinpath(@__DIR__, "test1_abcd.fits")
+    @test generate_filename("abcd.fits", @__DIR__, nothing, nothing, "_", r"fits(\.tar\.gz)?"i) == joinpath(@__DIR__, "abcd.fits")
+    @test generate_filename("abcd.fits", @__DIR__, "test1", nothing, "__", r"fits(\.tar\.gz)?"i) == joinpath(@__DIR__, "test1__abcd.fits")
+
+    # testing write_fits
+    filename = joinpath(@__DIR__, "test1_M6707HH_test2.fits")
+    sample_data = rand(5, 10)
+    write_fits(filename, sample_data)
+    image_array = getdata(FITS(filename)[1])
+    @test image_array == sample_data
 end
