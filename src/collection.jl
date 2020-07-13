@@ -191,19 +191,19 @@ A suffix and prefix can be added to filename of newly created files by modifying
 `ext` is the extension of files to be taken into consideration for applying function, by default it is set to `r"fits(\\.tar\\.gz)?"i`.
 """
 function images(f, collection::DataFrame; path = nothing, save_prefix = nothing, save_suffix = nothing, save_delim = "_", ext = r"fits(\.tar\.gz)?"i)
-    final_value = Vector{Array}(undef, first(size(collection)))
+    processed_images = Vector{Array}(undef, first(size(collection)))
     for (i,x) in enumerate(eachrow(collection))
         fh = FITS(x.path)
-        processed_value = f(fh[x.hdu])
+        processed_image = f(fh[x.hdu])
         close(fh)
-        final_value[i] = processed_value
+        processed_images[i] = processed_image
         # if path is not nothing then we save
         if !isnothing(path)
             save_path = generate_filename(x.name, path, save_prefix, save_suffix, save_delim, ext)
-            write_fits(save_path, processed_value)
+            write_fits(save_path, processed_image)
         end
     end
-    return final_value
+    return processed_images
 end
 
 
@@ -217,17 +217,17 @@ A suffix and prefix can be added to filename of newly created files by modifying
 `ext` is the extension of files to be taken into consideration for applying function, by default it is set to `r"fits(\\.tar\\.gz)?"i`.
 """
 function filenames(f, collection::DataFrame; path = nothing, save_prefix = nothing, save_suffix = nothing, save_delim = "_", ext = r"fits(\.tar\.gz)?"i)
-    final_value = Vector{Array}(undef, first(size(collection)))
+    processed_images = Vector{Array}(undef, first(size(collection)))
     for (i,x) in enumerate(eachrow(collection))
-        processed_value = f(x.path)
-        final_value[i] = processed_value
+        processed_image = f(x.path)
+        processed_images[i] = processed_image
         # if path is not nothing then we save
         if !isnothing(path)
             save_path = generate_filename(x.name, path, save_prefix, save_suffix, save_delim, ext)
-            write_fits(save_path, processed_value)
+            write_fits(save_path, processed_image)
         end
     end
-    return final_value
+    return processed_images
 end
 
 
@@ -241,17 +241,17 @@ A suffix and prefix can be added to filename of newly created files by modifying
 `ext` is the extension of files to be taken into consideration for applying function, by default it is set to `r"fits(\\.tar\\.gz)?"i`.
 """
 function arrays(f, collection::DataFrame; path = nothing, save_prefix = nothing, save_suffix = nothing, save_delim = "_", ext = r"fits(\.tar\.gz)?"i)
-    final_value = Vector{Array}(undef, first(size(collection)))
+    processed_images = Vector{Array}(undef, first(size(collection)))
     for (i,x) in enumerate(eachrow(collection))
         fh = FITS(x.path)
-        processed_value = f(getdata(fh[x.hdu]))
+        processed_image = f(getdata(fh[x.hdu]))
         close(fh)
-        final_value[i] = processed_value
+        processed_images[i] = processed_image
         # if path is not nothing then we save
         if !isnothing(path)
             save_path = generate_filename(x.name, path, save_prefix, save_suffix, save_delim, ext)
-            write_fits(save_path, processed_value)
+            write_fits(save_path, processed_image)
         end
     end
-    return final_value
+    return processed_images
 end
