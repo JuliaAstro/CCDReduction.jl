@@ -11,9 +11,14 @@ parse_name(filename, ext, ::Val{true}) = filename
 
 
 # utility function for generating filename
-function generate_filename(filename, save_location, save_prefix, save_suffix, save_delim, ext)
-    modified_name = parse_name(filename, "." * ext, Val(false))
+function generate_filename(path, save_location, save_prefix, save_suffix, save_delim, ext)
+    # get the filename
+    filename = last(splitdir(path))
 
+    # splitting name and extension
+    modified_name, ext = parse_name_ext(filename, "." * ext)
+
+    # adding prefix and suffix with delimiter
     if !isnothing(save_prefix)
         modified_name = string(save_prefix, save_delim, modified_name)
     end
@@ -21,8 +26,23 @@ function generate_filename(filename, save_location, save_prefix, save_suffix, sa
         modified_name = string(modified_name, save_delim, save_suffix)
     end
 
-    file_path = joinpath(save_location, modified_name * ".fits")
+    # adding extension to modified_name
+    if ext == ""
+        file_path = joinpath(save_location, modified_name * ".fits")
+    else
+        file_path = joinpath(save_location, modified_name * ext)
+    end
     return file_path
+end
+
+
+# utility function to return filename and extension separately
+# returns extension including "." at the beginning
+function parse_name_ext(filename, ext)
+    idxs = findall(ext, filename)
+    length(idxs) == 0 && return (filename, "")
+    breaking_index = first(last(idxs))
+    return filename[1:breaking_index - 1], filename[breaking_index:end]
 end
 
 
@@ -192,12 +212,12 @@ A suffix and prefix can be added to filename of newly created files by modifying
 """
 function images(f, collection::DataFrame; save = false, path = nothing, save_prefix = nothing, save_suffix = nothing, save_delim = "_", ext = r"fits(\.tar\.gz)?"i, kwargs...)
     image_iterator = images(collection; kwargs...)
-    names = collection.name
+    locations = collection.path
 
-    processed_images = map(zip(names, image_iterator)) do (filename, output)
+    processed_images = map(zip(locations, image_iterator)) do (location, output)
         processed_image = f(output)
         if save
-            save_path = generate_filename(filename, path, save_prefix, save_suffix, save_delim, ext)
+            save_path = generate_filename(location, path, save_prefix, save_suffix, save_delim, ext)
             write_data(save_path, processed_image)
         end
         processed_image
@@ -217,12 +237,12 @@ A suffix and prefix can be added to filename of newly created files by modifying
 """
 function filenames(f, collection::DataFrame; save = false, path = nothing, save_prefix = nothing, save_suffix = nothing, save_delim = "_", ext = r"fits(\.tar\.gz)?"i, kwargs...)
     path_iterator = filenames(collection; kwargs...)
-    names = collection.name
+    locations = collection.path
 
-    processed_images = map(zip(names, path_iterator)) do (filename, output)
+    processed_images = map(zip(locations, path_iterator)) do (location, output)
         processed_image = f(output)
         if save
-            save_path = generate_filename(filename, path, save_prefix, save_suffix, save_delim, ext)
+            save_path = generate_filename(location, path, save_prefix, save_suffix, save_delim, ext)
             write_data(save_path, processed_image)
         end
         processed_image
@@ -243,12 +263,12 @@ A suffix and prefix can be added to filename of newly created files by modifying
 """
 function arrays(f, collection::DataFrame; save = false, path = nothing, save_prefix = nothing, save_suffix = nothing, save_delim = "_", ext = r"fits(\.tar\.gz)?"i, kwargs...)
     array_iterator = arrays(collection; kwargs...)
-    names = collection.name
+    locations = collection.path
 
-    processed_images = map(zip(names, array_iterator)) do (filename, output)
+    processed_images = map(zip(locations, array_iterator)) do (location, output)
         processed_image = f(output)
         if save
-            save_path = generate_filename(filename, path, save_prefix, save_suffix, save_delim, ext)
+            save_path = generate_filename(location, path, save_prefix, save_suffix, save_delim, ext)
             write_data(save_path, processed_image)
         end
         processed_image

@@ -1,6 +1,7 @@
 using CCDReduction: parse_name,
                     generate_filename,
-                    write_data
+                    write_data,
+                    parse_name_ext
 
 @testset "fitscollection" begin
     # setting initial data
@@ -170,11 +171,11 @@ end
     @test parse_name("foo.fits", "."*r"fits(\.tar\.gz)?"i, Val(false)) == "foo"
 
     # testing generate_filename
-    @test generate_filename("abcd.fits", @__DIR__, "test1", "test2", "_", r"fits(\.tar\.gz)?"i) == joinpath(@__DIR__, "test1_abcd_test2.fits")
-    @test generate_filename("abcd.fits", @__DIR__, nothing, "test2", "_", r"fits(\.tar\.gz)?"i) == joinpath(@__DIR__, "abcd_test2.fits")
-    @test generate_filename("abcd.fits", @__DIR__, "test1", nothing, "_", r"fits(\.tar\.gz)?"i) == joinpath(@__DIR__, "test1_abcd.fits")
-    @test generate_filename("abcd.fits", @__DIR__, nothing, nothing, "_", r"fits(\.tar\.gz)?"i) == joinpath(@__DIR__, "abcd.fits")
-    @test generate_filename("abcd.fits", @__DIR__, "test1", nothing, "__", r"fits(\.tar\.gz)?"i) == joinpath(@__DIR__, "test1__abcd.fits")
+    @test generate_filename("home/abcd.fits", @__DIR__, "test1", "test2", "_", r"fits(\.tar\.gz)?"i) == joinpath(@__DIR__, "test1_abcd_test2.fits")
+    @test generate_filename("home/tek/abcd.fits", @__DIR__, nothing, "test2", "_", r"fits(\.tar\.gz)?"i) == joinpath(@__DIR__, "abcd_test2.fits")
+    @test generate_filename("home/downloads/abcd.fits", @__DIR__, "test1", nothing, "_", r"fits(\.tar\.gz)?"i) == joinpath(@__DIR__, "test1_abcd.fits")
+    @test generate_filename("home/hello/abcd.fits", @__DIR__, nothing, nothing, "_", r"fits(\.tar\.gz)?"i) == joinpath(@__DIR__, "abcd.fits")
+    @test generate_filename("~/.julia/abcd.fits", @__DIR__, "test1", nothing, "__", r"fits(\.tar\.gz)?"i) == joinpath(@__DIR__, "test1__abcd.fits")
 
     # testing write_data
     filename = joinpath(@__DIR__, "test1_M6707HH_test2.fits")
@@ -182,4 +183,11 @@ end
     write_data(filename, sample_data)
     image_array = getdata(FITS(filename)[1])
     @test image_array == sample_data
+
+    # testing parse_filename_ext
+    parse_name_ext("11.12.20_HD106754.fits.tar.gz", "." * r"fits(\.tar\.gz)?"i) == ("11.12.20_HD106754", ".fits.tar.gz")
+    parse_name_ext("abcd", "." * r"fits(\.tar\.gz)?"i) ==  ("abcd", "")
+    parse_name_ext("11.12.20_HD106754.fits", "." * "fits") == ("11.12.20_HD106754", ".fits")
+    parse_name_ext("abcd.fits", "." * "fits") == ("abcd", ".fits")
+    parse_name_ext("11.12.20_HD106754.Fits.Tar.gz", "." * r"fits(\.tar\.gz)?"i) == ("11.12.20_HD106754", ".Fits.Tar.gz")
 end
