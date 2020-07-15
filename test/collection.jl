@@ -63,7 +63,7 @@ end
     savedir = @__DIR__
     collection = fitscollection(dir)
 
-    final = arrays(collection; path = savedir, save_prefix = "test1", save_suffix = "test2") do img
+    final = arrays(collection; save = true, path = savedir, save_prefix = "test1", save_suffix = "test2") do img
         trim(img, (:, 1040:1059))
     end
 
@@ -98,7 +98,7 @@ end
     savedir = @__DIR__
     collection = fitscollection(dir)
 
-    final = filenames(collection; path = savedir, save_prefix = "test1", save_suffix = "test2") do img
+    final = filenames(collection; save = true, path = savedir, save_prefix = "test1", save_suffix = "test2") do img
         getdata(FITS(img)[1])
     end
 
@@ -142,7 +142,7 @@ end
     savedir = @__DIR__
     collection = fitscollection(dir)
 
-    final = images(collection; path = savedir, save_prefix = "test1", save_suffix = "test2") do img
+    final = images(collection; save = true, path = savedir, save_prefix = "test1", save_suffix = "test2") do img
         trim(img, (:, 1040:1059))
     end
 

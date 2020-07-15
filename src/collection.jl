@@ -14,10 +14,10 @@ parse_name(filename, ext, ::Val{true}) = filename
 function generate_filename(filename, save_location, save_prefix, save_suffix, save_delim, ext)
     modified_name = parse_name(filename, "." * ext, Val(false))
 
-    if !(save_prefix isa Nothing)
+    if !isnothing(save_prefix)
         modified_name = string(save_prefix, save_delim, modified_name)
     end
-    if !(save_suffix isa Nothing)
+    if !isnothing(save_suffix)
         modified_name = string(modified_name, save_delim, save_suffix)
     end
 
@@ -190,22 +190,21 @@ If `path = nothing`, then save functionality does not execute. It returns an arr
 A suffix and prefix can be added to filename of newly created files by modifying `save_suffix` and `save_prefix`, `save_delim` is used as delimiter.
 `ext` is the extension of files to be taken into consideration for applying function, by default it is set to `r"fits(\\.tar\\.gz)?"i`.
 """
-function images(f, collection::DataFrame; path = nothing, save_prefix = nothing, save_suffix = nothing, save_delim = "_", ext = r"fits(\.tar\.gz)?"i)
-    processed_images = Vector{Array}(undef, first(size(collection)))
-    for (i,x) in enumerate(eachrow(collection))
-        fh = FITS(x.path)
-        processed_image = f(fh[x.hdu])
-        close(fh)
-        processed_images[i] = processed_image
-        # if path is not nothing then we save
-        if !isnothing(path)
-            save_path = generate_filename(x.name, path, save_prefix, save_suffix, save_delim, ext)
+function images(f, collection::DataFrame; save = false, path = nothing, save_prefix = nothing, save_suffix = nothing, save_delim = "_", ext = r"fits(\.tar\.gz)?"i, kwargs...)
+    image_iterator = images(collection; kwargs...)
+    names = collection.name
+
+    processed_images = map(zip(names, image_iterator)) do (filename, output)
+        processed_image = f(output)
+        if save
+            save_path = generate_filename(filename, path, save_prefix, save_suffix, save_delim, ext)
             write_fits(save_path, processed_image)
         end
+        processed_image
     end
+
     return processed_images
 end
-
 
 """
     filenames(f, collection::DataFrame; path = nothing, save_prefix = nothing, save_suffix = nothing, save_delim = "_", ext = r"fits(\\.tar\\.gz)?"i)
@@ -216,17 +215,19 @@ If `path = nothing`, then save functionality does not execute. It returns an arr
 A suffix and prefix can be added to filename of newly created files by modifying `save_suffix` and `save_prefix`, `save_delim` is used as delimiter.
 `ext` is the extension of files to be taken into consideration for applying function, by default it is set to `r"fits(\\.tar\\.gz)?"i`.
 """
-function filenames(f, collection::DataFrame; path = nothing, save_prefix = nothing, save_suffix = nothing, save_delim = "_", ext = r"fits(\.tar\.gz)?"i)
-    processed_images = Vector{Array}(undef, first(size(collection)))
-    for (i,x) in enumerate(eachrow(collection))
-        processed_image = f(x.path)
-        processed_images[i] = processed_image
-        # if path is not nothing then we save
-        if !isnothing(path)
-            save_path = generate_filename(x.name, path, save_prefix, save_suffix, save_delim, ext)
+function filenames(f, collection::DataFrame; save = false, path = nothing, save_prefix = nothing, save_suffix = nothing, save_delim = "_", ext = r"fits(\.tar\.gz)?"i, kwargs...)
+    path_iterator = filenames(collection; kwargs...)
+    names = collection.name
+
+    processed_images = map(zip(names, path_iterator)) do (filename, output)
+        processed_image = f(output)
+        if save
+            save_path = generate_filename(filename, path, save_prefix, save_suffix, save_delim, ext)
             write_fits(save_path, processed_image)
         end
+        processed_image
     end
+
     return processed_images
 end
 
@@ -240,18 +241,18 @@ If `path = nothing`, then save functionality does not execute. It returns an arr
 A suffix and prefix can be added to filename of newly created files by modifying `save_suffix` and `save_prefix`, `save_delim` is used as delimiter.
 `ext` is the extension of files to be taken into consideration for applying function, by default it is set to `r"fits(\\.tar\\.gz)?"i`.
 """
-function arrays(f, collection::DataFrame; path = nothing, save_prefix = nothing, save_suffix = nothing, save_delim = "_", ext = r"fits(\.tar\.gz)?"i)
-    processed_images = Vector{Array}(undef, first(size(collection)))
-    for (i,x) in enumerate(eachrow(collection))
-        fh = FITS(x.path)
-        processed_image = f(getdata(fh[x.hdu]))
-        close(fh)
-        processed_images[i] = processed_image
-        # if path is not nothing then we save
-        if !isnothing(path)
-            save_path = generate_filename(x.name, path, save_prefix, save_suffix, save_delim, ext)
+function arrays(f, collection::DataFrame; save = false, path = nothing, save_prefix = nothing, save_suffix = nothing, save_delim = "_", ext = r"fits(\.tar\.gz)?"i, kwargs...)
+    array_iterator = arrays(collection; kwargs...)
+    names = collection.name
+
+    processed_images = map(zip(names, array_iterator)) do (filename, output)
+        processed_image = f(output)
+        if save
+            save_path = generate_filename(filename, path, save_prefix, save_suffix, save_delim, ext)
             write_fits(save_path, processed_image)
         end
+        processed_image
     end
+
     return processed_images
 end
