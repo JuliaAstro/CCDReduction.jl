@@ -202,12 +202,12 @@ end
 
 
 """
-    images(f, collection::DataFrame; path = nothing, save_prefix = nothing, save_suffix = nothing, save_delim = "_", ext = r"fits(\\.tar\\.gz)?"i)
+    images(f, collection::DataFrame; save = false, path = nothing, save_prefix = nothing, save_suffix = nothing, save_delim = "_", ext = r"fits(\\.tar\\.gz)?"i)
 
 Applies function `f` on all ImageHDUs present in data frame and saves it in FITS file.
 
-If `path = nothing`, then save functionality does not execute. It returns an array of arrays which contains final returned values of function.
-A suffix and prefix can be added to filename of newly created files by modifying `save_suffix` and `save_prefix`, `save_delim` is used as delimiter.
+It returns an array of output values of function `f` applied on ImageHDUs. If `save = false`, the save functionality does not execute. File is saved at `path` specified by the user.
+Suffix and prefix can be added to filename of newly created files by modifying `save_suffix` and `save_prefix`, `save_delim` is used as delimiter.
 `ext` is the extension of files to be taken into consideration for applying function, by default it is set to `r"fits(\\.tar\\.gz)?"i`.
 """
 function images(f, collection::DataFrame; save = false, path = nothing, save_prefix = nothing, save_suffix = nothing, save_delim = "_", ext = r"fits(\.tar\.gz)?"i, kwargs...)
@@ -227,12 +227,12 @@ function images(f, collection::DataFrame; save = false, path = nothing, save_pre
 end
 
 """
-    filenames(f, collection::DataFrame; path = nothing, save_prefix = nothing, save_suffix = nothing, save_delim = "_", ext = r"fits(\\.tar\\.gz)?"i)
+    filenames(f, collection::DataFrame; save = false, path = nothing, save_prefix = nothing, save_suffix = nothing, save_delim = "_", ext = r"fits(\\.tar\\.gz)?"i)
 
-Applies function `f` on all filenames present in data frame and saves it in FITS file.
+Applies function `f` on all file paths present in data frame and saves it in FITS file.
 
-If `path = nothing`, then save functionality does not execute. It returns an array of arrays which contains final returned values of function.
-A suffix and prefix can be added to filename of newly created files by modifying `save_suffix` and `save_prefix`, `save_delim` is used as delimiter.
+It returns an array of output values of function `f` applied on file paths. If `save = false`, the save functionality does not execute. File is saved at `path` specified by the user.
+Suffix and prefix can be added to filename of newly created files by modifying `save_suffix` and `save_prefix`, `save_delim` is used as delimiter.
 `ext` is the extension of files to be taken into consideration for applying function, by default it is set to `r"fits(\\.tar\\.gz)?"i`.
 """
 function filenames(f, collection::DataFrame; save = false, path = nothing, save_prefix = nothing, save_suffix = nothing, save_delim = "_", ext = r"fits(\.tar\.gz)?"i, kwargs...)
@@ -253,12 +253,12 @@ end
 
 
 """
-    arrays(f, collection::DataFrame; path = nothing, save_prefix = nothing, save_suffix = nothing, save_delim = "_", ext = r"fits(\\.tar\\.gz)?"i)
+    arrays(f, collection::DataFrame; save = false, path = nothing, save_prefix = nothing, save_suffix = nothing, save_delim = "_", ext = r"fits(\\.tar\\.gz)?"i)
 
 Applies function `f` on all image arrays present in data frame and saves it in FITS file.
 
-If `path = nothing`, then save functionality does not execute. It returns an array of arrays which contains final returned values of function.
-A suffix and prefix can be added to filename of newly created files by modifying `save_suffix` and `save_prefix`, `save_delim` is used as delimiter.
+It returns an array of output values of function `f` applied on image arrays. If `save = false`, the save functionality does not execute. File is saved at `path` specified by the user.
+Suffix and prefix can be added to filename of newly created files by modifying `save_suffix` and `save_prefix`, `save_delim` is used as delimiter.
 `ext` is the extension of files to be taken into consideration for applying function, by default it is set to `r"fits(\\.tar\\.gz)?"i`.
 """
 function arrays(f, collection::DataFrame; save = false, path = nothing, save_prefix = nothing, save_suffix = nothing, save_delim = "_", ext = r"fits(\.tar\.gz)?"i, kwargs...)
