@@ -27,11 +27,11 @@ end
 
 
 """
-    write_fits(file_path, data)
+    write_data(file_path, data)
 
 Writes `data` in FITS format at `file_path`.
 """
-function write_fits(file_path, data)
+function write_data(file_path, data)
     d = ndims(data)
     transposed_data = permutedims(data, d:-1:1)
     FITS(file_path, "w") do fh
@@ -198,7 +198,7 @@ function images(f, collection::DataFrame; save = false, path = nothing, save_pre
         processed_image = f(output)
         if save
             save_path = generate_filename(filename, path, save_prefix, save_suffix, save_delim, ext)
-            write_fits(save_path, processed_image)
+            write_data(save_path, processed_image)
         end
         processed_image
     end
@@ -223,7 +223,7 @@ function filenames(f, collection::DataFrame; save = false, path = nothing, save_
         processed_image = f(output)
         if save
             save_path = generate_filename(filename, path, save_prefix, save_suffix, save_delim, ext)
-            write_fits(save_path, processed_image)
+            write_data(save_path, processed_image)
         end
         processed_image
     end
@@ -249,7 +249,7 @@ function arrays(f, collection::DataFrame; save = false, path = nothing, save_pre
         processed_image = f(output)
         if save
             save_path = generate_filename(filename, path, save_prefix, save_suffix, save_delim, ext)
-            write_fits(save_path, processed_image)
+            write_data(save_path, processed_image)
         end
         processed_image
     end
