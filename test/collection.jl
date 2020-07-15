@@ -179,7 +179,7 @@ end
     @test generate_filename("~/.julia/abcd.abcd", @__DIR__, "test1", nothing, "__", r"fits(\.tar\.gz)?"i) == joinpath(@__DIR__, "test1__abcd.abcd.fits")
 
     # testing write_data
-    filename = joinpath(@__DIR__, "test1_M6707HH_test2.fits")
+    filename = joinpath(@__DIR__, "test.fits")
     sample_data = rand(5, 10)
     write_data(filename, sample_data)
     image_array = getdata(FITS(filename)[1])
