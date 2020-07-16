@@ -77,9 +77,16 @@ end
 
     collection1 = fitscollection(savedir; recursive = false)
 
+    # generating arrays from collection1
+    new_saved_data = map(eachrow(collection1)) do row
+        fh = FITS(row.path)
+        data = getdata(fh[row.hdu])
+        close(fh)
+        data
+    end
+
     # testing saved data
-    @test final[1] == getdata(FITS(collection1[1, :path])[collection1[1, :hdu]])
-    @test final[2] == getdata(FITS(collection1[2, :path])[collection1[2, :hdu]])
+    @test final == new_saved_data
 
     # testing saved filenames
     @test collection1[1, :name] == "test1_M35070V_test2.fits"
@@ -115,9 +122,16 @@ end
 
     collection1 = fitscollection(savedir; recursive = false)
 
+    # generating arrays from collection1
+    new_saved_data = map(eachrow(collection1)) do row
+        fh = FITS(row.path)
+        data = getdata(fh[row.hdu])
+        close(fh)
+        data
+    end
+
     # testing saved data
-    @test final[1] == getdata(FITS(collection1[1, :path])[collection1[1, :hdu]])
-    @test final[2] == getdata(FITS(collection1[2, :path])[collection1[2, :hdu]])
+    @test final == new_saved_data
 
     # testing saved filenames
     @test collection1[1, :name] == "test1_M35070V_test2.fits"
@@ -160,9 +174,16 @@ end
 
     collection1 = fitscollection(savedir; recursive = false)
 
+    # generating arrays from collection1
+    new_saved_data = map(eachrow(collection1)) do row
+        fh = FITS(row.path)
+        data = getdata(fh[row.hdu])
+        close(fh)
+        data
+    end
+
     # testing saved data
-    @test final[1] == getdata(FITS(collection1[1, :path])[collection1[1, :hdu]])
-    @test final[2] == getdata(FITS(collection1[2, :path])[collection1[2, :hdu]])
+    @test final == new_saved_data
 
     # testing saved filenames
     @test collection1[1, :name] == "test1_M35070V_test2.fits"
