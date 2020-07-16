@@ -81,6 +81,9 @@ end
     # testing saved filenames
     @test collection1[1, :name] == "test1_M35070V_test2.fits"
     @test collection1[2, :name] == "test1_M6707HH_test2.fits"
+
+    # removing data generated during testing
+    rm.(collection1[:, :path])
 end
 
 @testset "filename-generators" begin
@@ -116,6 +119,9 @@ end
     # testing saved filenames
     @test collection1[1, :name] == "test1_M35070V_test2.fits"
     @test collection1[2, :name] == "test1_M6707HH_test2.fits"
+
+    # removing data generated during testing
+    rm.(collection1[:, :path])
 end
 
 @testset "image-generators" begin
@@ -160,6 +166,9 @@ end
     # testing saved filenames
     @test collection1[1, :name] == "test1_M35070V_test2.fits"
     @test collection1[2, :name] == "test1_M6707HH_test2.fits"
+
+    # removing data generated during testing
+    rm.(collection1[:, :path]) 
 end
 
 @testset "helper" begin
@@ -184,6 +193,7 @@ end
     write_data(filename, sample_data)
     image_array = getdata(FITS(filename)[1])
     @test image_array == sample_data
+    rm(filename) # remove the data generated during testing
 
     # testing parse_filename_ext
     parse_name_ext("11.12.20_HD106754.fits.tar.gz", "." * r"fits(\.tar\.gz)?"i) == ("11.12.20_HD106754", ".fits.tar.gz")
