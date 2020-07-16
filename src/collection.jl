@@ -215,13 +215,31 @@ end
 
 
 """
-    images(f, collection::DataFrame; save = false, path = nothing, save_prefix = nothing, save_suffix = nothing, save_delim = "_", ext = r"fits(\\.tar\\.gz)?"i)
+    images(f, collection::DataFrame; save = false, path = nothing, save_prefix = nothing, save_suffix = nothing, save_delim = "_", ext = r"fits(\\.tar\\.gz)?"i, kwargs...)
 
-Applies function `f` on all ImageHDUs present in data frame and saves it in FITS file.
+Iterates over the ImageHDUs of the collection applying function `f` at each step.
 
-It returns an array of output values of function `f` applied on ImageHDUs. If `save = false`, the save functionality does not execute. File is saved at `path` specified by the user.
+It returns an array of output values of function `f` applied on ImageHDUs. If `save = true`, it enables programmatical saving of returned value of the function `f` using `CCDReduction.write_fits`. File is saved at `path` specified by the user.
 Suffix and prefix can be added to filename of newly created files by modifying `save_suffix` and `save_prefix`, `save_delim` is used as delimiter.
-`ext` is the extension of files to be taken into consideration for applying function, by default it is set to `r"fits(\\.tar\\.gz)?"i`.
+`ext` is the extension of files in collection, by default it is set to `r"fits(\\.tar\\.gz)?"i`.
+
+Mapping version can be used as
+```julia
+collection = fitscollection("~/data/tekdata")
+processed_images = map(images(collection)) do img
+    trim(img, (:, 1040:1059))
+end
+```
+The above generates `processed_images` which consists of trimmed versions of images present in `collection`.
+For saving the `processed_images` simultaneously with the operations performed
+```julia
+processed_images = map(images(collection; save = true, path = "~/data/tekdata", save_prefix = "trimmed")) do img
+    trim(img, (:, 1040:1059))
+end
+```
+the trimmed images are saved as `trimmed_(original_name)` (`FITS` files) at `path = "~/data/tekdata"` as specified by the user.
+
+Mapping version of `images` function is interfaced on iterative version of `images`, any valid parameter can be passed into iterative version as `kwargs`.
 """
 function images(f, collection::DataFrame; save = false, path = nothing, save_prefix = nothing, save_suffix = nothing, save_delim = "_", ext = r"fits(\.tar\.gz)?"i, kwargs...)
     image_iterator = images(collection; kwargs...)
@@ -239,14 +257,39 @@ function images(f, collection::DataFrame; save = false, path = nothing, save_pre
     return processed_images
 end
 
+
 """
-    filenames(f, collection::DataFrame; save = false, path = nothing, save_prefix = nothing, save_suffix = nothing, save_delim = "_", ext = r"fits(\\.tar\\.gz)?"i)
+    filenames(f, collection::DataFrame; save = false, path = nothing, save_prefix = nothing, save_suffix = nothing, save_delim = "_", ext = r"fits(\\.tar\\.gz)?"i, kwargs...)
 
-Applies function `f` on all file paths present in data frame and saves it in FITS file.
+Iterates over the file paths of the collection applying function `f` at each step.
 
-It returns an array of output values of function `f` applied on file paths. If `save = false`, the save functionality does not execute. File is saved at `path` specified by the user.
+It returns an array of output values of function `f` applied on file paths. If `save = true`, it enables programmatical saving of returned value of the function `f` using `CCDReduction.write_fits`. File is saved at `path` specified by the user.
 Suffix and prefix can be added to filename of newly created files by modifying `save_suffix` and `save_prefix`, `save_delim` is used as delimiter.
-`ext` is the extension of files to be taken into consideration for applying function, by default it is set to `r"fits(\\.tar\\.gz)?"i`.
+`ext` is the extension of files in collection, by default it is set to `r"fits(\\.tar\\.gz)?"i`.
+
+Mapping version can be used as
+```julia
+collection = fitscollection("~/data/tekdata")
+processed_images = map(filenames(collection)) do path
+    fh = FITS(path)
+    data = getdata(fh[1]) # assuming all 1-hdu are ImageHDUs
+    close(fh)
+    data
+end
+```
+The above generates `loaded_images` which consists of image arrays corresponding to 1st hdu of FITS file paths present in `collection`.
+For saving the `loaded_images` simultaneously with the operations performed
+```julia
+loaded_images = map(filenames(collection; save = true, path = "~/data/tekdata", save_prefix = "retrieved_from_filename")) do img
+    fh = FITS(path)
+    data = getdata(fh[1]) # assuming all 1-hdu are ImageHDUs
+    close(fh)
+    data
+end
+```
+the retrieved data is saved as `retrieved_from_filename_(original_name)` (`FITS` files) at `path = "~/data/tekdata"` as specified by the user.
+
+Mapping version of `filenames` function is interfaced on iterative version of `filenames`, any valid parameter can be passed into iterative version as `kwargs`.
 """
 function filenames(f, collection::DataFrame; save = false, path = nothing, save_prefix = nothing, save_suffix = nothing, save_delim = "_", ext = r"fits(\.tar\.gz)?"i, kwargs...)
     path_iterator = filenames(collection; kwargs...)
@@ -266,13 +309,31 @@ end
 
 
 """
-    arrays(f, collection::DataFrame; save = false, path = nothing, save_prefix = nothing, save_suffix = nothing, save_delim = "_", ext = r"fits(\\.tar\\.gz)?"i)
+    arrays(f, collection::DataFrame; save = false, path = nothing, save_prefix = nothing, save_suffix = nothing, save_delim = "_", ext = r"fits(\\.tar\\.gz)?"i, kwargs...)
 
-Applies function `f` on all image arrays present in data frame and saves it in FITS file.
+Iterates over the image arrays of the collection applying function `f` at each step.
 
-It returns an array of output values of function `f` applied on image arrays. If `save = false`, the save functionality does not execute. File is saved at `path` specified by the user.
+It returns an array of output values of function `f` applied on image arrays. If `save = true`, it enables programmatical saving of returned value of the function `f` using `CCDReduction.write_fits`. File is saved at `path` specified by the user.
 Suffix and prefix can be added to filename of newly created files by modifying `save_suffix` and `save_prefix`, `save_delim` is used as delimiter.
-`ext` is the extension of files to be taken into consideration for applying function, by default it is set to `r"fits(\\.tar\\.gz)?"i`.
+`ext` is the extension of files in collection, by default it is set to `r"fits(\\.tar\\.gz)?"i`.
+
+Mapping version can be used as
+```julia
+collection = fitscollection("~/data/tekdata")
+processed_images = map(arrays(collection)) do arr
+    trim(arr, (:, 1040:1059))
+end
+```
+The above generates `processed_images` which consists of trimmed versions of image arrays present in `collection`.
+For saving the `processed_images` simultaneously with the operations performed
+```julia
+processed_images = map(arrays(collection; save = true, path = "~/data/tekdata", save_prefix = "trimmed")) do img
+    trim(img, (:, 1040:1059))
+end
+```
+the trimmed image arrays are saved as `trimmed_(original_name)` (`FITS` files) at `path = "~/data/tekdata"` as specified by the user.
+
+Mapping version of `arrays` function is interfaced on iterative version of `arrays`, any valid parameter can be passed into iterative version as `kwargs`.
 """
 function arrays(f, collection::DataFrame; save = false, path = nothing, save_prefix = nothing, save_suffix = nothing, save_delim = "_", ext = r"fits(\.tar\.gz)?"i, kwargs...)
     array_iterator = arrays(collection; kwargs...)
