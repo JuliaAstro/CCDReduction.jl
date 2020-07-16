@@ -54,7 +54,10 @@ end
     collection = fitscollection(dir)
     arr1 = arrays(collection) |> collect
     arr2 = map(eachrow(collection)) do row
-        getdata(FITS(row.path)[row.hdu])
+        fh = FITS(row.path)
+        data = getdata(fh[row.hdu])
+        close(fh)
+        data
     end
     @test arr1 == arr2
 end
@@ -128,12 +131,10 @@ end
     # setting initial data
     dir = joinpath(@__DIR__, "data")
     collection = fitscollection(dir)
-    arr1 = images(collection) |> collect
-    arr2 = map(eachrow(collection)) do row
-        FITS(row.path)[row.hdu]
-    end
 
-    for (hdu1, hdu2) in zip(arr1, arr2)
+    for (row, hdu2) in zip(eachrow(collection), images(collection))
+        hdu1 = FITS(row.path)[row.hdu]
+
         @test getdata(hdu1) == getdata(hdu2)
         header1 = read_header(hdu1)
         header2 = read_header(hdu2)
@@ -168,7 +169,7 @@ end
     @test collection1[2, :name] == "test1_M6707HH_test2.fits"
 
     # removing data generated during testing
-    rm.(collection1[:, :path]) 
+    rm.(collection1[:, :path])
 end
 
 @testset "helper" begin

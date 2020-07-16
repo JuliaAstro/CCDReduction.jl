@@ -46,6 +46,12 @@ function parse_name_ext(filename, ext)
 end
 
 
+#=
+FITSIO.jl takes over memory write in by cfitsio, which writes in row-major form,
+whereas when Julia gives that memory, it is assumed as column major.
+Therefore all data written by `write` is transposed.
+Related comment: https://github.com/JuliaAstro/CCDReduction.jl/pull/16#issuecomment-638492572
+=#
 """
     write_data(file_path, data)
 
@@ -195,9 +201,16 @@ function images end
 
 # generator for ImageHDU specified by data frame (i.e. path of file, hdu etc.)
 @resumable function images(collection::DataFrame)
-    for row in eachrow(collection)
-        @yield FITS(row.path)[row.hdu]
+    files = Vector{FITS}(undef, first(size(collection)))
+
+    for (i,row) in enumerate(eachrow(collection))
+        fh = FITS(row.path)
+        files[i] = fh
+        @yield fh[row.hdu]
     end
+
+    # closing all files
+    close.(files)
 end
 
 
