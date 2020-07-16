@@ -192,8 +192,10 @@ end
     filename = joinpath(@__DIR__, "test.fits")
     sample_data = rand(5, 10)
     write_data(filename, sample_data)
-    image_array = getdata(FITS(filename)[1])
+    fh = FITS(filename)
+    image_array = getdata(fh[1])
     @test image_array == sample_data
+    close(fh) # closing handle so that generated file can be deleted
     rm(filename) # remove the data generated during testing
 
     # testing parse_filename_ext
