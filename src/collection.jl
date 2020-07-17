@@ -165,7 +165,7 @@ end
 
 Generator for arrays of images of entries in data frame.
 
-Iterative version of `arrays`, returns data loaded by `FITSIO` using `CCDReduction.get_data` into an `Array`.
+Iterative version of `arrays`, returns data loaded by `FITSIO` using `CCDReduction.getdata` into an `Array`.
 It utilizes the `path` and `hdu` from the `collection`.
 
 This version can be used as
