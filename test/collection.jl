@@ -207,7 +207,7 @@ end
     @test generate_filename("home/downloads/abcd.fits", @__DIR__, "test1", nothing, "_", r"fits(\.tar\.gz)?"i) == joinpath(@__DIR__, "test1_abcd.fits")
     @test generate_filename("home/hello/abcd.fits", @__DIR__, nothing, nothing, "_", r"fits(\.tar\.gz)?"i) == joinpath(@__DIR__, "abcd.fits")
     @test generate_filename("~/.julia/abcd.fits", @__DIR__, "test1", nothing, "__", r"fits(\.tar\.gz)?"i) == joinpath(@__DIR__, "test1__abcd.fits")
-    @test generate_filename("~/.julia/abcd.abcd", @__DIR__, "test1", nothing, "__", r"fits(\.tar\.gz)?"i) == joinpath(@__DIR__, "test1__abcd.abcd.fits")
+    @test generate_filename("~/.julia/abcd.abcd", @__DIR__, "test1", nothing, "__", r"fits(\.tar\.gz)?"i) == joinpath(@__DIR__, "test1__abcd.abcd") # case when extension does not match
 
     # testing write_data
     filename = joinpath(@__DIR__, "test.fits")

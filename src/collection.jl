@@ -16,7 +16,7 @@ function generate_filename(path, save_location, save_prefix, save_suffix, save_d
     filename = last(splitdir(path))
 
     # splitting name and extension
-    modified_name, ext = parse_name_ext(filename, "." * ext)
+    modified_name, extension = parse_name_ext(filename, "." * ext)
 
     # adding prefix and suffix with delimiter
     if !isnothing(save_prefix)
@@ -27,11 +27,7 @@ function generate_filename(path, save_location, save_prefix, save_suffix, save_d
     end
 
     # adding extension to modified_name
-    if ext == ""
-        file_path = joinpath(save_location, modified_name * ".fits")
-    else
-        file_path = joinpath(save_location, modified_name * ext)
-    end
+    file_path = joinpath(save_location, modified_name * extension)
     return file_path
 end
 
@@ -46,16 +42,13 @@ function parse_name_ext(filename, ext)
 end
 
 
-#=
-FITSIO.jl takes over memory write in by cfitsio, which writes in row-major form,
-whereas when Julia gives that memory, it is assumed as column major.
-Therefore all data written by `write` is transposed.
-Related comment: https://github.com/JuliaAstro/CCDReduction.jl/pull/16#issuecomment-638492572
-=#
 """
     write_data(file_path, data)
 
 Writes `data` in FITS format at `file_path`.
+
+`FITSIO` takes over memory write in by `cfitsio`, which writes in row-major form, whereas when Julia gives that memory, it is assumed as column major.
+Therefore all data written by [`FITSIO.write`](http://juliaastro.github.io/FITSIO.jl/latest/api.html#Base.write-Tuple{FITS,Dict{String,V}%20where%20V}) is transposed. This function allows the user to write the data in a consistent way to FITS file by transposing before writing.
 """
 function write_data(file_path, data)
     d = ndims(data)
@@ -165,24 +158,26 @@ end
 
 Generator for arrays of images of entries in data frame.
 
-Iterative version of `arrays`, returns data loaded by `FITSIO` using `CCDReduction.getdata` into an `Array`.
-It utilizes the `path` and `hdu` from the `collection`.
+Iterates over `collection` using each `path` and `hdu` to load data using [`CCDReduction.getdata`](@ref) into an `Array`.
 
-This version can be used as
+# Examples
 ```julia
 collection = fitscollection("~/data/tekdata")
-image_arrays = arrays(collection) |> collect
+data = arrays(collection) |> collect
 ```
-this returns all image arrays present in `collection`. This can also be used via a for-loop
+This returns all image arrays present in `collection`. This can also be used via a for-loop
 ```julia
 collection = fitscollection("~/data/tekdata")
-processed_images = Vector{Array}(undef, first(size(collection)))
-for (i, arr) in enumerate(arrays(collection))
-    processed_images[i] = trim(arr, (:, 1040, 1059))
+for arr in arrays(collection)
+    @assert arr isa Array
+    println(size(arr))
 end
-```
 
-This version involving for-loop (i.e. iterative version) does not support saving functionality.
+# output
+(1048, 1068)
+(1048, 1068)
+...
+```
 """
 function arrays end
 
@@ -201,20 +196,21 @@ end
 
 Generator for filenames of entries in data frame.
 
-Iterative version of `filenames`, returns file paths from data frame `collection`. It utilizes the `path` from the `collection`.
+Iterates over `collection` using each `path`.
 
-This version can be used as
+# Examples
 ```julia
 collection = fitscollection("~/data/tekdata")
-processed_images = Vector{Array}(undef, first(size(collection)))
-for (i, path) in enumerate(filenames(collection))
-    fh = FITS(path)
-    processed_images[i] = subtract_overscan(fh[1], :BIASSEC) # assuming 1-hdu is an image
-    close(fh)
+for path in filenames(collection)
+    @assert path isa String
+    println(path)
 end
-```
 
-This version involving for-loop (i.e. iterative version) does not support saving functionality.
+# output
+"~/data/tekdata/tek001.fits"
+"~/data/tekdata/tek002.fits"
+...
+```
 """
 function filenames end
 
@@ -231,15 +227,13 @@ end
 
 Generator for `ImageHDU`s of entries in data frame.
 
-Iterative version of `images`, returns data loaded by `FITSIO` using `FITSIO.FITS` into an `ImageHDU`.
-It utilizes the `path` and `hdu` from the `collection`.
+Iterates over `collection` using each `path` and `hdu` to load data using [`FITSIO.FITS`](http://juliaastro.github.io/FITSIO.jl/latest/api.html#FITSIO.FITS) into an `ImageHDU`.
 
 This version can be used as
 ```julia
 collection = fitscollection("~/data/tekdata")
-processed_images = Vector{Array}(undef, first(size(collection)))
-for (i, hdu) in enumerate(images(collection))
-    processed_images[i] = subtract_overscan(hdu, :BIASSEC)
+for hdu in images(collection)
+    @assert hdu isa ImageHDU
 end
 ```
 
@@ -247,10 +241,8 @@ The code below will not work, since all FITS files are closed after iteration.
 ```julia
 collection = fitscollection("~/data/tekdata")
 image_hdus = images(collection) |> collect
-data = getdata(first(image_hdus)) # raises error because the FITS file has already been closed after iteration
+data = getdata.(image_hdus) # raises error because the FITS file has already been closed after iteration
 ```
-
-This version involving for-loop (i.e. iterative version) does not support saving functionality.
 """
 function images end
 
@@ -274,11 +266,12 @@ end
 
 Iterates over the ImageHDUs of the collection applying function `f` at each step.
 
-It returns an array of output values of function `f` applied on ImageHDUs. If `save = true`, it enables programmatical saving of returned value of the function `f` using `CCDReduction.write_fits`. File is saved at `path` specified by the user.
+It returns an array of output values of function `f` applied on ImageHDUs.
+In addition to applying function `f`, the outputs can be saved. If `save = true`, it enables programmatical saving of returned value of the function `f` using [`CCDReduction.write_fits`](@ref). File is saved at `path` specified by the user.
 Suffix and prefix can be added to filename of newly created files by modifying `save_suffix` and `save_prefix`, `save_delim` is used as delimiter.
 `ext` is the extension of files in collection, by default it is set to `r"fits(\\.tar\\.gz)?"i`.
 
-Mapping version can be used as
+# Example
 ```julia
 collection = fitscollection("~/data/tekdata")
 processed_images = map(images(collection)) do img
@@ -292,7 +285,7 @@ processed_images = map(images(collection; save = true, path = "~/data/tekdata", 
     trim(img, (:, 1040:1059))
 end
 ```
-the trimmed images are saved as `trimmed_(original_name)` (FITS files) at `path = "~/data/tekdata"` as specified by the user.
+The trimmed images are saved as `trimmed_(original_name)` (FITS files) at `path = "~/data/tekdata"` as specified by the user.
 
 Mapping version of `images` function is interfaced on iterative version of `images`, any valid parameter can be passed into iterative version as `kwargs`.
 """
@@ -318,31 +311,32 @@ end
 
 Iterates over the file paths of the collection applying function `f` at each step.
 
-It returns an array of output values of function `f` applied on file paths. If `save = true`, it enables programmatical saving of returned value of the function `f` using `CCDReduction.write_fits`. File is saved at `path` specified by the user.
+It returns an array of output values of function `f` applied on file paths.
+In addition to applying function `f`, the outputs can be saved. If `save = true`, it enables programmatical saving of returned value of the function `f` using [`CCDReduction.write_fits`](@ref). File is saved at `path` specified by the user.
 Suffix and prefix can be added to filename of newly created files by modifying `save_suffix` and `save_prefix`, `save_delim` is used as delimiter.
 `ext` is the extension of files in collection, by default it is set to `r"fits(\\.tar\\.gz)?"i`.
 
-Mapping version can be used as
+# Examples
 ```julia
 collection = fitscollection("~/data/tekdata")
-processed_images = map(filenames(collection)) do path
+data = map(filenames(collection)) do path
     fh = FITS(path)
     data = getdata(fh[1]) # assuming all 1-hdu are ImageHDUs
     close(fh)
     data
 end
 ```
-The above generates `loaded_images` which consists of image arrays corresponding to 1st hdu of FITS file paths present in `collection`.
-For saving the `loaded_images` simultaneously with the operations performed
+The above generates `data` which consists of image arrays corresponding to 1st hdu of FITS file paths present in `collection`.
+For saving the `data` simultaneously with the operations performed
 ```julia
-loaded_images = map(filenames(collection; save = true, path = "~/data/tekdata", save_prefix = "retrieved_from_filename")) do img
+data = map(filenames(collection; save = true, path = "~/data/tekdata", save_prefix = "retrieved_from_filename")) do img
     fh = FITS(path)
     data = getdata(fh[1]) # assuming all 1-hdu are ImageHDUs
     close(fh)
     data
 end
 ```
-the retrieved data is saved as `retrieved_from_filename_(original_name)` (FITS files) at `path = "~/data/tekdata"` as specified by the user.
+The retrieved data is saved as `retrieved_from_filename_(original_name)` (FITS files) at `path = "~/data/tekdata"` as specified by the user.
 
 Mapping version of `filenames` function is interfaced on iterative version of `filenames`, any valid parameter can be passed into iterative version as `kwargs`.
 """
@@ -368,11 +362,12 @@ end
 
 Iterates over the image arrays of the collection applying function `f` at each step.
 
-It returns an array of output values of function `f` applied on image arrays. If `save = true`, it enables programmatical saving of returned value of the function `f` using `CCDReduction.write_fits`. File is saved at `path` specified by the user.
+It returns an array of output values of function `f` applied on image arrays.
+In addition to applying function `f`, the outputs can be saved. If `save = true`, it enables programmatical saving of returned value of the function `f` using [`CCDReduction.write_fits`](@ref). File is saved at `path` specified by the user.
 Suffix and prefix can be added to filename of newly created files by modifying `save_suffix` and `save_prefix`, `save_delim` is used as delimiter.
 `ext` is the extension of files in collection, by default it is set to `r"fits(\\.tar\\.gz)?"i`.
 
-Mapping version can be used as
+# Examples
 ```julia
 collection = fitscollection("~/data/tekdata")
 processed_images = map(arrays(collection)) do arr
@@ -386,7 +381,7 @@ processed_images = map(arrays(collection; save = true, path = "~/data/tekdata", 
     trim(img, (:, 1040:1059))
 end
 ```
-the trimmed image arrays are saved as `trimmed_(original_name)` (FITS files) at `path = "~/data/tekdata"` as specified by the user.
+The trimmed image arrays are saved as `trimmed_(original_name)` (FITS files) at `path = "~/data/tekdata"` as specified by the user.
 
 Mapping version of `arrays` function is interfaced on iterative version of `arrays`, any valid parameter can be passed into iterative version as `kwargs`.
 """

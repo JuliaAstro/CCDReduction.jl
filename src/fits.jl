@@ -1,11 +1,16 @@
 # helper functions
 
 #=
-FITSIO.jl takes over memory read in by cfitsio, which reads in row-major form,
-whereas when Julia takes that memory, it is assumed as column major.
-Therefore all data read by `read` is transposed.
 Related comment: https://github.com/JuliaAstro/CCDReduction.jl/pull/16#issuecomment-638492572
 =#
+"""
+    getdata(::FITSIO.ImageHDU)
+
+Loads image array form `ImageHDU`
+
+FITSIO.jl takes over memory read in by cfitsio, which reads in row-major form, whereas when Julia takes that memory, it is assumed as column major.
+Therefore all data read by [`FITSIO.read`](http://juliaastro.github.io/FITSIO.jl/latest/api.html#Base.read-Tuple{ImageHDU}) is transposed. This function allows the user to read data in a consistent way to `Array` by transposing after reading.
+"""
 function getdata(hdu::ImageHDU)
     data = read(hdu)
     d = ndims(data)
