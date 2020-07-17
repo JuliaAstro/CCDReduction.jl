@@ -164,6 +164,25 @@ end
     arrays(collection::DataFrame)
 
 Generator for arrays of images of entries in data frame.
+
+Iterative version of `arrays`, returns data loaded by `FITSIO` using `CCDReduction.get_data` into an `Array`.
+It utilizes the `path` and `hdu` from the `collection`.
+
+This version can be used as
+```julia
+collection = fitscollection("~/data/tekdata")
+image_arrays = arrays(collection) |> collect
+```
+this returns all image arrays present in `collection`. This can also be used via a for-loop
+```julia
+collection = fitscollection("~/data/tekdata")
+processed_images = Vector{Array}(undef, first(size(collection)))
+for (i, arr) in enumerate(arrays(collection))
+    processed_images[i] = trim(arr, (:, 1040, 1059))
+end
+```
+
+This version involving for-loop (i.e. iterative version) does not support saving functionality.
 """
 function arrays end
 
@@ -181,6 +200,21 @@ end
     filenames(collection::DataFrame)
 
 Generator for filenames of entries in data frame.
+
+Iterative version of `filenames`, returns file paths from data frame `collection`. It utilizes the `path` from the `collection`.
+
+This version can be used as
+```julia
+collection = fitscollection("~/data/tekdata")
+processed_images = Vector{Array}(undef, first(size(collection)))
+for (i, path) in enumerate(filenames(collection))
+    fh = FITS(path)
+    processed_images[i] = subtract_overscan(fh[1], :BIASSEC) # assuming 1-hdu is an image
+    close(fh)
+end
+```
+
+This version involving for-loop (i.e. iterative version) does not support saving functionality.
 """
 function filenames end
 
@@ -196,6 +230,27 @@ end
     images(collection::DataFrame)
 
 Generator for `ImageHDU`s of entries in data frame.
+
+Iterative version of `images`, returns data loaded by `FITSIO` using `FITSIO.FITS` into an `ImageHDU`.
+It utilizes the `path` and `hdu` from the `collection`.
+
+This version can be used as
+```julia
+collection = fitscollection("~/data/tekdata")
+processed_images = Vector{Array}(undef, first(size(collection)))
+for (i, hdu) in enumerate(images(collection))
+    processed_images[i] = subtract_overscan(hdu, :BIASSEC)
+end
+```
+
+The code below will not work, since all FITS files are closed after iteration.
+```julia
+collection = fitscollection("~/data/tekdata")
+image_hdus = images(collection) |> collect
+data = getdata(first(image_hdus)) # raises error because the FITS file has already been closed after iteration
+```
+
+This version involving for-loop (i.e. iterative version) does not support saving functionality.
 """
 function images end
 
@@ -237,7 +292,7 @@ processed_images = map(images(collection; save = true, path = "~/data/tekdata", 
     trim(img, (:, 1040:1059))
 end
 ```
-the trimmed images are saved as `trimmed_(original_name)` (`FITS` files) at `path = "~/data/tekdata"` as specified by the user.
+the trimmed images are saved as `trimmed_(original_name)` (FITS files) at `path = "~/data/tekdata"` as specified by the user.
 
 Mapping version of `images` function is interfaced on iterative version of `images`, any valid parameter can be passed into iterative version as `kwargs`.
 """
@@ -287,7 +342,7 @@ loaded_images = map(filenames(collection; save = true, path = "~/data/tekdata", 
     data
 end
 ```
-the retrieved data is saved as `retrieved_from_filename_(original_name)` (`FITS` files) at `path = "~/data/tekdata"` as specified by the user.
+the retrieved data is saved as `retrieved_from_filename_(original_name)` (FITS files) at `path = "~/data/tekdata"` as specified by the user.
 
 Mapping version of `filenames` function is interfaced on iterative version of `filenames`, any valid parameter can be passed into iterative version as `kwargs`.
 """
@@ -331,7 +386,7 @@ processed_images = map(arrays(collection; save = true, path = "~/data/tekdata", 
     trim(img, (:, 1040:1059))
 end
 ```
-the trimmed image arrays are saved as `trimmed_(original_name)` (`FITS` files) at `path = "~/data/tekdata"` as specified by the user.
+the trimmed image arrays are saved as `trimmed_(original_name)` (FITS files) at `path = "~/data/tekdata"` as specified by the user.
 
 Mapping version of `arrays` function is interfaced on iterative version of `arrays`, any valid parameter can be passed into iterative version as `kwargs`.
 """
