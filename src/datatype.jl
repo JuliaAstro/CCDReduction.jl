@@ -17,7 +17,7 @@ Base.setindex!(ccd::CCDData, v, inds...) = setindex!(ccd.data, v, inds...) # def
 Base.BroadcastStyle(::Type{<:CCDData}) = Broadcast.ArrayStyle{CCDData}()
 function Base.similar(bc::Broadcast.Broadcasted{Broadcast.ArrayStyle{CCDData}}, ::Type{T}) where T
     ccd = find_ccd(bc)
-    CCDData(similar(ccd.data, T, axes(bc)), ccd.hdr)
+    CCDData(similar(ccd.data, T, axes(bc)))
 end
 "`A = find_ccd(As)` returns the first CCDData among the arguments."
 find_ccd(bc::Base.Broadcast.Broadcasted) = find_ccd(bc.args)
