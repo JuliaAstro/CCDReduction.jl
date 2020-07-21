@@ -1,17 +1,21 @@
-# custom data type to hold ImageHDU
+# abstract data type for CCDData
 abstract type AbstractCCDData{T} <: AbstractMatrix{T} end
 
+# custom data type to hold ImageHDU
 struct CCDData{T,M<:AbstractMatrix{T}} <: AbstractCCDData{T}
     data::M
     hdr::FITSHeader
 end
 
 CCDData(hdu::ImageHDU) = CCDData(getdata(hdu), read_header(hdu))
+CCDData{T}(data, hdr) where {T<:Number} = CCDData(T.(data), hdr)
 
 # extending the AbstractMatrix interface
 Base.size(ccd::CCDData) = size(ccd.data)
 Base.getindex(ccd::CCDData, inds...) = getindex(ccd.data, inds...) # default fallback for operations on Array
 Base.setindex!(ccd::CCDData, v, inds...) = setindex!(ccd.data, v, inds...) # default fallback for operations on Array
+Base.promote_rule(::Type{CCDData{T}}, ::Type{CCDData{V}}) where {T,V} = CCDData{promote_type{T,V}}
+Base.convert(::Type{CCDData{T}}, ccd::CCDData{V}) where {T,V} = CCDData{T}(ccd.data, ccd.hdr)
 
 # broadcast mechanics
 Base.BroadcastStyle(::Type{<:CCDData}) = Broadcast.ArrayStyle{CCDData}()

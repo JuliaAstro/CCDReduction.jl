@@ -52,6 +52,11 @@ end
     subtract_bias!(array_frame, hdu_bias_frame)
     @test array_frame isa Array
     @test array_frame == zeros(1059, 1059)
+
+    # testing error in mutating version
+    hdu_frame = CCDData(fill(2, 5, 5), read_header(M6707HH[1]))
+    hdu_bias = CCDData(fill(2.5, 5, 5), read_header(M6707HH[1]))
+    @test_throws InexactError subtract_bias!(hdu_frame, hdu_bias)
 end
 
 @testset "overscan subtraction(FITS)" begin
@@ -81,33 +86,45 @@ end
 
 @testset "flat correction(FITS)" begin
     # setting initial data
-    hdu_frame = M6707HH[1]
-    hdu_flat_frame = M6707HH[1]
-    array_frame = read(hdu_frame)'
-    array_flat_frame = read(hdu_flat_frame)'
-    string_flat_frame = test_file_path_M6707HH
-    string_frame = test_file_path_M6707HH
+    hdu_frame = CCDData(M6707HH[1])
+    hdu_flat_frame = CCDData(M6707HH[1])
+    array_frame = getdata(M6707HH[1])
+    array_flat_frame = getdata(M6707HH[1])
     mean_flat_frame = mean(array_flat_frame)
 
     # testing non mutating version
-    @test flat_correct(array_frame, array_flat_frame) ≈ fill(mean_flat_frame, 1059, 1059) # Testing Array Array case
-    @test flat_correct(hdu_frame, hdu_flat_frame; norm_value = 1) ≈ ones(1059, 1059) # testing ImageHDU ImageHDU case
-    @test flat_correct(array_frame, hdu_flat_frame; norm_value = 1) ≈ ones(1059, 1059) # testing Array ImageHDU case
-    @test flat_correct(hdu_frame, array_flat_frame; norm_value = 1) ≈ ones(1059, 1059) # testing ImageHDU Array case
-    @test flat_correct(string_frame, array_flat_frame; norm_value = 1) ≈ ones(1059, 1059) # testing String Array case
-    @test flat_correct(array_frame, string_flat_frame; norm_value = 1) ≈ ones(1059, 1059) # testing Array String case
-    @test flat_correct(string_frame, hdu_flat_frame; norm_value = 1) ≈ ones(1059, 1059) # testing String ImageHDU case
-    @test flat_correct(hdu_frame, string_flat_frame; norm_value = 1) ≈ ones(1059, 1059) # testing ImageHDU String case
-    @test flat_correct(string_frame, string_flat_frame; norm_value = 1) ≈ ones(1059, 1059) # testing String String case
+    # testing CCDData CCDData case
+    processed_image = flat_correct(hdu_frame, hdu_flat_frame)
+    @test processed_image isa CCDData
+    test_header(processed_image, hdu_frame)
+    @test processed_image.data ≈ fill(mean_flat_frame, 1059, 1059)
+
+    # testing CCDData Array case
+    processed_image = flat_correct(hdu_frame, array_flat_frame; norm_value = 1)
+    @test processed_image isa CCDData
+    @test processed_image.data ≈ ones(1059, 1059)
+
+    # testing Array CCDData case
+    processed_image = flat_correct(array_frame, hdu_flat_frame; norm_value = 1)
+    @test processed_image isa Array
+    @test processed_image ≈ ones(1059, 1059)
+
+    # testing type mutation in non mutating version
+    hdu_frame = CCDData(fill(1, 5, 5), read_header(M6707HH[1]))
+    bias_frame = CCDData(fill(2.0, 5, 5), read_header(M6707HH[1]))
+    processed_image = flat_correct(hdu_frame, bias_frame; norm_value = 1)
+    @test processed_image isa CCDData
+    @test processed_image.data ≈ fill(0.5, 5, 5)
 
     # testing mutating version
-    frame = read(hdu_frame)'
-    @test_throws InexactError flat_correct!(frame, string_flat_frame) # errors due to type mutation
+    hdu_frame = CCDData(ones(5, 5), read_header(M6707HH[1]))
+    flat_correct!(hdu_frame, fill(2.0, 5, 5); norm_value = 1)
+    @test hdu_frame.data ≈ fill(0.5, 5, 5)
 
-    frame = read(hdu_frame)'
-    @test_throws InexactError flat_correct!(frame, hdu_flat_frame) # errors due to type mutation
+    # testing type error in mutating version
+    frame = CCDData(fill(1, 5 ,5), read_header(M6707HH[1]))
+    @test_throws InexactError flat_correct!(frame, fill(2.0, 5, 5); norm_value = 1)
 end
-
 
 @testset "trim(FITS)" begin
     # setting initial data
