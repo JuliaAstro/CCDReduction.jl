@@ -1,36 +1,20 @@
-# custom data tyoe to hold ImageHDU
-struct CCDData{T,M<:AbstractMatrix{T}} <: AbstractMatrix{T}
+# custom data type to hold ImageHDU
+abstract type AbstractCCDData{T} <: AbstractMatrix{T} end
+
+struct CCDData{T,M<:AbstractMatrix{T}} <: AbstractCCDData{T}
     data::M
     hdr::FITSHeader
 end
 
 # extending the AbstractMatrix interface
-Base.size(A::CCDData) = size(A.data)
-Base.getindex(A::CCDData, i) = getindex(A.data, i)
-Base.setindex!(A::CCDData, v, i) = setindex!(A.data, v, i)
-Base.eachindex(A::CCDData) = eachindex(A.data)
-Base.iterate(A::CCDData) = iterate(A.data, state=(eachindex(A),))
-Base.length(A::CCDData) = length(A.data)
-Base.axes(A::CCDData) = axes(A.data)
+Base.size(ccd::CCDData) = size(A.data)
+Base.getindex(ccd::CCDData, inds...) = getindex(ccd.data, inds...) # default fallback for operations on Array
+Base.setindex!(ccd::CCDData, v, inds...) = setindex!(ccd.data, v, inds...) # default fallback for operations on Array
+Base.eachindex(ccd::CCDData) = eachindex(ccd.data)
+Base.iterate(ccd::CCDData) = iterate(ccd.data)
+Base.iterate(ccd::CCDData, state) = iterate(ccd.data, state)
+Base.length(ccd::CCDData) = length(ccd.data)
+Base.axes(ccd::CCDData) = axes(ccd.data)
 Base.IndexStyle(::CCDData) = IndexCartesian()
 
-read_hdu(hdu::ImageHDU) = CCDData(getdata(hdu), read_header(hdu))
-
-
-# defining basic functions on CCDData
-# subtract_bias
-function subtract_bias!(frame::CCDData, bias_frame::CCDData)
-    subtract_bias!(frame.data, bias.data)
-    return frame
-end
-
-subtract_bias(frame::CCDData, bias_frame::CCDData) = subtract_bias!(deepcopy(frame), bias_frame)
-
-
-# subtract_overscan
-function subtract_overscan!(frame::CCDData, idxs; kwargs...)
-    subtract_overscan!(frame.data, idxs; kwargs...)
-    return frame
-end
-subtract_overscan!(frame::CCDData, key::Symbol; kwargs...) = subtract_overscan!(frame, frame.header[string(key)]; kwargs...)
-subtract_overscan(frame::CCDData, idxs; kwargs...) = subtract_overscan!(deepcopy(frame), idxs; kwargs...)
+CCDData(hdu::ImageHDU) = CCDData(getdata(hdu), read_header(hdu))

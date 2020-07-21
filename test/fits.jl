@@ -1,33 +1,57 @@
 using CCDReduction: getdata
 
+function test_header(ccd1::CCDData, ccd2::CCDData)
+    header1 = ccd1.hdr
+    header2 = ccd2.hdr
+    @test keys(header1) == keys(header2)
+    for (k1, k2) in zip(keys(header1), keys(header2))
+        @test header1[k1] == header2[k2]
+    end
+end
+
 @testset "bias subtraction(FITS)" begin
     # setting initial data
-    hdu_frame = M6707HH[1]
-    hdu_bias_frame = M6707HH[1]
-    array_frame = read(hdu_frame)'
-    array_bias_frame = read(hdu_bias_frame)'
-    string_bias_frame = test_file_path_M6707HH
-    string_frame = test_file_path_M6707HH
+    hdu_frame = CCDData(M6707HH[1])
+    hdu_bias_frame = CCDData(M6707HH[1])
+    array_frame = getdata(M6707HH[1])
+    array_bias_frame = getdata(M6707HH[1])
 
     # non-mutating version
-    @test subtract_bias(array_frame, array_bias_frame) == zeros(1059, 1059) # Testing Array Array case
-    @test subtract_bias(hdu_frame, hdu_bias_frame) == zeros(1059, 1059) # testing ImageHDU ImageHDU case
-    @test subtract_bias(array_frame, hdu_bias_frame) == zeros(1059, 1059) # testing Array ImageHDU case
-    @test subtract_bias(hdu_frame, array_bias_frame) == zeros(1059, 1059) # testing ImageHDU Array case
-    @test subtract_bias(string_frame, array_bias_frame) == zeros(1059, 1059) # testing String Array case
-    @test subtract_bias(array_frame, string_bias_frame) == zeros(1059, 1059) # testing Array String case
-    @test subtract_bias(string_frame, hdu_bias_frame) == zeros(1059, 1059) # testing String ImageHDU case
-    @test subtract_bias(hdu_frame, string_bias_frame) == zeros(1059, 1059) # testing ImageHDU String case
-    @test subtract_bias(string_frame, string_bias_frame) == zeros(1059, 1059) # testing String String case
+    # testing CCDData CCDData case
+    processed_frame = subtract_bias(hdu_frame, hdu_bias_frame)
+    @test processed_frame isa CCDData
+    @test processed_frame.data == zeros(1059, 1059)
+    test_header(processed_frame, hdu_frame)
 
-    # mutating version
-    frame = read(hdu_frame)'
-    @inferred subtract_bias!(frame, string_bias_frame)
-    @test frame == zeros(1059, 1059) # testing Array String case
+    ## testing Array CCDData case
+    processed_frame = subtract_bias(array_frame, hdu_bias_frame)
+    @test processed_frame isa Array
+    @test processed_frame == zeros(1059, 1059)
 
-    frame = read(hdu_frame)'
-    @inferred subtract_bias!(frame, hdu_bias_frame)
-    @test frame == zeros(1059, 1059) # testing Array ImageHDU case
+    # testing CCDData case
+    processed_frame = subtract_bias(hdu_frame, array_bias_frame)
+    @test processed_frame isa CCDData
+    @test processed_frame.data == zeros(1059, 1059)
+    test_header(processed_frame, hdu_frame)
+
+    # testing mutating version
+    # testing CCDData CCDData case
+    hdu_frame = CCDData(M6707HH[1])
+    subtract_bias!(hdu_frame, hdu_bias_frame)
+    @test hdu_frame isa CCDData
+    @test hdu_frame.data == zeros(1059, 1059)
+
+    # testing CCDData Array case
+    hdu_frame = CCDData(M6707HH[1])
+    subtract_bias!(hdu_frame, array_bias_frame)
+    @test hdu_frame isa CCDData
+    @test hdu_frame.data == zeros(1059, 1059)
+
+    # testing Array CCDData case
+    array_frame = getdata(M6707HH[1])
+    subtract_bias!(array_frame, hdu_bias_frame)
+    @test array_frame isa Array
+    @test array_frame == zeros(1059, 1059)
 end
 
 @testset "overscan subtraction(FITS)" begin
