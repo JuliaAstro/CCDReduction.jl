@@ -56,15 +56,27 @@ end
 
 @testset "overscan subtraction(FITS)" begin
     # setting initial data
-    hdu = M6707HH[1]
-    data = read(hdu)'
+    hdu_frame = CCDData(M6707HH[1])
+    array_frame = getdata(M6707HH[1])
 
     # testing non-mutating version
-    @test subtract_overscan(data, (:, 1050:1059)) == subtract_overscan(test_file_path_M6707HH, (:, 1050:1059))
-    @test subtract_overscan(data, (:, 1050:1059)) == subtract_overscan(test_file_path_M6707HH, "1050:1059, 1:1059")
-    @test subtract_overscan(data, (:, 1050:1059)) == subtract_overscan(hdu, "1050:1059, 1:1059")
-    @test subtract_overscan(data, (1050:1059, :)) == subtract_overscan(hdu, "1:1059, 1050:1059")
+    processed_frame = subtract_overscan(hdu_frame, (:, 1050:1059))
+    @test processed_frame isa CCDData
+    @test processed_frame.data == subtract_overscan(array_frame, (:, 1050:1059))
+    test_header(processed_frame, hdu_frame)
 
+    processed_frame = subtract_overscan(hdu_frame, "1050:1059, 1:1059")
+    processed_frame isa CCDData
+    @test processed_frame.data == subtract_overscan(array_frame, (:, 1050:1059))
+
+    # testing mutating version
+    hdu_frame = CCDData(M6707HH[1])
+    subtract_overscan!(hdu_frame, (:, 1050:1059))
+    @test hdu_frame.data == subtract_overscan(array_frame, (:, 1050:1059))
+
+    hdu_frame = CCDData(M6707HH[1])
+    subtract_overscan!(hdu_frame, "1050:1059, 1:1059")
+    @test hdu_frame.data == subtract_overscan(array_frame, (:, 1050:1059))
 end
 
 @testset "flat correction(FITS)" begin
