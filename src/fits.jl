@@ -11,3 +11,32 @@ function getdata(hdu::ImageHDU)
     d = ndims(data)
     return permutedims(data, d:-1:1)
 end
+
+# documentation for functions interface with CCDData
+"""
+    subtract_bias(frame, bias_frame)
+
+Load HDU for the `frame` or `bias_frame` as `CCDData` before subtracting from `frame`.
+
+```julia
+framefits = FITS(...) # loads FITS file
+biasfits = FITS(...) # loads FITS file
+
+frame = CCDData(framefits[1]) # loads ImageHDU of framefits as CCDData
+bias = CCDData(biasfits[1]) # loads ImageHDU of biasfits as CCDData
+
+processed_frame = subtract_bias(frame, bias) # outputs bias subtracted frame
+```
+
+Output of the function inherits the type of first parameter and header file of output (if applicable) is same as of the first parameter.
+The parameters can also be of mixed type, e.g. `frame` is an `Array` and `bias_frame` is `CCDData` or vice versa.
+"""
+function subtract_bias end
+
+
+"""
+    subtract_bias!(frame, bias_frame)
+
+Load HDU for the `frame` or `bias_frame` as `CCDData` before subtracting from `frame` in-place.
+"""
+function subtract_bias! end
