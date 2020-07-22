@@ -203,37 +203,32 @@ end
 
 @testset "dark subtraction(FITS)" begin
     # setting initial data
-    hdu_frame = M6707HH[1]
-    hdu_bias_frame = M6707HH[1]
-    array_frame = read(hdu_frame)'
-    array_bias_frame = read(hdu_bias_frame)'
-    string_bias_frame = test_file_path_M6707HH
-    string_frame = test_file_path_M6707HH
+    hdu_frame = CCDData(M6707HH[1])
+    hdu_bias_frame = CCDData(M6707HH[1])
+    array_frame = getdata(M6707HH[1])
+    array_bias_frame = getdata(M6707HH[1])
 
     # testing non-mutating version
-    @test subtract_dark(array_frame, array_bias_frame; dark_exposure = 0.5) == (-1).* array_frame # testing Array Array case
-    @test subtract_dark(array_frame, hdu_bias_frame; data_exposure = 2, dark_exposure = 2) == zeros(1059, 1059) # testing Array ImageHDU case
-    @test subtract_dark(hdu_frame, hdu_bias_frame; data_exposure = 2, dark_exposure = 2) == zeros(1059, 1059) # testing ImageHDU ImageHDU case
-    @test subtract_dark(hdu_frame, array_bias_frame; data_exposure = 2, dark_exposure = 2) == zeros(1059, 1059) # testing ImageHDU Array case
-    @test subtract_dark(array_frame, string_bias_frame; data_exposure = 2, dark_exposure = 2) == zeros(1059, 1059) # testing Array String case
-    @test subtract_dark(string_frame, array_bias_frame; data_exposure = 2, dark_exposure = 2) == zeros(1059, 1059) # testing String Array case
-    @test subtract_dark(string_frame, string_bias_frame; data_exposure = 2, dark_exposure = 2) == zeros(1059, 1059) # testsing String String case
-    @test subtract_dark(string_frame, hdu_bias_frame; data_exposure = 2, dark_exposure = 2) == zeros(1059, 1059) # testing String ImageHDU case
-    @test subtract_dark(hdu_frame, string_bias_frame; data_exposure = 2, dark_exposure = 2) == zeros(1059, 1059) # testing ImageHDU String case
+    # testing CCDData CCDData case
+    processed_frame = subtract_dark(hdu_frame, hdu_bias_frame; dark_exposure = 0.5)
+    @test processed_frame isa CCDData
+    test_header(processed_frame, hdu_frame)
+    @test processed_frame == (-1) .* array_frame
 
-    # testing with Symbols
-    @test subtract_dark(hdu_frame, hdu_bias_frame; data_exposure = :EXPOSURE, dark_exposure = :EXPOSURE) == zeros(1059, 1059)
-    @test subtract_dark(string_frame, string_bias_frame; data_exposure = :EXPOSURE, dark_exposure = :EXPOSURE) == zeros(1059, 1059)
-    @test subtract_dark(array_frame, hdu_bias_frame; dark_exposure = :EXPOSURE) ≈ (49 / 50) .* array_frame
+    # testing CCDData Array case
+    processed_frame = subtract_dark(hdu_frame, array_bias_frame; dark_exposure = 2, data_exposure = 2)
+    @test processed_frame isa CCDData
+    @test processed_frame.data == zeros(1059, 1059)
 
-    #testing mutating version
-    frame = read(hdu_frame)'
-    subtract_dark!(frame, string_bias_frame; hdu = 1, data_exposure = 1, dark_exposure = 1)
-    @test frame == zeros(1059, 1059) # testing Array String Case
+    # testing Array CCDData
+    processed_frame = subtract_dark(array_frame, hdu_bias_frame; dark_exposure = 2, data_exposure = 2)
+    @test processed_frame isa Array
+    @test processed_frame == zeros(1059, 1059)
 
-    frame = read(hdu_frame)'
-    subtract_dark!(frame, hdu_bias_frame; data_exposure = 2, dark_exposure = 2)
-    @test frame == zeros(1059, 1059)
+    # testing mutating version
+    hdu_frame = CCDData(M6707HH[1])
+    subtract_dark!(hdu_frame, hdu_bias_frame; dark_exposure = 2, data_exposure = 2)
+    @test hdu_frame.data == zeros(1059, 1059)
 end
 
 @testset "helper(FITS)" begin
