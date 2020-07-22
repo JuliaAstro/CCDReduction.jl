@@ -125,7 +125,7 @@ end
 
     # testing error
     @test_throws DimensionMismatch combine(rand(5, 5), rand(6, 6))
-    @test_throws MethodError combine()
+    @test_throws ArgumentError combine()
 end
 
 @testset "dark subtraction" begin
