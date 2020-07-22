@@ -152,14 +152,31 @@ end
 
 @testset "cropping(FITS)" begin
     # setting initial data
-    hdu = M6707HH[1]
-    data = read(hdu)'
+    hdu_frame = CCDData(M6707HH[1])
+    array_frame = getdata(M6707HH[1])
 
-    # testing non-mutating version
-    @test crop(data, (:, 5)) == crop(hdu, (:, 5))
-    @test crop(data, (1000, 5); force_equal = false) == crop(hdu, (1000, 5); force_equal = false)
-    @test_logs (:warn, "dimension 1 changed from 348 to 349") (:warn, "dimension 2 changed from 226 to 227") (:warn, "dimension 1 changed from 348 to 349") (:warn, "dimension 2 changed from 226 to 227") @test crop(data, (348, 226)) == crop(test_file_path_M6707HH, (348, 226))
-    @test crop(data, (348, 226); force_equal = false) == crop(test_file_path_M6707HH, (348, 226); force_equal = false)
+    # testing crop
+    processed_frame = crop(hdu_frame, (:, 5))
+    @test processed_frame isa CCDData
+    @test processed_frame.data isa Array
+    @test processed_frame.data == crop(array_frame, (:, 5))
+
+    @test_logs (:warn, "dimension 1 changed from 348 to 349") (:warn, "dimension 2 changed from 226 to 227") processed_frame = crop(hdu_frame, (348, 226))
+    @test processed_frame isa CCDData
+    @test processed_frame.data isa Array
+    @test_logs (:warn, "dimension 1 changed from 348 to 349") (:warn, "dimension 2 changed from 226 to 227") @test processed_frame.data == crop(array_frame, (348, 226))
+
+    processed_frame = crop(hdu_frame, (1000, 5); force_equal = false)
+    @test processed_frame isa CCDData
+    @test processed_frame.data isa Array
+    @test processed_frame.data == crop(array_frame, (1000, 5); force_equal = false)
+
+    # testing trimview
+    processed_frame = cropview(hdu_frame, (:, :))
+    @test processed_frame isa CCDData
+    @test processed_frame.data isa SubArray
+    processed_frame.data[5] = 1
+    @test hdu_frame[5] == 1 # modifying processed_frame modifies hdu_frame
 end
 
 
