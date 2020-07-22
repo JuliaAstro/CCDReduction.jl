@@ -16,6 +16,9 @@ Base.getindex(ccd::CCDData, inds...) = getindex(ccd.data, inds...) # default fal
 Base.setindex!(ccd::CCDData, v, inds...) = setindex!(ccd.data, v, inds...) # default fallback for operations on Array
 Base.promote_rule(::Type{CCDData{T}}, ::Type{CCDData{V}}) where {T,V} = CCDData{promote_type{T,V}}
 Base.convert(::Type{CCDData{T}}, ccd::CCDData{V}) where {T,V} = CCDData{T}(ccd.data, ccd.hdr)
+Base.view(ccd::CCDData, inds...) = CCDData(view(ccd.data, inds...), ccd.hdr)
+Base.selectdim(ccd::CCDData, d::Integer, idxs) = CCDData(selectdim(ccd.data, d, idxs), ccd.hdr)
+Base.copy(ccd::CCDData) = CCDData(copy(ccd.data), deepcopy(ccd.hdr))
 
 # broadcast mechanics
 Base.BroadcastStyle(::Type{<:CCDData}) = Broadcast.ArrayStyle{CCDData}()

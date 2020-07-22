@@ -94,27 +94,27 @@ end
 
     # testing non mutating version
     # testing CCDData CCDData case
-    processed_image = flat_correct(hdu_frame, hdu_flat_frame)
-    @test processed_image isa CCDData
-    test_header(processed_image, hdu_frame)
-    @test processed_image.data ≈ fill(mean_flat_frame, 1059, 1059)
+    processed_frame = flat_correct(hdu_frame, hdu_flat_frame)
+    @test processed_frame isa CCDData
+    test_header(processed_frame, hdu_frame)
+    @test processed_frame.data ≈ fill(mean_flat_frame, 1059, 1059)
 
     # testing CCDData Array case
-    processed_image = flat_correct(hdu_frame, array_flat_frame; norm_value = 1)
-    @test processed_image isa CCDData
-    @test processed_image.data ≈ ones(1059, 1059)
+    processed_frame = flat_correct(hdu_frame, array_flat_frame; norm_value = 1)
+    @test processed_frame isa CCDData
+    @test processed_frame.data ≈ ones(1059, 1059)
 
     # testing Array CCDData case
-    processed_image = flat_correct(array_frame, hdu_flat_frame; norm_value = 1)
-    @test processed_image isa Array
-    @test processed_image ≈ ones(1059, 1059)
+    processed_frame = flat_correct(array_frame, hdu_flat_frame; norm_value = 1)
+    @test processed_frame isa Array
+    @test processed_frame ≈ ones(1059, 1059)
 
     # testing type mutation in non mutating version
     hdu_frame = CCDData(fill(1, 5, 5), read_header(M6707HH[1]))
     bias_frame = CCDData(fill(2.0, 5, 5), read_header(M6707HH[1]))
-    processed_image = flat_correct(hdu_frame, bias_frame; norm_value = 1)
-    @test processed_image isa CCDData
-    @test processed_image.data ≈ fill(0.5, 5, 5)
+    processed_frame = flat_correct(hdu_frame, bias_frame; norm_value = 1)
+    @test processed_frame isa CCDData
+    @test processed_frame.data ≈ fill(0.5, 5, 5)
 
     # testing mutating version
     hdu_frame = CCDData(ones(5, 5), read_header(M6707HH[1]))
@@ -128,14 +128,26 @@ end
 
 @testset "trim(FITS)" begin
     # setting initial data
-    hdu = M6707HH[1]
-    data = read(hdu)'
+    hdu_frame = CCDData(M6707HH[1])
+    array_frame = M6707HH[1] |> getdata
 
-    # testing non-mutating version
-    @test trim(data, (:, 1050:1059)) == trim(test_file_path_M6707HH, (:, 1050:1059))
-    @test trim(data, (:, 1050:1059)) == trim(test_file_path_M6707HH, "1050:1059, 1:1059")
-    @test trim(data, (:, 1050:1059)) == trim(hdu, "1050:1059, 1:1059")
-    @test trim(data, (1050:1059, :)) == trim(hdu, "1:1059, 1050:1059")
+    # testing trum
+    processed_frame = trim(hdu_frame, (:, 1050:1059))
+    @test processed_frame isa CCDData
+    @test processed_frame.data == trim(array_frame, (:, 1050:1059))
+
+    processed_frame = trim(hdu_frame, "1:1059, 1050:1059")
+    test_header(processed_frame, hdu_frame)
+    @test processed_frame isa CCDData
+    @test processed_frame.data isa Array
+    @test processed_frame.data == trim(array_frame, (1050:1059, :))
+
+    # testing trimview
+    processed_frame = trimview(hdu_frame, (:, 1050:1059))
+    @test processed_frame isa CCDData
+    @test processed_frame.data isa SubArray
+    processed_frame.data[3] = 16
+    @test hdu_frame.data[3] == 16 # modifying processed_frame modifies hdu_frame
 end
 
 @testset "cropping(FITS)" begin
