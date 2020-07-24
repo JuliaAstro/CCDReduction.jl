@@ -28,6 +28,6 @@ export subtract_bias,
 include("methods.jl")
 include("fits.jl")
 include("collection.jl")
-include("datatype.jl")
+include("ccddata.jl")
 
 end
