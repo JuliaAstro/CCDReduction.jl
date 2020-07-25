@@ -12,6 +12,49 @@ function getdata(hdu::ImageHDU)
     return permutedims(data, d:-1:1)
 end
 
+# helper function to get BITPIX for an image array
+function get_bitpix(T::Type)
+    T === UInt8 && return 8
+    T === Int16 && return 16
+    T === Int32 && return 32
+    T === Int64 && return 64
+    T === Float32 && return -32
+    T === Float64 && return -64
+end
+
+# helper function to generate default header of an image array
+function get_default_header(data::AbstractArray{T}) where T <: Number
+    # initial comments
+    comments = ["file does conform to FITS standard", # comment for SIMPLE
+                "number of bits per data pixel",      # comment for BITPIX
+                "number of data axes"]                # comment for NAXIS
+
+    hdr = OrderedDict{String, Any}() # creating OrderedDict to store header
+
+    # Assiging SIMPLE, will be true since header is for fits file
+    hdr["SIMPLE"] = "T"
+    # Assigning BITPIX based on type
+    hdr["BITPIX"] = get_bitpix(T)
+
+    # Assiging NAXIS
+    hdr["NAXIS"] = ndims(data)
+    dims = reverse(size(data)) # reversing becuase of fits standard format
+    for (i, dim) in enumerate(dims)
+        str = string("NAXIS", string(i))
+        hdr[str] = dim
+        push!(comments, string("length of data axis ", string(i))) # Assigning comments for axis
+    end
+
+    # EXTEND is always true since no header was previously present, taken from AstroPy
+    hdr["EXTEND"] = "T"
+    push!(comments, "FITS dataset may contain extensions") # Assigning comments for EXTEND
+
+    hdu_keys = keys(hdr) |> collect
+    hdu_values = values(hdr) |> collect
+    return FITSHeader(hdu_keys, hdu_values, comments)
+end
+
+#---------------------------------------------------------------------------------------
 # documentation for functions interface with CCDData
 """
     subtract_bias(frame, bias_frame)

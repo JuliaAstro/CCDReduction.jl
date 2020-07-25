@@ -5,6 +5,7 @@ using LazyStack
 using FITSIO
 using DataFrames: DataFrame
 using ResumableFunctions
+using DataStructures
 
 export subtract_bias,
        subtract_bias!,

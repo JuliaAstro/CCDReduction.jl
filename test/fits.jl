@@ -1,4 +1,6 @@
-using CCDReduction: getdata
+using CCDReduction: getdata,
+                    get_bitpix,
+                    get_default_header
 
 function test_header(ccd1::CCDData, ccd2::CCDData)
     header1 = ccd1.hdr
@@ -54,8 +56,8 @@ end
     @test array_frame == zeros(1059, 1059)
 
     # testing error in mutating version
-    hdu_frame = CCDData(fill(2, 5, 5), read_header(M6707HH[1]))
-    hdu_bias = CCDData(fill(2.5, 5, 5), read_header(M6707HH[1]))
+    hdu_frame = CCDData(fill(2, 5, 5))
+    hdu_bias = CCDData(fill(2.5, 5, 5))
     @test_throws InexactError subtract_bias!(hdu_frame, hdu_bias)
 end
 
@@ -110,19 +112,19 @@ end
     @test processed_frame ≈ ones(1059, 1059)
 
     # testing type mutation in non mutating version
-    hdu_frame = CCDData(fill(1, 5, 5), read_header(M6707HH[1]))
-    bias_frame = CCDData(fill(2.0, 5, 5), read_header(M6707HH[1]))
+    hdu_frame = CCDData(fill(1, 5, 5))
+    bias_frame = CCDData(fill(2.0, 5, 5))
     processed_frame = flat_correct(hdu_frame, bias_frame; norm_value = 1)
     @test processed_frame isa CCDData
     @test processed_frame.data ≈ fill(0.5, 5, 5)
 
     # testing mutating version
-    hdu_frame = CCDData(ones(5, 5), read_header(M6707HH[1]))
+    hdu_frame = CCDData(ones(5, 5))
     flat_correct!(hdu_frame, fill(2.0, 5, 5); norm_value = 1)
     @test hdu_frame.data ≈ fill(0.5, 5, 5)
 
     # testing type error in mutating version
-    frame = CCDData(fill(1, 5 ,5), read_header(M6707HH[1]))
+    frame = CCDData(fill(1, 5 ,5))
     @test_throws InexactError flat_correct!(frame, fill(2.0, 5, 5); norm_value = 1)
 end
 
@@ -236,4 +238,24 @@ end
     hdu = M6707HH[1]
     data = read(hdu)'
     @test data == getdata(hdu)
+
+    # testing get_bitpix
+    @test get_bitpix(UInt8) == 8
+    @test get_bitpix(Int16) == 16
+    @test get_bitpix(Int32) == 32
+    @test get_bitpix(Int64) == 64
+    @test get_bitpix(Float32) == -32
+    @test get_bitpix(Float64) == -64
+
+    # testing get_default_header
+    data = fill(Int16(2), 5, 6, 2)
+    hdr = get_default_header(data)
+    @test hdr isa FITSHeader
+    @test hdr["SIMPLE"] == "T"
+    @test hdr["BITPIX"] == 16
+    @test hdr["NAXIS"] == 3
+    @test hdr["NAXIS1"] == 2
+    @test hdr["NAXIS2"] == 6
+    @test hdr["NAXIS3"] == 5
+    @test hdr["EXTEND"] == "T"
 end

@@ -8,6 +8,7 @@ struct CCDData{T,M<:AbstractMatrix{T}} <: AbstractCCDData{T}
 end
 
 CCDData(hdu::ImageHDU) = CCDData(getdata(hdu), read_header(hdu))
+CCDData(data) = CCDData(data, get_default_header(data))
 CCDData{T}(data, hdr) where {T<:Number} = CCDData(T.(data), hdr)
 
 # extending the AbstractMatrix interface
