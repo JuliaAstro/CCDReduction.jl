@@ -9,6 +9,12 @@ end
 
 CCDData(hdu::ImageHDU) = CCDData(getdata(hdu), read_header(hdu))
 CCDData(data) = CCDData(data, get_default_header(data))
+function CCDData(path::String, hdu)
+    fh = FITS(path)
+    ccd = CCDData(fh[hdu])
+    close(fh)
+    return ccd
+end
 CCDData{T}(data, hdr) where {T<:Number} = CCDData(T.(data), hdr)
 
 # extending the AbstractMatrix interface

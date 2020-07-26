@@ -17,6 +17,8 @@ end
     hdu_bias_frame = CCDData(M6707HH[1])
     array_frame = getdata(M6707HH[1])
     array_bias_frame = getdata(M6707HH[1])
+    string_frame = joinpath(@__DIR__, "data/M6707HH.fits")
+    string_bias_frame = joinpath(@__DIR__, "data/M6707HH.fits")
 
     # non-mutating version
     # testing CCDData CCDData case
@@ -25,16 +27,44 @@ end
     @test processed_frame.data == zeros(1059, 1059)
     test_header(processed_frame, hdu_frame)
 
-    ## testing Array CCDData case
+    # testing Array CCDData case
     processed_frame = subtract_bias(array_frame, hdu_bias_frame)
     @test processed_frame isa Array
     @test processed_frame == zeros(1059, 1059)
 
-    # testing CCDData case
+    # testing CCDData Array case
     processed_frame = subtract_bias(hdu_frame, array_bias_frame)
     @test processed_frame isa CCDData
     @test processed_frame.data == zeros(1059, 1059)
     test_header(processed_frame, hdu_frame)
+
+    # testing CCDData String case
+    processed_frame = subtract_bias(hdu_frame, string_bias_frame)
+    @test processed_frame isa CCDData
+    @test processed_frame.data == zeros(1059, 1059)
+    test_header(processed_frame, hdu_frame)
+
+    # testing String CCDData case
+    processed_frame = subtract_bias(string_frame, hdu_bias_frame)
+    @test processed_frame isa CCDData
+    @test processed_frame.data == zeros(1059, 1059)
+    test_header(processed_frame, hdu_frame)
+
+    # testing String String case
+    processed_frame = subtract_bias(string_frame, string_bias_frame)
+    @test processed_frame isa CCDData
+    @test processed_frame.data == zeros(1059, 1059)
+    test_header(processed_frame, hdu_frame)
+
+    # testing Array String case
+    processed_frame = subtract_bias(array_frame, string_bias_frame)
+    @test processed_frame isa Array
+    @test processed_frame == zeros(1059, 1059)
+
+    # testing String Array case
+    processed_frame = subtract_bias(string_frame, array_bias_frame)
+    @test processed_frame isa CCDData
+    @test processed_frame == zeros(1059, 1059)
 
     # testing mutating version
     # testing CCDData CCDData case
@@ -54,6 +84,18 @@ end
     subtract_bias!(array_frame, hdu_bias_frame)
     @test array_frame isa Array
     @test array_frame == zeros(1059, 1059)
+
+    # testing Array String
+    array_frame = getdata(M6707HH[1])
+    subtract_bias!(array_frame, string_bias_frame)
+    @test array_frame isa Array
+    @test array_frame == zeros(1059, 1059)
+
+    # testing CCDData String
+    hdu_frame = CCDData(M6707HH[1])
+    subtract_bias!(hdu_frame, string_bias_frame)
+    @test hdu_frame isa CCDData
+    @test hdu_frame.data == zeros(1059, 1059)
 
     # testing error in mutating version
     hdu_frame = CCDData(fill(2, 5, 5))

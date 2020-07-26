@@ -55,6 +55,27 @@ function get_default_header(data::AbstractArray{T}) where T <: Number
 end
 
 #---------------------------------------------------------------------------------------
+# Code generation with codegen to support path of FITS files
+for func in (:flat_correct, :subtract_bias)
+    @eval $func(frame::String, correction; hdu = 1, kwargs...) = $func(CCDData(frame, hdu), correction; kwargs...)
+    @eval $func(frame, correction::String; hdu = 1, kwargs...) = $func(frame, CCDData(correction, hdu); kwargs...)
+    @eval begin
+        function $func(frame::String, correction::String; hdu = (1, 1), kwargs...)
+            hdus = hdu isa Integer ? (hdu, hdu) : hdu
+            return $func(CCDData(frame, hdus[1]), CCDData(frame, hdus[2]); kwargs...)
+        end
+    end
+end
+
+for func in (:flat_correct!, :subtract_bias!)
+    @eval $func(frame::AbstractArray, correction::String; hdu = 1, kwargs...) = $func(frame, CCDData(correction, hdu); kwargs...)
+end
+
+
+for func in (:crop, :trim, :subtract_overscan)
+    @eval $func(frame::String, args...; hdu = 1, kwargs...) = $func(CCDData(frame, hdu), args...; kwargs...)
+end
+
 # documentation for functions interface with CCDData
 """
     subtract_bias(frame, bias_frame)
