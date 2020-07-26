@@ -142,6 +142,8 @@ end
     hdu_flat_frame = CCDData(M6707HH[1])
     array_frame = getdata(M6707HH[1])
     array_flat_frame = getdata(M6707HH[1])
+    string_frame = joinpath(@__DIR__, "data/M6707HH.fits")
+    string_flat_frame = joinpath(@__DIR__, "data/M6707HH.fits")
     mean_flat_frame = mean(array_flat_frame)
 
     # testing non mutating version
@@ -161,6 +163,33 @@ end
     @test processed_frame isa Array
     @test processed_frame ≈ ones(1059, 1059)
 
+    # testing String CCDData case
+    processed_frame = flat_correct(string_frame, hdu_flat_frame; norm_value = 1, hdu = 1)
+    @test processed_frame isa CCDData
+    @test processed_frame.data ≈ ones(1059, 1059)
+
+    # testing String Array Case
+    processed_frame = flat_correct(string_frame, array_flat_frame; norm_value = 1, hdu = 1)
+    @test processed_frame isa CCDData
+    @test processed_frame.data ≈ ones(1059, 1059)
+    test_header(processed_frame, CCDData(string_frame, 1))
+
+    # testing CCDData String case
+    processed_frame = flat_correct(hdu_frame, string_flat_frame; norm_value = 1, hdu = 1)
+    @test processed_frame isa CCDData
+    @test processed_frame.data ≈ ones(1059, 1059)
+
+    # testing Array String case
+    processed_frame = flat_correct(array_frame, string_flat_frame; norm_value = 1, hdu = 1)
+    @test processed_frame isa Array
+    @test processed_frame ≈ ones(1059, 1059)
+
+    # testing String String case
+    processed_frame = flat_correct(string_frame, string_flat_frame; norm_value = 1, hdu = 1)
+    @test processed_frame isa CCDData
+    @test processed_frame.data ≈ ones(1059, 1059)
+    test_header(processed_frame, CCDData(string_frame, 1))
+
     # testing type mutation in non mutating version
     hdu_frame = CCDData(fill(1, 5, 5))
     bias_frame = CCDData(fill(2.0, 5, 5))
@@ -169,9 +198,25 @@ end
     @test processed_frame.data ≈ fill(0.5, 5, 5)
 
     # testing mutating version
+    # testing CCDData Array case
     hdu_frame = CCDData(ones(5, 5))
     flat_correct!(hdu_frame, fill(2.0, 5, 5); norm_value = 1)
     @test hdu_frame.data ≈ fill(0.5, 5, 5)
+
+    # testing CCDData CCDData case
+    hdu_frame = CCDData(ones(5, 5))
+    flat_correct!(hdu_frame, CCDData(fill(2.0, 5, 5)); norm_value = 1)
+    @test hdu_frame.data ≈ fill(0.5, 5, 5)
+
+    # testing CCDData String case
+    hdu_frame = CCDData(M6707HH[1])
+    flat_correct!(hdu_frame, string_flat_frame; norm_value = 1, hdu = 1)
+    @test hdu_frame.data ≈ ones(1059, 1059)
+
+    # testing Array String case
+    array_frame = getdata(M6707HH[1])
+    flat_correct!(array_frame, string_flat_frame; norm_value = 1, hdu = 1)
+    @test hdu_frame.data ≈ ones(1059, 1059)
 
     # testing type error in mutating version
     frame = CCDData(fill(1, 5 ,5))
