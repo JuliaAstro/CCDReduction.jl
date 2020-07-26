@@ -320,30 +320,74 @@ end
 @testset "dark subtraction(FITS)" begin
     # setting initial data
     hdu_frame = CCDData(M6707HH[1])
-    hdu_bias_frame = CCDData(M6707HH[1])
+    hdu_dark_frame = CCDData(M6707HH[1])
     array_frame = getdata(M6707HH[1])
-    array_bias_frame = getdata(M6707HH[1])
+    array_dark_frame = getdata(M6707HH[1])
+    string_frame = joinpath(@__DIR__, "data/M6707HH.fits")
+    string_dark_frame = joinpath(@__DIR__, "data/M6707HH.fits")
 
     # testing non-mutating version
     # testing CCDData CCDData case
-    processed_frame = subtract_dark(hdu_frame, hdu_bias_frame; dark_exposure = 0.5)
+    processed_frame = subtract_dark(hdu_frame, hdu_dark_frame; dark_exposure = 0.5)
     @test processed_frame isa CCDData
     test_header(processed_frame, hdu_frame)
     @test processed_frame == (-1) .* array_frame
 
     # testing CCDData Array case
-    processed_frame = subtract_dark(hdu_frame, array_bias_frame; dark_exposure = 2, data_exposure = 2)
+    processed_frame = subtract_dark(hdu_frame, array_dark_frame; dark_exposure = 2, data_exposure = 2)
     @test processed_frame isa CCDData
     @test processed_frame.data == zeros(1059, 1059)
 
-    # testing Array CCDData
-    processed_frame = subtract_dark(array_frame, hdu_bias_frame; dark_exposure = 2, data_exposure = 2)
+    # testing Array CCDData case
+    processed_frame = subtract_dark(array_frame, hdu_dark_frame; dark_exposure = 2, data_exposure = 2)
     @test processed_frame isa Array
     @test processed_frame == zeros(1059, 1059)
 
+    # testing CCDData String case
+    processed_frame = subtract_dark(hdu_frame, string_dark_frame; dark_exposure = 2, data_exposure = 2, hdu = 1)
+    @test processed_frame isa CCDData
+    @test processed_frame.data == zeros(1059, 1059)
+
+    # testing Array String case
+    processed_frame = subtract_dark(array_frame, string_dark_frame; dark_exposure = 2, data_exposure = 2, hdu = 1)
+    @test processed_frame isa Array
+    @test processed_frame == zeros(1059, 1059)
+
+    # testing String Array case
+    processed_frame = subtract_dark(string_frame, array_dark_frame; dark_exposure = 2, data_exposure = 2, hdu = 1)
+    @test processed_frame isa CCDData
+    @test processed_frame.data == zeros(1059, 1059)
+
+    # testing String CCDData case
+    processed_frame = subtract_dark(string_frame, hdu_dark_frame; dark_exposure = 2, data_exposure = 2, hdu = 1)
+    @test processed_frame isa CCDData
+    @test processed_frame.data == zeros(1059, 1059)
+    test_header(processed_frame, CCDData(string_frame, 1))
+
+    # testing String String case
+    processed_frame = subtract_dark(string_frame, string_dark_frame; dark_exposure = 2, data_exposure = 2, hdu = 1)
+    @test processed_frame isa CCDData
+    @test processed_frame.data == zeros(1059, 1059)
+
     # testing mutating version
+    # testing CCDData CCDData case
     hdu_frame = CCDData(M6707HH[1])
-    subtract_dark!(hdu_frame, hdu_bias_frame; dark_exposure = 2, data_exposure = 2)
+    subtract_dark!(hdu_frame, hdu_dark_frame; dark_exposure = 2, data_exposure = 2)
+    @test hdu_frame.data == zeros(1059, 1059)
+
+    # testing Array CCDData case
+    array_frame = getdata(M6707HH[1])
+    subtract_dark!(array_frame, hdu_dark_frame; dark_exposure = 2, data_exposure = 2)
+    @test hdu_frame.data == zeros(1059, 1059)
+
+    # testing CCDData String case
+    hdu_frame = CCDData(M6707HH[1])
+    subtract_dark!(hdu_frame, string_dark_frame; dark_exposure = 2, data_exposure = 2, hdu = 1)
+    @test hdu_frame.data == zeros(1059, 1059)
+
+    # testing Array String case
+    array_frame = getdata(M6707HH[1])
+    subtract_dark!(array_frame, string_dark_frame; dark_exposure = 2, data_exposure = 2, hdu = 1)
     @test hdu_frame.data == zeros(1059, 1059)
 end
 

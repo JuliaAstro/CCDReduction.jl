@@ -56,7 +56,7 @@ end
 
 #---------------------------------------------------------------------------------------
 # Code generation with codegen to support path of FITS files
-for func in (:flat_correct, :subtract_bias)
+for func in (:flat_correct, :subtract_bias, :subtract_dark)
     @eval $func(frame::String, correction; hdu = 1, kwargs...) = $func(CCDData(frame, hdu), correction; kwargs...)
     @eval $func(frame, correction::String; hdu = 1, kwargs...) = $func(frame, CCDData(correction, hdu); kwargs...)
     @eval begin
@@ -67,7 +67,7 @@ for func in (:flat_correct, :subtract_bias)
     end
 end
 
-for func in (:flat_correct!, :subtract_bias!)
+for func in (:flat_correct!, :subtract_bias!, :subtract_dark!)
     @eval $func(frame::AbstractArray, correction::String; hdu = 1, kwargs...) = $func(frame, CCDData(correction, hdu); kwargs...)
 end
 
