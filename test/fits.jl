@@ -174,13 +174,23 @@ end
     # setting initial data
     hdu_frame = CCDData(M6707HH[1])
     array_frame = M6707HH[1] |> getdata
+    string_frame = joinpath(@__DIR__, "data/M6707HH.fits")
 
-    # testing trum
+    # testing trim
+    # testing CCDData case
     processed_frame = trim(hdu_frame, (:, 1050:1059))
     @test processed_frame isa CCDData
+    @test processed_frame.data isa Array
     @test processed_frame.data == trim(array_frame, (:, 1050:1059))
 
     processed_frame = trim(hdu_frame, "1:1059, 1050:1059")
+    test_header(processed_frame, hdu_frame)
+    @test processed_frame isa CCDData
+    @test processed_frame.data isa Array
+    @test processed_frame.data == trim(array_frame, (1050:1059, :))
+
+    # testing string case
+    processed_frame = trim(string_frame, "1:1059, 1050:1059")
     test_header(processed_frame, hdu_frame)
     @test processed_frame isa CCDData
     @test processed_frame.data isa Array
@@ -198,8 +208,10 @@ end
     # setting initial data
     hdu_frame = CCDData(M6707HH[1])
     array_frame = getdata(M6707HH[1])
+    string_frame = joinpath(@__DIR__, "data/M6707HH.fits")
 
     # testing crop
+    # testning CCDData case
     processed_frame = crop(hdu_frame, (:, 5))
     @test processed_frame isa CCDData
     @test processed_frame.data isa Array
@@ -213,6 +225,13 @@ end
     processed_frame = crop(hdu_frame, (1000, 5); force_equal = false)
     @test processed_frame isa CCDData
     @test processed_frame.data isa Array
+    @test processed_frame.data == crop(array_frame, (1000, 5); force_equal = false)
+
+    # testing String case
+    processed_frame = crop(string_frame, (1000, 5); force_equal = false)
+    @test processed_frame isa CCDData
+    @test processed_frame.data isa Array
+    test_header(processed_frame, CCDData(string_frame, 1))
     @test processed_frame.data == crop(array_frame, (1000, 5); force_equal = false)
 
     # testing trimview
