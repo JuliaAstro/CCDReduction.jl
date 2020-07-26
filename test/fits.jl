@@ -39,19 +39,19 @@ end
     test_header(processed_frame, hdu_frame)
 
     # testing CCDData String case
-    processed_frame = subtract_bias(hdu_frame, string_bias_frame)
+    processed_frame = subtract_bias(hdu_frame, string_bias_frame; hdu = 1)
     @test processed_frame isa CCDData
     @test processed_frame.data == zeros(1059, 1059)
     test_header(processed_frame, hdu_frame)
 
     # testing String CCDData case
-    processed_frame = subtract_bias(string_frame, hdu_bias_frame)
+    processed_frame = subtract_bias(string_frame, hdu_bias_frame; hdu = 1)
     @test processed_frame isa CCDData
     @test processed_frame.data == zeros(1059, 1059)
     test_header(processed_frame, hdu_frame)
 
     # testing String String case
-    processed_frame = subtract_bias(string_frame, string_bias_frame)
+    processed_frame = subtract_bias(string_frame, string_bias_frame; hdu = 1)
     @test processed_frame isa CCDData
     @test processed_frame.data == zeros(1059, 1059)
     test_header(processed_frame, hdu_frame)
@@ -107,8 +107,10 @@ end
     # setting initial data
     hdu_frame = CCDData(M6707HH[1])
     array_frame = getdata(M6707HH[1])
+    string_frame = joinpath(@__DIR__, "data/M6707HH.fits")
 
     # testing non-mutating version
+    # testing CCDData case
     processed_frame = subtract_overscan(hdu_frame, (:, 1050:1059))
     @test processed_frame isa CCDData
     @test processed_frame.data == subtract_overscan(array_frame, (:, 1050:1059))
@@ -117,6 +119,12 @@ end
     processed_frame = subtract_overscan(hdu_frame, "1050:1059, 1:1059")
     processed_frame isa CCDData
     @test processed_frame.data == subtract_overscan(array_frame, (:, 1050:1059))
+
+    # testing String case
+    processed_frame = subtract_overscan(string_frame, "1050:1059, 1:1059"; hdu = 1)
+    @test processed_frame isa CCDData
+    @test processed_frame.data == subtract_overscan(array_frame, (:, 1050:1059))
+    test_header(processed_frame, hdu_frame)
 
     # testing mutating version
     hdu_frame = CCDData(M6707HH[1])
@@ -190,7 +198,7 @@ end
     @test processed_frame.data == trim(array_frame, (1050:1059, :))
 
     # testing string case
-    processed_frame = trim(string_frame, "1:1059, 1050:1059")
+    processed_frame = trim(string_frame, "1:1059, 1050:1059"; hdu = 1)
     test_header(processed_frame, hdu_frame)
     @test processed_frame isa CCDData
     @test processed_frame.data isa Array
@@ -228,7 +236,7 @@ end
     @test processed_frame.data == crop(array_frame, (1000, 5); force_equal = false)
 
     # testing String case
-    processed_frame = crop(string_frame, (1000, 5); force_equal = false)
+    processed_frame = crop(string_frame, (1000, 5); force_equal = false, hdu = 1)
     @test processed_frame isa CCDData
     @test processed_frame.data isa Array
     test_header(processed_frame, CCDData(string_frame, 1))
