@@ -251,11 +251,11 @@ end
     data = fill(Int16(2), 5, 6, 2)
     hdr = get_default_header(data)
     @test hdr isa FITSHeader
-    @test hdr["SIMPLE"] == "T"
+    @test hdr["SIMPLE"] == true
     @test hdr["BITPIX"] == 16
     @test hdr["NAXIS"] == 3
     @test hdr["NAXIS1"] == 2
     @test hdr["NAXIS2"] == 6
     @test hdr["NAXIS3"] == 5
-    @test hdr["EXTEND"] == "T"
+    @test hdr["EXTEND"] == true
 end

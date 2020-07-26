@@ -32,7 +32,7 @@ function get_default_header(data::AbstractArray{T}) where T <: Number
     hdr = OrderedDict{String, Any}() # creating OrderedDict to store header
 
     # Assiging SIMPLE, will be true since header is for fits file
-    hdr["SIMPLE"] = "T"
+    hdr["SIMPLE"] = true
     # Assigning BITPIX based on type
     hdr["BITPIX"] = get_bitpix(T)
 
@@ -46,7 +46,7 @@ function get_default_header(data::AbstractArray{T}) where T <: Number
     end
 
     # EXTEND is always true since no header was previously present, taken from AstroPy
-    hdr["EXTEND"] = "T"
+    hdr["EXTEND"] = true
     push!(comments, "FITS dataset may contain extensions") # Assigning comments for EXTEND
 
     hdu_keys = keys(hdr) |> collect
