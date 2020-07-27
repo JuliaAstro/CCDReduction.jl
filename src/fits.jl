@@ -12,16 +12,6 @@ function getdata(hdu::ImageHDU)
     return permutedims(data, d:-1:1)
 end
 
-# helper function to get BITPIX for an image array
-function get_bitpix(T::Type)
-    T === UInt8 && return 8
-    T === Int16 && return 16
-    T === Int32 && return 32
-    T === Int64 && return 64
-    T === Float32 && return -32
-    T === Float64 && return -64
-end
-
 # helper function to generate default header of an image array
 function get_default_header(data::AbstractArray{T}) where T <: Number
     # initial comments
@@ -34,7 +24,7 @@ function get_default_header(data::AbstractArray{T}) where T <: Number
     # Assiging SIMPLE, will be true since header is for fits file
     hdr["SIMPLE"] = true
     # Assigning BITPIX based on type
-    hdr["BITPIX"] = get_bitpix(T)
+    hdr["BITPIX"] = bitpix_from_type(T)
 
     # Assiging NAXIS
     hdr["NAXIS"] = ndims(data)

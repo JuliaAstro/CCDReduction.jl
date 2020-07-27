@@ -1,5 +1,4 @@
 using CCDReduction: getdata,
-                    get_bitpix,
                     get_default_header
 
 function test_header(ccd1::CCDData, ccd2::CCDData)
@@ -396,14 +395,6 @@ end
     hdu = M6707HH[1]
     data = read(hdu)'
     @test data == getdata(hdu)
-
-    # testing get_bitpix
-    @test get_bitpix(UInt8) == 8
-    @test get_bitpix(Int16) == 16
-    @test get_bitpix(Int32) == 32
-    @test get_bitpix(Int64) == 64
-    @test get_bitpix(Float32) == -32
-    @test get_bitpix(Float64) == -64
 
     # testing get_default_header
     data = fill(Int16(2), 5, 6, 2)
