@@ -14,33 +14,27 @@ end
 
 # helper function to generate default header of an image array
 function get_default_header(data::AbstractArray{T}) where T <: Number
-    # initial comments
-    comments = ["file does conform to FITS standard", # comment for SIMPLE
-                "number of bits per data pixel",      # comment for BITPIX
-                "number of data axes"]                # comment for NAXIS
+    # assigning keys
+    hdu_keys = ["SIMPLE",
+                "BITPIX",
+                "NAXIS",
+                [string(Symbol("NAXIS", i)) for i in 1:ndims(data)]...,
+                "EXTEND"]
 
-    hdr = OrderedDict{String, Any}() # creating OrderedDict to store header
+    # assiging values
+    hdu_values = [true,                         # SIMPLE
+                  bitpix_from_type(T),          # BITPIX
+                  ndims(data),                  # NAXIS
+                  reverse(size(data))...,       # size of each axis
+                  true]                         # EXTEND
 
-    # Assiging SIMPLE, will be true since header is for fits file
-    hdr["SIMPLE"] = true
-    # Assigning BITPIX based on type
-    hdr["BITPIX"] = bitpix_from_type(T)
+    # assigning comments
+    comments = ["file does conform to FITS standard",                                   # comment for SIMPLE
+                "number of bits per data pixel",                                        # comment for BITPIX
+                "number of data axes",                                                  # comment for NAXIS
+                [string(Symbol("length of data axis ", i)) for i in 1:ndims(data)]...,  # comments for axis length
+                "FITS dataset may contain extensions"]                                  # comment for EXTEND
 
-    # Assiging NAXIS
-    hdr["NAXIS"] = ndims(data)
-    dims = reverse(size(data)) # reversing becuase of fits standard format
-    for (i, dim) in enumerate(dims)
-        str = string("NAXIS", string(i))
-        hdr[str] = dim
-        push!(comments, string("length of data axis ", string(i))) # Assigning comments for axis
-    end
-
-    # EXTEND is always true since no header was previously present, taken from AstroPy
-    hdr["EXTEND"] = true
-    push!(comments, "FITS dataset may contain extensions") # Assigning comments for EXTEND
-
-    hdu_keys = keys(hdr) |> collect
-    hdu_values = values(hdr) |> collect
     return FITSHeader(hdu_keys, hdu_values, comments)
 end
 
