@@ -61,11 +61,20 @@ for func in (:crop, :trim, :subtract_overscan)
 end
 
 # separate function for combine involving CCDData because of custom header copying
-function combine(frames::Vararg{<:CCDData{<:Number}}; hdu = 1, kwargs...)
+function combine(frames::Vararg{<:CCDData{<:Number}}; header_hdu = 1, kwargs...)
     data_arrays = map(frame -> frame.data, frames)
     processed_frame = combine(data_arrays...; kwargs...)
-    return CCDData(processed_frame, deepcopy(frames[hdu].hdr))
+    return CCDData(processed_frame, deepcopy(frames[header_hdu].hdr))
 end
+
+# String supporting version of combine
+function combine(frames::Vararg{String, N}; hdu = ntuple(one, N), kwargs...) where N
+    ccddata_frames = map(zip(frames, hdu)) do (frame, hdu_idx)
+        CCDData(FITS(frame)[hdu_idx])
+    end
+    return combine(ccddata_frames...; kwargs...)
+end
+
 
 # documentation for functions interface with CCDData
 """

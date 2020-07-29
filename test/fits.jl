@@ -300,6 +300,8 @@ end
     frame = CCDData(M6707HH[1])
     vector_frames = [frame for i in 1:3]
     vector_arrays = [frame.data for i in 1:3]
+    dir_frame = joinpath(@__DIR__, "data/M6707HH.fits")
+    array_frame = getdata(M6707HH[1])
 
     # testing the vector version
     processed_frame = combine(vector_frames)
@@ -316,10 +318,16 @@ end
     data2 = CCDData(fill(2, 5, 6))
     data2.hdr["SIMPLE"] = false # initially was true
 
-    processed_frame = combine(data1, data2; hdu = 2, method = sum)
+    processed_frame = combine(data1, data2; header_hdu = 2, method = sum)
     @test processed_frame isa CCDData
     @test processed_frame.data == combine(data1.data, data2.data; method = sum)
     test_header(processed_frame, data2)
+
+    # testing String case
+    processed_frame = combine([dir_frame, dir_frame, dir_frame]; method = sum)
+    @test processed_frame isa CCDData
+    @test processed_frame.data == combine(array_frame, array_frame, array_frame; method = sum)
+    test_header(processed_frame, frame)
 end
 
 @testset "dark subtraction(FITS)" begin
