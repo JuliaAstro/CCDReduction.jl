@@ -60,6 +60,13 @@ for func in (:crop, :trim, :subtract_overscan)
     @eval $func(frame::String, args...; hdu = 1, kwargs...) = $func(CCDData(frame, hdu), args...; kwargs...)
 end
 
+# separate function for combine involving CCDData because of custom header copying
+function combine(frames::Vararg{<:CCDData{<:Number}}; hdu = 1, kwargs...)
+    data_arrays = map(frame -> frame.data, frames)
+    processed_frame = combine(data_arrays...; kwargs...)
+    return CCDData(processed_frame, deepcopy(frames[hdu].hdr))
+end
+
 # documentation for functions interface with CCDData
 """
     subtract_bias(frame, bias_frame)

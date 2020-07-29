@@ -26,9 +26,9 @@ export subtract_bias,
        images,
        CCDData
 
+include("ccddata.jl")
 include("methods.jl")
 include("fits.jl")
 include("collection.jl")
-include("ccddata.jl")
 
 end

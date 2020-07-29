@@ -125,7 +125,7 @@ end
 
     # testing error
     @test_throws DimensionMismatch combine(rand(5, 5), rand(6, 6))
-    @test_throws ArgumentError combine()
+    @test_throws StackOverflowError combine() # because of two constructors, one with variable CCDData and other with variable arrays
 end
 
 @testset "dark subtraction" begin

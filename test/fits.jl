@@ -295,26 +295,32 @@ end
 end
 
 
-# @testset "combine(FITS)" begin
-#     # setting initial data
-#     frame = M6707HH[1] |> getdata
-#     vector_hdu = [M6707HH[1] for i in 1:3]
-#     vector_frames = [frame for i in 1:3]
-#     vector_frames_dir = [test_file_path_M6707HH for i in 1:3]
-#
-#     # testing the vector version
-#     @test combine(vector_hdu) == combine(vector_frames)
-#     @test combine(vector_frames_dir) == combine(vector_frames)
-#
-#     # testing the varargs version
-#     @test combine(M6707HH[1], M6707HH[1], M6707HH[1]) == combine(vector_frames)
-#     @test combine(test_file_path_M6707HH, test_file_path_M6707HH, test_file_path_M6707HH) == combine(vector_frames)
-#
-#     # testing with kwargs
-#     @test combine(vector_frames_dir; hdu = 1, method = sum) == combine(vector_frames_dir; hdu = (1, 1, 1), method = sum)
-#     @test combine(test_file_path_M6707HH, test_file_path_M6707HH; hdu = 1) == combine(test_file_path_M6707HH, test_file_path_M6707HH)
-# end
+@testset "combine(FITS)" begin
+    # setting initial data
+    frame = CCDData(M6707HH[1])
+    vector_frames = [frame for i in 1:3]
+    vector_arrays = [frame.data for i in 1:3]
 
+    # testing the vector version
+    processed_frame = combine(vector_frames)
+    @test processed_frame isa CCDData
+    @test processed_frame.data == combine(vector_arrays)
+
+    # testing varargs version
+    processed_frame = combine(frame, frame, frame)
+    @test processed_frame isa CCDData
+    @test processed_frame.data == combine(vector_arrays)
+
+    # testing header header copyig functionality
+    data1 = CCDData(ones(5, 6))
+    data2 = CCDData(fill(2, 5, 6))
+    data2.hdr["SIMPLE"] = false # initially was true
+
+    processed_frame = combine(data1, data2; hdu = 2, method = sum)
+    @test processed_frame isa CCDData
+    @test processed_frame.data == combine(data1.data, data2.data; method = sum)
+    test_header(processed_frame, data2)
+end
 
 @testset "dark subtraction(FITS)" begin
     # setting initial data
