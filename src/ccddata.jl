@@ -1,14 +1,41 @@
 # abstract data type for CCDData
+"""
+    AbstractCCDData{T}
+
+Supertype for `CCDData` based on `AbstractMatrix` interface.
+"""
 abstract type AbstractCCDData{T} <: AbstractMatrix{T} end
 
 # custom data type to hold ImageHDU
+"""
+    CCDData(data::AbstractMatrix, hdr::FITSHeader)
+
+Struct to store `ImageHDU`, derived from [`AbstractCCDData`](@ref).
+"""
 struct CCDData{T,M<:AbstractMatrix{T}} <: AbstractCCDData{T}
     data::M
     hdr::FITSHeader
 end
 
+"""
+    CCDData(hdu::ImageHDU)
+
+Loads `ImageHDU` as `CCDData`.
+"""
 CCDData(hdu::ImageHDU) = CCDData(getdata(hdu), read_header(hdu))
+
+"""
+    CCDData(data::AbstractArray)
+
+Creates `CCDData` from an `Array`.
+"""
 CCDData(data) = CCDData(data, get_default_header(data))
+
+"""
+    CCDData(path::String, hdu)
+
+Loads HDU from `hdu` index in `FITS` file at `path` as `CCDData`.
+"""
 function CCDData(path::String, hdu)
     fh = FITS(path)
     ccd = CCDData(fh[hdu])
