@@ -342,7 +342,7 @@ Combine multiple frames using `method`. Multiple frames can also be passed in a 
 
 To pass a custom method, it must have a signature like `method(::AbstractArray; dims)`.
 
-If `frames` is strings, , it will be loaded into `CCDData` first. The HDU number can be specified with `hdu` as either an integer or a tuple corresponding to each file.
+If `frames` are strings, they will be loaded into [`CCDData`](@ref)s first. The HDU indices can be specified with `hdu` as either an integer or a tuple corresponding to each file.
 
 Function output inherits the type of first parameter and header file of output (if applicable) is specified by `header_hdu` which by default is 1.
 
