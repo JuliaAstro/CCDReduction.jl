@@ -22,11 +22,11 @@ function get_default_header(data::AbstractArray{T}) where T <: Number
                 "EXTEND"]
 
     # assiging values
-    hdu_values = [true,                         # SIMPLE
-                  bitpix_from_type(T),          # BITPIX
-                  ndims(data),                  # NAXIS
-                  reverse(size(data))...,       # size of each axis
-                  true]                         # EXTEND
+    hdu_values = [true,                                           # SIMPLE
+                  FITSIO.Libcfitsio.bitpix_from_type(T),          # BITPIX
+                  ndims(data),                                    # NAXIS
+                  reverse(size(data))...,                         # size of each axis
+                  true]                                           # EXTEND
 
     # assigning comments
     comments = ["file does conform to FITS standard",                                   # comment for SIMPLE

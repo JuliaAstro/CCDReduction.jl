@@ -5,7 +5,6 @@ using LazyStack
 using FITSIO
 using DataFrames: DataFrame
 using ResumableFunctions
-using CFITSIO: bitpix_from_type
 
 export subtract_bias,
        subtract_bias!,
