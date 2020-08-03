@@ -39,8 +39,6 @@ Subtract the `bias_frame` from `frame`.
 
 If either are strings, they will be loaded into [`CCDData`](@ref) first. The HDU loaded can be specified by `hdu` as either an integer or a tuple corresponding to each file.
 
-Function output inherits the type of first parameter and header file of output (if applicable) is same as of the first parameter.
-
 # Examples
 ```jldoctest
 julia> frame = [1.0 2.2 3.3 4.5];
@@ -87,8 +85,6 @@ of `dims` is the axis with smaller length in overscan region. If `idxs` is a str
 
 If `frame` is a string, it will be loaded into [`CCDData`](@ref) first. The HDU loaded can be specified by `hdu` which by default is 1.
 
-Function output inherits the type of first parameter and header file of output (if applicable) is same as of the first parameter.
-
 # Examples
 ```jldoctest
 julia> frame = [4.0 2.0 3.0 1.0 1.0];
@@ -132,8 +128,6 @@ Correct `frame` for non-uniformity using the calibrated `flat_frame`.
 By default, the `flat_frame` is normalized by its mean, but this can be changed by providing a custom `norm_value`.
 
 If either are strings, they will be loaded into [`CCDData`](@ref) first. The HDU loaded can be specified by `hdu` as either an integer or a tuple corresponding to each file.
-
-Function output inherits the type of first parameter and header file of output (if applicable) is same as of the first parameter.
 
 !!! note
     This function may introduce non-finite values if `flat_frame` contains values very close to `0` due to dividing by zero.
@@ -179,8 +173,6 @@ The function also supports FITS-style indices.
 
 If `frame` is a string, it will be loaded into [`CCDData`](@ref) first. The HDU loaded can be specified by `hdu` which by default is 1.
 
-Function output inherits the type of first parameter and header file of output (if applicable) is same as of the first parameter.
-
 # Examples
 ```jldoctest
 julia> frame = ones(5, 5);
@@ -215,8 +207,6 @@ trim(frame, idxs) = copy(trimview(frame, idxs))
 Trims the `frame` to remove the region specified by idxs.
 
 This function is same as the [`trim`](@ref) function but returns a view of the frame.
-
-Function output inherits the type of first parameter and header file of output (if applicable) is same as of the first parameter.
 
 !!! note
     This function returns a view of the frame, so any modification to output
@@ -260,8 +250,6 @@ increase the output size (e.g. 6 -> 7) so there is equal removal on each side. T
 
 If `frame` is a string, it will be loaded into [`CCDData`](@ref) first. The HDU loaded can be specified by `hdu` which by default is 1.
 
-Function output inherits the type of first parameter and header file of output (if applicable) is same as of the first parameter.
-
 # Examples
 ```jldoctest
 julia> frame = reshape(1:25, (5, 5));
@@ -293,8 +281,6 @@ crop(frame, shape; kwargs...) = copy(cropview(frame, shape; kwargs...))
 Crops `frame` to the size specified by `shape` anchored by the frame center.
 
 This function is same as the [`crop`](@ref) function but returns a view of the frame.
-
-Function output inherits the type of first parameter and header file of output (if applicable) is same as of the first parameter.
 
 !!! note
     This function returns a view of the frame, so any modification to output
@@ -338,7 +324,7 @@ To pass a custom method, it must have a signature like `method(::AbstractArray; 
 
 If `frames` are strings, they will be loaded into [`CCDData`](@ref)s first. The HDU indices can be specified with `hdu` as either an integer or a tuple corresponding to each file.
 
-Function output inherits the type of first parameter and header file of output (if applicable) is specified by `header_hdu` which by default is 1.
+Header of output file (if applicable) is specified by `header_hdu` which by default is 1.
 
 # Examples
 ```jldoctest
@@ -387,8 +373,6 @@ end
 Subtract the `dark_frame` from `frame`.
 
 If either are strings, they will be loaded into [`CCDData`](@ref) first. The HDU loaded can be specified by `hdu` as either an integer or a tuple corresponding to each file.
-
-Function output inherits the type of first parameter and header file of output (if applicable) is same as of the first parameter.
 
 # Examples
 ```jldoctest
