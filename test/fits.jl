@@ -171,7 +171,7 @@ end
     processed_frame = flat_correct(string_frame, array_flat_frame; norm_value = 1, hdu = 1)
     @test processed_frame isa CCDData
     @test processed_frame.data ≈ ones(1059, 1059)
-    test_header(processed_frame, CCDData(string_frame, 1))
+    test_header(processed_frame, CCDData(string_frame; hdu = 1))
 
     # testing CCDData String case
     processed_frame = flat_correct(hdu_frame, string_flat_frame; norm_value = 1, hdu = 1)
@@ -187,7 +187,7 @@ end
     processed_frame = flat_correct(string_frame, string_flat_frame; norm_value = 1, hdu = 1)
     @test processed_frame isa CCDData
     @test processed_frame.data ≈ ones(1059, 1059)
-    test_header(processed_frame, CCDData(string_frame, 1))
+    test_header(processed_frame, CCDData(string_frame; hdu = 1))
 
     # testing type mutation in non mutating version
     hdu_frame = CCDData(fill(1, 5, 5))
@@ -283,7 +283,7 @@ end
     processed_frame = crop(string_frame, (1000, 5); force_equal = false, hdu = 1)
     @test processed_frame isa CCDData
     @test processed_frame.data isa Array
-    test_header(processed_frame, CCDData(string_frame, 1))
+    test_header(processed_frame, CCDData(string_frame; hdu = 1))
     @test processed_frame.data == crop(array_frame, (1000, 5); force_equal = false)
 
     # testing trimview
@@ -375,7 +375,7 @@ end
     processed_frame = subtract_dark(string_frame, hdu_dark_frame; dark_exposure = 2, data_exposure = 2, hdu = 1)
     @test processed_frame isa CCDData
     @test processed_frame.data == zeros(1059, 1059)
-    test_header(processed_frame, CCDData(string_frame, 1))
+    test_header(processed_frame, CCDData(string_frame; hdu = 1))
 
     # testing String String case
     processed_frame = subtract_dark(string_frame, string_dark_frame; dark_exposure = 2, data_exposure = 2, hdu = 1)

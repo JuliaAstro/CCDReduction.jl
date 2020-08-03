@@ -32,16 +32,12 @@ Creates `CCDData` from an `Array`.
 CCDData(data) = CCDData(data, get_default_header(data))
 
 """
-    CCDData(path::String, hdu)
+    CCDData(path::AbstractString; hdu = 1)
 
 Loads HDU from `hdu` index in `FITS` file at `path` as `CCDData`.
 """
-function CCDData(path::String, hdu)
-    fh = FITS(path)
-    ccd = CCDData(fh[hdu])
-    close(fh)
-    return ccd
-end
+CCDData(path::AbstractString; hdu = 1) = FITS(f -> CCDData(f[hdu]), path)
+
 CCDData{T}(data, hdr) where {T<:Number} = CCDData(T.(data), hdr)
 
 # extending the AbstractMatrix interface
