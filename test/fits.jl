@@ -421,4 +421,11 @@ end
     @test hdr["NAXIS2"] == 6
     @test hdr["NAXIS3"] == 5
     @test hdr["EXTEND"] == true
+
+    # testing the ways to access header
+    ccd = CCDData(zeros(5, 5))
+    @test ccd[:SIMPLE] == true
+    @test ccd[:SIMPLE] == ccd["SIMPLE"]
+    ccd[:SIMPLE] = false
+    @test ccd["SIMPLE"] == false # testing the modified version
 end

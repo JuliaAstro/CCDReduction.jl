@@ -3,6 +3,8 @@
     AbstractCCDData{T}
 
 Supertype for `CCDData` based on `AbstractMatrix` interface.
+
+Every subtype of this type should have methods `data` and `hdr` defined.
 """
 abstract type AbstractCCDData{T} <: AbstractMatrix{T} end
 
@@ -10,6 +12,10 @@ abstract type AbstractCCDData{T} <: AbstractMatrix{T} end
 Base.size(ccd::AbstractCCDData) = size(data(ccd))
 Base.getindex(ccd::AbstractCCDData, inds...) = getindex(data(ccd), inds...) # default fallback for operations on Array
 Base.setindex!(ccd::AbstractCCDData, v, inds...) = setindex!(data(ccd), v, inds...) # default fallback for operations on Array
+Base.getindex(ccd::AbstractCCDData, inds::AbstractString...) = getindex(hdr(ccd), inds...) # accesing header using strings
+Base.setindex!(ccd::AbstractCCDData, v, inds::AbstractString...) = setindex!(hdr(ccd), v, inds...) # modifying header using strings
+Base.getindex(ccd::AbstractCCDData, inds::Symbol...) = getindex(ccd, string.(inds)...) # accessing header using symbol
+Base.setindex!(ccd::AbstractCCDData, v, inds::Symbol...) = setindex!(ccd, v, string.(inds)...) # modifying header using Symbol
 Base.promote_rule(::Type{AbstractCCDData{T}}, ::Type{AbstractCCDData{V}}) where {T,V} = AbstractCCDData{promote_type{T,V}}
 
 # custom data type to hold ImageHDU
@@ -26,6 +32,16 @@ ccd = CCDData(zeros(4, 4))
 ccd[1]
 ```
 This accesses the 1st element in matrix associated with `ccd`.
+
+```
+ccd["SIMPLE"]
+```
+One can also access the header directly from `ccd`, the key can be `Symbol` as well.
+
+```
+ccd[:SIMPLE] = false
+```
+Header values can be directly modified from `ccd`.
 
 One can perform arithmetic operations on it as well:
 
