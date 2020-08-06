@@ -19,7 +19,7 @@ convert_value(S, x) = convert(S, x)
 
 #-------------------------------------------------------------------------------
 """
-    subtract_bias!(frame::AbstractArray, bias_frame::AbstractArray)
+    subtract_bias!(frame, bias_frame; [hdu = 1])
 
 In-place version of [`subtract_bias`](@ref)
 
@@ -33,9 +33,11 @@ end
 
 
 """
-    subtract_bias(frame::AbstractArray, bias_frame::AbstractArray)
+    subtract_bias(frame, bias_frame; [hdu = 1])
 
 Subtract the `bias_frame` from `frame`.
+
+If either are strings, they will be loaded into [`CCDData`](@ref) first. The HDU loaded can be specified by `hdu` as either an integer or a tuple corresponding to each file.
 
 # Examples
 ```jldoctest
@@ -56,7 +58,7 @@ subtract_bias(frame::AbstractArray, bias_frame::AbstractArray) = subtract_bias!(
 
 
 """
-    subtract_overscan!(frame::AbstractArray, idxs; dims = axes_min_length(idxs))
+    subtract_overscan!(frame, idxs; dims = axes_min_length(idxs))
 
 In-place version of [`subtract_overscan`](@ref)
 
@@ -74,12 +76,14 @@ subtract_overscan!(frame::AbstractArray, idxs::String; kwargs...) = subtract_ove
 
 
 """
-    subtract_overscan(frame, idxs; dims = axes_min_length(idxs))
+    subtract_overscan(frame, idxs; dims = axes_min_length(idxs), [hdu = 1])
 
 Subtract the overscan frame from image.
 
 `dims` is the dimension along which `overscan_frame` is combined. The default value
 of `dims` is the axis with smaller length in overscan region. If `idxs` is a string it will be parsed as FITS-style indices.
+
+If `frame` is a string, it will be loaded into [`CCDData`](@ref) first. The HDU loaded can be specified by `hdu` which by default is 1.
 
 # Examples
 ```jldoctest
@@ -102,7 +106,7 @@ subtract_overscan(frame, idxs; kwargs...) = subtract_overscan!(deepcopy(frame), 
 
 
 """
-    flat_correct!(frame::AbstractArray, flat_frame::AbstractArray; norm_value = mean(flat_frame))
+    flat_correct!(frame, flat_frame; norm_value = mean(flat_frame), [hdu = 1])
 
 In-place version of [`flat_correct`](@ref)
 
@@ -117,11 +121,13 @@ end
 
 
 """
-    flat_correct(frame::AbstractArray, flat_frame::AbstractArray; norm_value = mean(flat_frame))
+    flat_correct(frame, flat_frame; norm_value = mean(flat_frame), [hdu = 1])
 
 Correct `frame` for non-uniformity using the calibrated `flat_frame`.
 
 By default, the `flat_frame` is normalized by its mean, but this can be changed by providing a custom `norm_value`.
+
+If either are strings, they will be loaded into [`CCDData`](@ref) first. The HDU loaded can be specified by `hdu` as either an integer or a tuple corresponding to each file.
 
 !!! note
     This function may introduce non-finite values if `flat_frame` contains values very close to `0` due to dividing by zero.
@@ -157,13 +163,15 @@ end
 
 
 """
-    trim(frame, idxs)
+    trim(frame, idxs; [hdu = 1])
 
 Trims the `frame` to remove the region specified by idxs.
 
 This function trims the array in a manner such that final array should be rectangular.
 The indices follow standard Julia convention, so `(:, 45:60)` trims all columns from 45 to 60 and `(1:20, :)` trims all the rows from 1 to 20.
 The function also supports FITS-style indices.
+
+If `frame` is a string, it will be loaded into [`CCDData`](@ref) first. The HDU loaded can be specified by `hdu` which by default is 1.
 
 # Examples
 ```jldoctest
@@ -194,7 +202,7 @@ trim(frame, idxs) = copy(trimview(frame, idxs))
 
 
 """
-    trimview(frame::AbstractArray, idxs)
+    trimview(frame, idxs)
 
 Trims the `frame` to remove the region specified by idxs.
 
@@ -233,12 +241,14 @@ trimview(frame::AbstractArray, idxs::String) = trimview(frame, fits_indices(idxs
 
 
 """
-    crop(frame::AbstractArray, shape; force_equal = true)
+    crop(frame, shape; force_equal = true, [hdu = 1])
 
 Crops `frame` to the size specified by `shape` anchored by the frame center.
 
 This will remove rows/cols of the `frame` equally on each side. When there is an uneven difference in sizes (e.g. size 9 -> 6 can't be removed equally) the default is to
 increase the output size (e.g. 6 -> 7) so there is equal removal on each side. To disable this, set `force_equal=false`, which will remove the extra slice from the end of the axis.
+
+If `frame` is a string, it will be loaded into [`CCDData`](@ref) first. The HDU loaded can be specified by `hdu` which by default is 1.
 
 # Examples
 ```jldoctest
@@ -266,7 +276,7 @@ crop(frame, shape; kwargs...) = copy(cropview(frame, shape; kwargs...))
 
 
 """
-    cropview(frame::AbstractArray, shape; force_equal = true)
+    cropview(frame, shape; force_equal = true)
 
 Crops `frame` to the size specified by `shape` anchored by the frame center.
 
@@ -305,12 +315,16 @@ end
 
 
 """
-    combine(frames...; method = median)
-    combine(frames; method = median)
+    combine(frames...; method = median, [hdu = 1], [header_hdu = 1])
+    combine(frames; method = median, [hdu = 1], [header_hdu = 1])
 
 Combine multiple frames using `method`. Multiple frames can also be passed in a vector or as generators for combining.
 
 To pass a custom method, it must have a signature like `method(::AbstractArray; dims)`.
+
+If `frames` are strings, they will be loaded into [`CCDData`](@ref)s first. The HDU indices can be specified with `hdu` as either an integer or a tuple corresponding to each file.
+
+Header of output file (if applicable) is specified by `header_hdu` which by default is 1.
 
 # Examples
 ```jldoctest
@@ -332,14 +346,14 @@ function combine(frames::Vararg{<:AbstractArray{<:Number}}; method = median)
     firstframe = first(frames)
     dim = ndims(firstframe) + 1
     shape = size(firstframe)
-    return reshape(method(LazyStack.stack(frames), dims = dim), shape)
+    return reshape(method(LazyStack.stack(frames...), dims = dim), shape)
 end
 
-combine(frames; method = median, kwargs...) = combine(frames...; method = method, kwargs...)
+combine(frames; kwargs...) = combine(frames...; kwargs...)
 
 
 """
-    subtract_dark!(frame::AbstractArray, dark_frame::AbstractArray; data_exposure = 1, dark_exposure = 1)
+    subtract_dark!(frame, dark_frame; data_exposure = 1, dark_exposure = 1, [hdu = 1])
 
 In-place version of [`subtract_dark`](@ref)
 
@@ -354,9 +368,11 @@ end
 
 
 """
-    subtract_dark(frame::AbstractArray, dark_frame::AbstractArray; data_exposure = 1, dark_exposure = 1)
+    subtract_dark(frame, dark_frame; data_exposure = 1, dark_exposure = 1, [hdu = 1])
 
 Subtract the `dark_frame` from `frame`.
+
+If either are strings, they will be loaded into [`CCDData`](@ref) first. The HDU loaded can be specified by `hdu` as either an integer or a tuple corresponding to each file.
 
 # Examples
 ```jldoctest
