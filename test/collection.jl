@@ -1,4 +1,7 @@
-using CCDReduction: parse_name
+using CCDReduction: parse_name,
+                    generate_filename,
+                    parse_name_ext,
+                    write_data
 
 @testset "fitscollection" begin
     # setting initial data
@@ -104,4 +107,14 @@ end
     parse_name_ext("11.12.20_HD106754.fits", "." * "fits") == ("11.12.20_HD106754", ".fits")
     parse_name_ext("abcd.fits", "." * "fits") == ("abcd", ".fits")
     parse_name_ext("11.12.20_HD106754.Fits.Tar.gz", "." * r"fits(\.tar\.gz)?"i) == ("11.12.20_HD106754", ".Fits.Tar.gz")
+
+    # testing write_data
+    filename = joinpath(@__DIR__, "test.fits")
+    sample_data = rand(5, 10)
+    write_data(filename, sample_data)
+    fh = FITS(filename)
+    image_array = getdata(fh[1])
+    @test image_array == sample_data
+    close(fh) # closing handle so that generated file can be deleted
+    rm(filename) # remove the data generated during testing
 end

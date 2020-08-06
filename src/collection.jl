@@ -40,6 +40,23 @@ function parse_name_ext(filename, ext)
     return filename[1:breaking_index - 1], filename[breaking_index:end]
 end
 
+
+"""
+    write_data(file_path, data)
+
+Writes `data` in FITS format at `file_path`.
+
+`FITSIO` takes over memory write in by `cfitsio`, which writes in row-major form, whereas when Julia gives that memory, it is assumed as column major.
+Therefore all data written by [`FITSIO.write`](http://juliaastro.github.io/FITSIO.jl/latest/api.html#Base.write-Tuple{FITS,Dict{String,V}%20where%20V}) is transposed. This function allows the user to write the data in a consistent way to FITS file by transposing before writing.
+"""
+function write_data(file_path, data)
+    d = ndims(data)
+    transposed_data = permutedims(data, d:-1:1)
+    FITS(file_path, "w") do fh
+        write(fh, transposed_data)
+    end
+end
+
 #---------------------------------------------------------------------------------------
 @doc raw"""
     fitscollection(dir; recursive=true, abspath=true, keepext=true, ext=r"fits(\.tar\.gz)?", exclude=nothing, exclude_dir=nothing, exclude_key = ("", "HISTORY"))
