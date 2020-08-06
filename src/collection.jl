@@ -59,7 +59,14 @@ end
 
 #---------------------------------------------------------------------------------------
 @doc raw"""
-    fitscollection(dir; recursive=true, abspath=true, keepext=true, ext=r"fits(\.tar\.gz)?", exclude=nothing, exclude_dir=nothing, exclude_key = ("", "HISTORY"))
+    fitscollection(dir;
+                   recursive=true,
+                   abspath=true,
+                   keepext=true,
+                   ext=r"fits(\.tar\.gz)?",
+                   exclude=nothing,
+                   exclude_dir=nothing,
+                   exclude_key=("", "HISTORY"))
 
 Walk through `dir` collecting FITS files, scanning their headers, and culminating into a `DataFrame` that can be used with the generators for iterating over many files and processing them. If `recursive` is false, no subdirectories will be walked through.
 
@@ -149,6 +156,27 @@ end
     arrays(df::DataFrame)
 
 Generator for arrays of images of entries in data frame.
+
+Iterates over `collection` using each `path` and `hdu` to load data using [`CCDReduction.getdata`](@ref) into an `Array`.
+
+# Examples
+```julia
+collection = fitscollection("~/data/tekdata")
+data = arrays(collection) |> collect
+```
+This returns all image arrays present in `collection`. This can also be used via a for-loop
+```julia
+collection = fitscollection("~/data/tekdata")
+for arr in arrays(collection)
+    @assert arr isa Array
+    println(size(arr))
+end
+
+# output
+(1048, 1068)
+(1048, 1068)
+...
+```
 """
 function arrays end
 
@@ -166,6 +194,22 @@ end
     filenames(df::DataFrame)
 
 Generator for filenames of entries in data frame.
+
+Iterates over `collection` using each `path`.
+
+# Examples
+```julia
+collection = fitscollection("~/data/tekdata")
+for path in filenames(collection)
+    @assert path isa String
+    println(path)
+end
+
+# output
+"~/data/tekdata/tek001.fits"
+"~/data/tekdata/tek002.fits"
+...
+```
 """
 function filenames end
 
@@ -181,6 +225,16 @@ end
     ccds(df::DataFrame)
 
 Generator for `CCDData`s of entries in data frame.
+
+Iterates over `collection` using each `path` and `hdu` to load data using [`FITSIO.FITS`](http://juliaastro.github.io/FITSIO.jl/latest/api.html#FITSIO.FITS) into a [`CCDData`](@ref).
+
+# Examples
+```julia
+collection = fitscollection("~/data/tekdata")
+for hdu in ccds(collection)
+    @assert hdu isa CCDData
+end
+```
 """
 function ccds end
 
