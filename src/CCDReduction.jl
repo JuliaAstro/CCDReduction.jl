@@ -22,7 +22,7 @@ export subtract_bias,
        fitscollection,
        arrays,
        filenames,
-       images,
+       ccds,
        CCDData
 
 include("ccddata.jl")

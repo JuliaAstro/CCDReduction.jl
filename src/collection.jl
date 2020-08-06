@@ -130,15 +130,17 @@ end
 
 
 """
-    images(df::DataFrame)
+    ccds(df::DataFrame)
 
-Generator for `ImageHDU`s of entries in data frame.
+Generator for `CCDData`s of entries in data frame.
 """
-function images end
+function ccds end
 
-# generator for ImageHDU specified by data frame (i.e. path of file, hdu etc.)
-@resumable function images(df::DataFrame)
+# generator for CCDData specified by data frame (i.e. path of file, hdu etc.)
+@resumable function ccds(df::DataFrame)
     for row in eachrow(df)
-        @yield FITS(row.path)[row.hdu]
+        fh = FITS(row.path)
+        @yield CCDData(fh[row.hdu])
+        close(fh)
     end
 end

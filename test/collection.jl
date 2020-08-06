@@ -71,19 +71,14 @@ end
     # setting initial data
     dir = joinpath(@__DIR__, "data")
     df = fitscollection(dir)
-    arr1 = images(df) |> collect
+    arr1 = ccds(df) |> collect
     arr2 = map(eachrow(df)) do row
-        FITS(row.path)[row.hdu]
+        CCDData(FITS(row.path)[row.hdu])
     end
 
     for (hdu1, hdu2) in zip(arr1, arr2)
-        @test getdata(hdu1) == getdata(hdu2)
-        header1 = read_header(hdu1)
-        header2 = read_header(hdu2)
-        @test keys(header1) == keys(header2)
-        for (k1, k2) in zip(keys(header1), keys(header2))
-            @test header1[k1] == header2[k2]
-        end
+        @test hdu1.data == hdu2.data
+        test_header(hdu1, hdu2)
     end
 end
 
