@@ -5,5 +5,5 @@ Underscores = "d9a01c3f-67ce-4d8c-9b55-35f6e4050bb1"
 
 [compat]
 Documenter = "0.24"
-FITSIO = "0.15"
+FITSIO = "0.16.2"
 Underscores = "2"

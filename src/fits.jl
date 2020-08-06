@@ -12,32 +12,6 @@ function getdata(hdu::ImageHDU)
     return permutedims(data, d:-1:1)
 end
 
-# helper function to generate default header of an image array
-function get_default_header(data::AbstractArray{T}) where T <: Number
-    # assigning keys
-    hdu_keys = ["SIMPLE",
-                "BITPIX",
-                "NAXIS",
-                [string(Symbol("NAXIS", i)) for i in 1:ndims(data)]...,
-                "EXTEND"]
-
-    # assiging values
-    hdu_values = [true,                                           # SIMPLE
-                  FITSIO.Libcfitsio.bitpix_from_type(T),          # BITPIX
-                  ndims(data),                                    # NAXIS
-                  reverse(size(data))...,                         # size of each axis
-                  true]                                           # EXTEND
-
-    # assigning comments
-    comments = ["file does conform to FITS standard",                                   # comment for SIMPLE
-                "number of bits per data pixel",                                        # comment for BITPIX
-                "number of data axes",                                                  # comment for NAXIS
-                [string(Symbol("length of data axis ", i)) for i in 1:ndims(data)]...,  # comments for axis length
-                "FITS dataset may contain extensions"]                                  # comment for EXTEND
-
-    return FITSHeader(hdu_keys, hdu_values, comments)
-end
-
 #---------------------------------------------------------------------------------------
 # Code generation with codegen to support path of FITS files
 for func in (:flat_correct, :subtract_bias, :subtract_dark)

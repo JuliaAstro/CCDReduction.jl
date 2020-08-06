@@ -1,5 +1,4 @@
-using CCDReduction: getdata,
-                    get_default_header
+using CCDReduction: getdata
 
 function test_header(ccd1::CCDData, ccd2::CCDData)
     header1 = ccd1.hdr
@@ -409,18 +408,6 @@ end
     hdu = M6707HH[1]
     data = read(hdu)'
     @test data == getdata(hdu)
-
-    # testing get_default_header
-    data = fill(Int16(2), 5, 6, 2)
-    hdr = get_default_header(data)
-    @test hdr isa FITSHeader
-    @test hdr["SIMPLE"] == true
-    @test hdr["BITPIX"] == 16
-    @test hdr["NAXIS"] == 3
-    @test hdr["NAXIS1"] == 2
-    @test hdr["NAXIS2"] == 6
-    @test hdr["NAXIS3"] == 5
-    @test hdr["EXTEND"] == true
 
     # testing the ways to access header
     ccd = CCDData(zeros(5, 5))

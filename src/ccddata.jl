@@ -71,7 +71,7 @@ Loads `ImageHDU` as `CCDData`.
 """
 CCDData(hdu::ImageHDU) = CCDData(getdata(hdu), read_header(hdu))
 
-CCDData(data) = CCDData(data, get_default_header(data))
+CCDData(data) = CCDData(data, default_header(data))
 
 """
     CCDData(path::AbstractString; hdu = 1)
