@@ -187,8 +187,6 @@ function ccds end
 # generator for CCDData specified by data frame (i.e. path of file, hdu etc.)
 @resumable function ccds(df::DataFrame)
     for row in eachrow(df)
-        fh = FITS(row.path)
-        @yield CCDData(fh[row.hdu])
-        close(fh)
+        @yield CCDData(row.path; hdu = row.hdu)
     end
 end
