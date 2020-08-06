@@ -9,6 +9,37 @@ end
 
 parse_name(filename, ext, ::Val{true}) = filename
 
+# utility function for generating filename
+function generate_filename(path, save_location, save_prefix, save_suffix, save_delim, ext)
+    # get the filename
+    filename = last(splitdir(path))
+
+    # splitting name and extension
+    modified_name, extension = parse_name_ext(filename, "." * ext)
+
+    # adding prefix and suffix with delimiter
+    if !isnothing(save_prefix)
+        modified_name = string(save_prefix, save_delim, modified_name)
+    end
+    if !isnothing(save_suffix)
+        modified_name = string(modified_name, save_delim, save_suffix)
+    end
+
+    # adding extension to modified_name
+    file_path = joinpath(save_location, modified_name * extension)
+    return file_path
+end
+
+
+# utility function to return filename and extension separately
+# returns extension including "." at the beginning
+function parse_name_ext(filename, ext)
+    idxs = findall(ext, filename)
+    length(idxs) == 0 && return (filename, "")
+    breaking_index = first(last(idxs))
+    return filename[1:breaking_index - 1], filename[breaking_index:end]
+end
+
 #---------------------------------------------------------------------------------------
 @doc raw"""
     fitscollection(dir; recursive=true, abspath=true, keepext=true, ext=r"fits(\.tar\.gz)?", exclude=nothing, exclude_dir=nothing, exclude_key = ("", "HISTORY"))
