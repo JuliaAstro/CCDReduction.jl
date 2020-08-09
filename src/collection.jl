@@ -344,3 +344,48 @@ function filenames(f, collection::DataFrame; save = false, path = nothing, save_
 
     return processed_images
 end
+
+
+"""
+    arrays(f, collection::DataFrame; save = false, path = nothing, save_prefix = nothing, save_suffix = nothing, save_delim = "_", ext = r"fits(\\.tar\\.gz)?"i, kwargs...)
+
+Iterates over the image arrays of the collection applying function `f` at each step.
+
+It returns an array of output values of function `f` applied on image arrays.
+In addition to applying function `f`, the outputs can be saved. If `save = true`, it enables programmatical saving of returned value of the function `f` using [`CCDReduction.write_fits`](@ref). File is saved at `path` specified by the user.
+Suffix and prefix can be added to filename of newly created files by modifying `save_suffix` and `save_prefix`, `save_delim` is used as delimiter.
+`ext` is the extension of files in collection, by default it is set to `r"fits(\\.tar\\.gz)?"i`.
+
+# Examples
+```julia
+collection = fitscollection("~/data/tekdata")
+processed_images = map(arrays(collection)) do arr
+    trim(arr, (:, 1040:1059))
+end
+```
+The above generates `processed_images` which consists of trimmed versions of image arrays present in `collection`.
+For saving the `processed_images` simultaneously with the operations performed
+```julia
+processed_images = map(arrays(collection; save = true, path = "~/data/tekdata", save_prefix = "trimmed")) do img
+    trim(img, (:, 1040:1059))
+end
+```
+The trimmed image arrays are saved as `trimmed_(original_name)` (FITS files) at `path = "~/data/tekdata"` as specified by the user.
+
+Mapping version of `arrays` function is interfaced on iterative version of `arrays`, any valid parameter can be passed into iterative version as `kwargs`.
+"""
+function arrays(f, collection::DataFrame; save = false, path = nothing, save_prefix = nothing, save_suffix = nothing, save_delim = "_", ext = r"fits(\.tar\.gz)?"i, kwargs...)
+    array_iterator = arrays(collection; kwargs...)
+    locations = collection.path
+
+    processed_images = map(zip(locations, array_iterator)) do (location, output)
+        processed_image = f(output)
+        if save
+            save_path = generate_filename(location, path, save_prefix, save_suffix, save_delim, ext)
+            write_data(save_path, processed_image)
+        end
+        processed_image
+    end
+
+    return processed_images
+end
