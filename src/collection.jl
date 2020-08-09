@@ -293,3 +293,54 @@ function ccds(f, collection::DataFrame; save = false, path = nothing, save_prefi
 
     return processed_images
 end
+
+
+"""
+    filenames(f, collection::DataFrame; save = false, path = nothing, save_prefix = nothing, save_suffix = nothing, save_delim = "_", ext = r"fits(\\.tar\\.gz)?"i, kwargs...)
+
+Iterates over the file paths of the collection applying function `f` at each step.
+
+It returns an array of output values of function `f` applied on file paths.
+In addition to applying function `f`, the outputs can be saved. If `save = true`, it enables programmatical saving of returned value of the function `f` using [`CCDReduction.write_fits`](@ref). File is saved at `path` specified by the user.
+Suffix and prefix can be added to filename of newly created files by modifying `save_suffix` and `save_prefix`, `save_delim` is used as delimiter.
+`ext` is the extension of files in collection, by default it is set to `r"fits(\\.tar\\.gz)?"i`.
+
+# Examples
+```julia
+collection = fitscollection("~/data/tekdata")
+data = map(filenames(collection)) do path
+    fh = FITS(path)
+    data = getdata(fh[1]) # assuming all 1-hdu are ImageHDUs
+    close(fh)
+    data
+end
+```
+The above generates `data` which consists of image arrays corresponding to 1st hdu of FITS file paths present in `collection`.
+For saving the `data` simultaneously with the operations performed
+```julia
+data = map(filenames(collection; save = true, path = "~/data/tekdata", save_prefix = "retrieved_from_filename")) do img
+    fh = FITS(path)
+    data = getdata(fh[1]) # assuming all 1-hdu are ImageHDUs
+    close(fh)
+    data
+end
+```
+The retrieved data is saved as `retrieved_from_filename_(original_name)` (FITS files) at `path = "~/data/tekdata"` as specified by the user.
+
+Mapping version of `filenames` function is interfaced on iterative version of `filenames`, any valid parameter can be passed into iterative version as `kwargs`.
+"""
+function filenames(f, collection::DataFrame; save = false, path = nothing, save_prefix = nothing, save_suffix = nothing, save_delim = "_", ext = r"fits(\.tar\.gz)?"i, kwargs...)
+    path_iterator = filenames(collection; kwargs...)
+    locations = collection.path
+
+    processed_images = map(zip(locations, path_iterator)) do (location, output)
+        processed_image = f(output)
+        if save
+            save_path = generate_filename(location, path, save_prefix, save_suffix, save_delim, ext)
+            write_data(save_path, processed_image)
+        end
+        processed_image
+    end
+
+    return processed_images
+end
