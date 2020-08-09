@@ -155,6 +155,40 @@ end
     rm.(collection1[:, :path])
 end
 
+@testset "saving-arrays" begin
+    dir = joinpath(@__DIR__, "data")
+    savedir = @__DIR__
+    collection = fitscollection(dir)
+
+    final = arrays(collection; save = true, path = savedir, save_prefix = "test1", save_suffix = "test2") do img
+        trim(img, (:, 1040:1059))
+    end
+
+    # testing function outputs
+    @test final[1] == trim(getdata(M35070V[1]), (:, 1040:1059))
+    @test final[2] == trim(getdata(M6707HH[1]), (:, 1040:1059))
+
+    collection1 = fitscollection(savedir; recursive = false)
+
+    # generating arrays from collection1
+    new_saved_data = map(eachrow(collection1)) do row
+        fh = FITS(row.path)
+        data = getdata(fh[row.hdu])
+        close(fh)
+        data
+    end
+
+    # testing saved data
+    @test final == new_saved_data
+
+    # testing saved filenames
+    @test collection1[1, :name] == "test1_M35070V_test2.fits"
+    @test collection1[2, :name] == "test1_M6707HH_test2.fits"
+
+    # removing data generated during testing
+    rm.(collection1[:, :path])
+end
+
 @testset "helper" begin
     # testing parse_name
     @test parse_name("abc.fits", "."*"fits", Val(true)) == "abc.fits"
