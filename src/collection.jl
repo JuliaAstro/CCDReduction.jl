@@ -12,7 +12,7 @@ parse_name(filename, ext, ::Val{true}) = filename
 # utility function for generating filename
 function generate_filename(path, save_location, save_prefix, save_suffix, save_delim, ext)
     # get the filename
-    filename = last(splitdir(path))
+    filename = basename(path)
 
     # splitting name and extension
     modified_name, extension = parse_name_ext(filename, "." * ext)
@@ -42,20 +42,23 @@ end
 
 
 """
-    write_data(file_path, data)
+    write_data(file_path, data; header = nothing)
+    write_data(file_path, ccd::CCDData)
 
-Writes `data` in FITS format at `file_path`.
+Writes `data`/`ccd` in FITS format at `file_path`.
 
 `FITSIO` takes over memory write in by `cfitsio`, which writes in row-major form, whereas when Julia gives that memory, it is assumed as column major.
 Therefore all data written by [`FITSIO.write`](http://juliaastro.github.io/FITSIO.jl/latest/api.html#Base.write-Tuple{FITS,Dict{String,V}%20where%20V}) is transposed. This function allows the user to write the data in a consistent way to FITS file by transposing before writing.
 """
-function write_data(file_path, data)
+function write_data(file_path, data; header = nothing)
     d = ndims(data)
     transposed_data = permutedims(data, d:-1:1)
     FITS(file_path, "w") do fh
-        write(fh, transposed_data)
+        write(fh, transposed_data; header = header)
     end
 end
+
+write_data(file_path, ccd::CCDData) = write_data(file_path, ccd.data; header = ccd.hdr)
 
 #---------------------------------------------------------------------------------------
 @doc raw"""
@@ -243,4 +246,50 @@ function ccds end
     for row in eachrow(df)
         @yield CCDData(row.path; hdu = row.hdu)
     end
+end
+
+
+"""
+    ccds(f, collection::DataFrame; save = false, path = nothing, save_prefix = nothing, save_suffix = nothing, save_delim = "_", ext = r"fits(\\.tar\\.gz)?"i, kwargs...)
+
+Iterates over the `CCDData`s of the collection applying function `f` at each step.
+
+It returns an array of output values of function `f` applied on `CCDData`s.
+In addition to applying function `f`, the outputs can be saved. If `save = true`, it enables programmatical saving of returned value of the function `f` using [`CCDReduction.write_fits`](@ref). File is saved at `path` specified by the user.
+Suffix and prefix can be added to filename of newly created files by modifying `save_suffix` and `save_prefix`, `save_delim` is used as delimiter.
+`ext` is the extension of files in collection, by default it is set to `r"fits(\\.tar\\.gz)?"i`.
+
+# Example
+```julia
+collection = fitscollection("~/data/tekdata")
+processed_images = map(ccds(collection)) do img
+    trim(img, (:, 1040:1059))
+end
+```
+The above generates `processed_images` which consists of trimmed versions of images present in `collection`.
+
+For saving the `processed_images` simultaneously with the operations performed
+```julia
+processed_images = map(ccds(collection; save = true, path = "~/data/tekdata", save_prefix = "trimmed")) do img
+    trim(img, (:, 1040:1059))
+end
+```
+The trimmed images are saved as `trimmed_(original_name)` (FITS files) at `path = "~/data/tekdata"` as specified by the user.
+
+Mapping version of `ccds` function is interfaced on iterative version of `images`, any valid parameter can be passed into iterative version as `kwargs`.
+"""
+function ccds(f, collection::DataFrame; save = false, path = nothing, save_prefix = nothing, save_suffix = nothing, save_delim = "_", ext = r"fits(\.tar\.gz)?"i, kwargs...)
+    image_iterator = ccds(collection; kwargs...)
+    locations = collection.path
+
+    processed_images = map(zip(locations, image_iterator)) do (location, output)
+        processed_image = f(output)
+        if save
+            save_path = generate_filename(location, path, save_prefix, save_suffix, save_delim, ext)
+            write_data(save_path, processed_image)
+        end
+        processed_image
+    end
+
+    return processed_images
 end
