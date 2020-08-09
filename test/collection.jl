@@ -116,6 +116,9 @@ end
     # testing saved filenames
     @test collection1[1, :name] == "test1_M35070V_test2.fits"
     @test collection1[2, :name] == "test1_M6707HH_test2.fits"
+
+    # remove the files generated during tests
+    rm.(collection1[:, :path])
 end
 
 @testset "helper" begin
