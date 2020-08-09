@@ -85,6 +85,39 @@ end
     end
 end
 
+@testset "saving-image" begin
+    dir = joinpath(@__DIR__, "data")
+    savedir = @__DIR__
+    collection = fitscollection(dir)
+
+    final = ccds(collection; save = true, path = savedir, save_prefix = "test1", save_suffix = "test2") do img
+        trim(img, (:, 1040:1059))
+    end
+
+    # testing function outputs
+    @test final[1].data == trim(CCDData(M35070V[1]), (:, 1040:1059)).data
+    @test final[2].data == trim(CCDData(M6707HH[1]), (:, 1040:1059)).data
+
+    collection1 = fitscollection(savedir; recursive = false)
+
+    # generating arrays from collection1
+    new_saved_data = map(eachrow(collection1)) do row
+        fh = FITS(row.path)
+        data = getdata(fh[row.hdu])
+        close(fh)
+        data
+    end
+
+    # testing saved data
+    for (ccd, arr2) in zip(final, new_saved_data)
+        @test ccd.data == arr2
+    end
+
+    # testing saved filenames
+    @test collection1[1, :name] == "test1_M35070V_test2.fits"
+    @test collection1[2, :name] == "test1_M6707HH_test2.fits"
+end
+
 @testset "helper" begin
     # testing parse_name
     @test parse_name("abc.fits", "."*"fits", Val(true)) == "abc.fits"
@@ -117,4 +150,14 @@ end
     @test image_array == sample_data
     close(fh) # closing handle so that generated file can be deleted
     rm(filename) # remove the data generated during testing
+
+    # writitng CCDData
+    ccd = CCDData(zeros(4, 4))
+    write_data(filename, ccd)
+    fh = FITS(filename)
+    image_array = getdata(fh[1])
+    @test image_array == ccd.data
+    @test read_header(fh[1])["SIMPLE"] == true
+    close(fh)
+    rm(filename)
 end
