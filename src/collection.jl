@@ -255,7 +255,7 @@ end
 Iterates over the `CCDData`s of the collection applying function `f` at each step.
 
 It returns an array of output values of function `f` applied on `CCDData`s.
-In addition to applying function `f`, the outputs can be saved. If `save = true`, it enables programmatical saving of returned value of the function `f` using [`CCDReduction.write_fits`](@ref). File is saved at `path` specified by the user.
+In addition to applying function `f`, the outputs can be saved. If `save = true`, it enables programmatical saving of returned value of the function `f` using [`CCDReduction.write_data`](@ref). File is saved at `path` specified by the user.
 Suffix and prefix can be added to filename of newly created files by modifying `save_suffix` and `save_prefix`, `save_delim` is used as delimiter.
 `ext` is the extension of files in collection, by default it is set to `r"fits(\\.tar\\.gz)?"i`.
 
@@ -301,7 +301,7 @@ end
 Iterates over the file paths of the collection applying function `f` at each step.
 
 It returns an array of output values of function `f` applied on file paths.
-In addition to applying function `f`, the outputs can be saved. If `save = true`, it enables programmatical saving of returned value of the function `f` using [`CCDReduction.write_fits`](@ref). File is saved at `path` specified by the user.
+In addition to applying function `f`, the outputs can be saved. If `save = true`, it enables programmatical saving of returned value of the function `f` using [`CCDReduction.write_data`](@ref). File is saved at `path` specified by the user.
 Suffix and prefix can be added to filename of newly created files by modifying `save_suffix` and `save_prefix`, `save_delim` is used as delimiter.
 `ext` is the extension of files in collection, by default it is set to `r"fits(\\.tar\\.gz)?"i`.
 
@@ -352,7 +352,7 @@ end
 Iterates over the image arrays of the collection applying function `f` at each step.
 
 It returns an array of output values of function `f` applied on image arrays.
-In addition to applying function `f`, the outputs can be saved. If `save = true`, it enables programmatical saving of returned value of the function `f` using [`CCDReduction.write_fits`](@ref). File is saved at `path` specified by the user.
+In addition to applying function `f`, the outputs can be saved. If `save = true`, it enables programmatical saving of returned value of the function `f` using [`CCDReduction.write_data`](@ref). File is saved at `path` specified by the user.
 Suffix and prefix can be added to filename of newly created files by modifying `save_suffix` and `save_prefix`, `save_delim` is used as delimiter.
 `ext` is the extension of files in collection, by default it is set to `r"fits(\\.tar\\.gz)?"i`.
 
