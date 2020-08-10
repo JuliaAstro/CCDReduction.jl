@@ -1,7 +1,7 @@
 using CCDReduction: parse_name,
                     generate_filename,
                     parse_name_ext,
-                    write_data
+                    writefits
 
 @testset "fitscollection" begin
     # setting initial data
@@ -212,10 +212,10 @@ end
     parse_name_ext("abcd.fits", "." * "fits") == ("abcd", ".fits")
     parse_name_ext("11.12.20_HD106754.Fits.Tar.gz", "." * r"fits(\.tar\.gz)?"i) == ("11.12.20_HD106754", ".Fits.Tar.gz")
 
-    # testing write_data
+    # testing writefits
     filename = joinpath(@__DIR__, "test.fits")
     sample_data = rand(5, 10)
-    write_data(filename, sample_data)
+    writefits(filename, sample_data)
     fh = FITS(filename)
     image_array = getdata(fh[1])
     @test image_array == sample_data
@@ -224,7 +224,7 @@ end
 
     # writitng CCDData
     ccd = CCDData(zeros(4, 4))
-    write_data(filename, ccd)
+    writefits(filename, ccd)
     fh = FITS(filename)
     image_array = getdata(fh[1])
     @test image_array == ccd.data

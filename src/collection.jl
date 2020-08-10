@@ -42,15 +42,15 @@ end
 
 
 """
-    write_data(file_path, data; header = nothing)
-    write_data(file_path, ccd::CCDData)
+    writefits(file_path, data; header = nothing)
+    writefits(file_path, ccd::CCDData)
 
 Writes `data`/`ccd` in FITS format at `file_path`.
 
 `FITSIO` takes over memory write in by `cfitsio`, which writes in row-major form, whereas when Julia gives that memory, it is assumed as column major.
 Therefore all data written by [`FITSIO.write`](http://juliaastro.github.io/FITSIO.jl/latest/api.html#Base.write-Tuple{FITS,Dict{String,V}%20where%20V}) is transposed. This function allows the user to write the data in a consistent way to FITS file by transposing before writing.
 """
-function write_data(file_path, data; header = nothing)
+function writefits(file_path, data; header = nothing)
     d = ndims(data)
     transposed_data = permutedims(data, d:-1:1)
     FITS(file_path, "w") do fh
@@ -58,7 +58,7 @@ function write_data(file_path, data; header = nothing)
     end
 end
 
-write_data(file_path, ccd::CCDData) = write_data(file_path, ccd.data; header = ccd.hdr)
+writefits(file_path, ccd::CCDData) = writefits(file_path, ccd.data; header = ccd.hdr)
 
 #---------------------------------------------------------------------------------------
 @doc raw"""
@@ -255,7 +255,7 @@ end
 Iterates over the `CCDData`s of the collection applying function `f` at each step.
 
 It returns an array of output values of function `f` applied on `CCDData`s.
-In addition to applying function `f`, the outputs can be saved. If `save = true`, it enables programmatical saving of returned value of the function `f` using [`CCDReduction.write_data`](@ref). File is saved at `path` specified by the user.
+In addition to applying function `f`, the outputs can be saved. If `save = true`, it enables programmatical saving of returned value of the function `f` using [`CCDReduction.writefits`](@ref). File is saved at `path` specified by the user.
 Suffix and prefix can be added to filename of newly created files by modifying `save_suffix` and `save_prefix`, `save_delim` is used as delimiter.
 `ext` is the extension of files in collection, by default it is set to `r"fits(\\.tar\\.gz)?"i`.
 
@@ -286,7 +286,7 @@ function ccds(f, collection::DataFrame; save = false, path = nothing, save_prefi
         processed_image = f(output)
         if save
             save_path = generate_filename(location, path, save_prefix, save_suffix, save_delim, ext)
-            write_data(save_path, processed_image)
+            writefits(save_path, processed_image)
         end
         processed_image
     end
@@ -301,7 +301,7 @@ end
 Iterates over the file paths of the collection applying function `f` at each step.
 
 It returns an array of output values of function `f` applied on file paths.
-In addition to applying function `f`, the outputs can be saved. If `save = true`, it enables programmatical saving of returned value of the function `f` using [`CCDReduction.write_data`](@ref). File is saved at `path` specified by the user.
+In addition to applying function `f`, the outputs can be saved. If `save = true`, it enables programmatical saving of returned value of the function `f` using [`CCDReduction.writefits`](@ref). File is saved at `path` specified by the user.
 Suffix and prefix can be added to filename of newly created files by modifying `save_suffix` and `save_prefix`, `save_delim` is used as delimiter.
 `ext` is the extension of files in collection, by default it is set to `r"fits(\\.tar\\.gz)?"i`.
 
@@ -337,7 +337,7 @@ function filenames(f, collection::DataFrame; save = false, path = nothing, save_
         processed_image = f(output)
         if save
             save_path = generate_filename(location, path, save_prefix, save_suffix, save_delim, ext)
-            write_data(save_path, processed_image)
+            writefits(save_path, processed_image)
         end
         processed_image
     end
@@ -352,7 +352,7 @@ end
 Iterates over the image arrays of the collection applying function `f` at each step.
 
 It returns an array of output values of function `f` applied on image arrays.
-In addition to applying function `f`, the outputs can be saved. If `save = true`, it enables programmatical saving of returned value of the function `f` using [`CCDReduction.write_data`](@ref). File is saved at `path` specified by the user.
+In addition to applying function `f`, the outputs can be saved. If `save = true`, it enables programmatical saving of returned value of the function `f` using [`CCDReduction.writefits`](@ref). File is saved at `path` specified by the user.
 Suffix and prefix can be added to filename of newly created files by modifying `save_suffix` and `save_prefix`, `save_delim` is used as delimiter.
 `ext` is the extension of files in collection, by default it is set to `r"fits(\\.tar\\.gz)?"i`.
 
@@ -382,7 +382,7 @@ function arrays(f, collection::DataFrame; save = false, path = nothing, save_pre
         processed_image = f(output)
         if save
             save_path = generate_filename(location, path, save_prefix, save_suffix, save_delim, ext)
-            write_data(save_path, processed_image)
+            writefits(save_path, processed_image)
         end
         processed_image
     end
