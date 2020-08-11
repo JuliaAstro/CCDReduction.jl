@@ -250,7 +250,7 @@ end
 
 
 """
-    ccds(f, collection::DataFrame; save = false, path = nothing, save_prefix = nothing, save_suffix = nothing, save_delim = "_", ext = r"fits(\\.tar\\.gz)?"i, kwargs...)
+    ccds(f, collection::DataFrame; save = any(!isnothing, (save_prefix, path, save_suffix)), path = nothing, save_prefix = nothing, save_suffix = nothing, save_delim = "_", ext = r"fits(\\.tar\\.gz)?"i, kwargs...)
 
 Iterates over the `CCDData`s of the collection applying function `f` at each step.
 
@@ -278,7 +278,7 @@ The trimmed images are saved as `trimmed_(original_name)` (FITS files) at `path 
 
 Mapping version of `ccds` function is interfaced on iterative version of `images`, any valid parameter can be passed into iterative version as `kwargs`.
 """
-function ccds(f, collection::DataFrame; save = false, path = nothing, save_prefix = nothing, save_suffix = nothing, save_delim = "_", ext = r"fits(\.tar\.gz)?"i, kwargs...)
+function ccds(f, collection::DataFrame; save = any(!isnothing, (save_prefix, path, save_suffix)), path = nothing, save_prefix = nothing, save_suffix = nothing, save_delim = "_", ext = r"fits(\.tar\.gz)?"i, kwargs...)
     image_iterator = ccds(collection; kwargs...)
     locations = collection.path
 
@@ -296,7 +296,7 @@ end
 
 
 """
-    filenames(f, collection::DataFrame; save = false, path = nothing, save_prefix = nothing, save_suffix = nothing, save_delim = "_", ext = r"fits(\\.tar\\.gz)?"i, kwargs...)
+    filenames(f, collection::DataFrame; save = any(!isnothing, (save_prefix, path, save_suffix)), path = nothing, save_prefix = nothing, save_suffix = nothing, save_delim = "_", ext = r"fits(\\.tar\\.gz)?"i, kwargs...)
 
 Iterates over the file paths of the collection applying function `f` at each step.
 
@@ -329,7 +329,7 @@ The retrieved data is saved as `retrieved_from_filename_(original_name)` (FITS f
 
 Mapping version of `filenames` function is interfaced on iterative version of `filenames`, any valid parameter can be passed into iterative version as `kwargs`.
 """
-function filenames(f, collection::DataFrame; save = false, path = nothing, save_prefix = nothing, save_suffix = nothing, save_delim = "_", ext = r"fits(\.tar\.gz)?"i, kwargs...)
+function filenames(f, collection::DataFrame; save = any(!isnothing, (save_prefix, path, save_suffix)), path = nothing, save_prefix = nothing, save_suffix = nothing, save_delim = "_", ext = r"fits(\.tar\.gz)?"i, kwargs...)
     path_iterator = filenames(collection; kwargs...)
     locations = collection.path
 
@@ -347,7 +347,7 @@ end
 
 
 """
-    arrays(f, collection::DataFrame; save = false, path = nothing, save_prefix = nothing, save_suffix = nothing, save_delim = "_", ext = r"fits(\\.tar\\.gz)?"i, kwargs...)
+    arrays(f, collection::DataFrame; save = any(!isnothing, (save_prefix, path, save_suffix)), path = nothing, save_prefix = nothing, save_suffix = nothing, save_delim = "_", ext = r"fits(\\.tar\\.gz)?"i, kwargs...)
 
 Iterates over the image arrays of the collection applying function `f` at each step.
 
@@ -374,7 +374,7 @@ The trimmed image arrays are saved as `trimmed_(original_name)` (FITS files) at 
 
 Mapping version of `arrays` function is interfaced on iterative version of `arrays`, any valid parameter can be passed into iterative version as `kwargs`.
 """
-function arrays(f, collection::DataFrame; save = false, path = nothing, save_prefix = nothing, save_suffix = nothing, save_delim = "_", ext = r"fits(\.tar\.gz)?"i, kwargs...)
+function arrays(f, collection::DataFrame; save = any(!isnothing, (save_prefix, path, save_suffix)), path = nothing, save_prefix = nothing, save_suffix = nothing, save_delim = "_", ext = r"fits(\.tar\.gz)?"i, kwargs...)
     array_iterator = arrays(collection; kwargs...)
     locations = collection.path
 
