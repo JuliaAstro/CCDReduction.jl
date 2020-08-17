@@ -42,8 +42,8 @@ end
 
 
 """
-    writefits(file_path, data; header = nothing)
-    writefits(file_path, ccd::CCDData)
+    CCDReduction.writefits(file_path, data; header = nothing)
+    CCDReduction.writefits(file_path, ccd::CCDData)
 
 Writes `data`/`ccd` in FITS format at `file_path`.
 
@@ -250,7 +250,15 @@ end
 
 
 """
-    ccds(f, collection; save = any(!isnothing, (save_prefix, path, save_suffix)), path = nothing, save_prefix = nothing, save_suffix = nothing, save_delim = "_", ext = r"fits(\\.tar\\.gz)?"i, kwargs...)
+    ccds(f,
+         collection;
+         path = nothing,
+         save_prefix = nothing,
+         save_suffix = nothing,
+         save = any(!isnothing, (save_prefix, path, save_suffix)),
+         save_delim = "_",
+         ext = r"fits(\\.tar\\.gz)?"i,
+         kwargs...)
 
 Iterates over the `CCDData`s of the collection applying function `f` at each step.
 
@@ -270,7 +278,7 @@ The above generates `processed_images` which consists of trimmed versions of ima
 
 For saving the `processed_images` simultaneously with the operations performed
 ```julia
-processed_images = map(ccds(collection; save = true, path = "~/data/tekdata", save_prefix = "trimmed")) do img
+processed_images = map(ccds(collection; path = "~/data/tekdata", save_prefix = "trimmed")) do img
     trim(img, (:, 1040:1059))
 end
 ```
@@ -278,7 +286,15 @@ The trimmed images are saved as `trimmed_(original_name)` (FITS files) at `path 
 
 Mapping version of `ccds` function is interfaced on iterative version of `images`, any valid parameter can be passed into iterative version as `kwargs`.
 """
-function ccds(f, collection; save = any(!isnothing, (save_prefix, path, save_suffix)), path = nothing, save_prefix = nothing, save_suffix = nothing, save_delim = "_", ext = r"fits(\.tar\.gz)?"i, kwargs...)
+function ccds(f,
+              collection;
+              path = nothing,
+              save_prefix = nothing,
+              save_suffix = nothing,
+              save = any(!isnothing, (save_prefix, path, save_suffix)),
+              save_delim = "_",
+              ext = r"fits(\.tar\.gz)?"i,
+              kwargs...)
     image_iterator = ccds(collection; kwargs...)
     locations = collection.path
 
@@ -296,7 +312,15 @@ end
 
 
 """
-    filenames(f, collection; save = any(!isnothing, (save_prefix, path, save_suffix)), path = nothing, save_prefix = nothing, save_suffix = nothing, save_delim = "_", ext = r"fits(\\.tar\\.gz)?"i, kwargs...)
+    filenames(f,
+              collection;
+              path = nothing,
+              save_prefix = nothing,
+              save_suffix = nothing,
+              save = any(!isnothing, (save_prefix, path, save_suffix)),
+              save_delim = "_",
+              ext = r"fits(\\.tar\\.gz)?"i,
+              kwargs...)
 
 Iterates over the file paths of the collection applying function `f` at each step.
 
@@ -318,7 +342,7 @@ end
 The above generates `data` which consists of image arrays corresponding to 1st hdu of FITS file paths present in `collection`.
 For saving the `data` simultaneously with the operations performed
 ```julia
-data = map(filenames(collection; save = true, path = "~/data/tekdata", save_prefix = "retrieved_from_filename")) do img
+data = map(filenames(collection; path = "~/data/tekdata", save_prefix = "retrieved_from_filename")) do img
     fh = FITS(path)
     data = getdata(fh[1]) # assuming all 1-hdu are ImageHDUs
     close(fh)
@@ -329,7 +353,15 @@ The retrieved data is saved as `retrieved_from_filename_(original_name)` (FITS f
 
 Mapping version of `filenames` function is interfaced on iterative version of `filenames`, any valid parameter can be passed into iterative version as `kwargs`.
 """
-function filenames(f, collection; save = any(!isnothing, (save_prefix, path, save_suffix)), path = nothing, save_prefix = nothing, save_suffix = nothing, save_delim = "_", ext = r"fits(\.tar\.gz)?"i, kwargs...)
+function filenames(f,
+                   collection;
+                   path = nothing,
+                   save_prefix = nothing,
+                   save_suffix = nothing,
+                   save = any(!isnothing, (save_prefix, path, save_suffix)),
+                   save_delim = "_",
+                   ext = r"fits(\.tar\.gz)?"i,
+                   kwargs...)
     path_iterator = filenames(collection; kwargs...)
     locations = collection.path
 
@@ -347,7 +379,15 @@ end
 
 
 """
-    arrays(f, collection; save = any(!isnothing, (save_prefix, path, save_suffix)), path = nothing, save_prefix = nothing, save_suffix = nothing, save_delim = "_", ext = r"fits(\\.tar\\.gz)?"i, kwargs...)
+    arrays(f,
+           collection;
+           save = any(!isnothing, (save_prefix, path, save_suffix)),
+           path = nothing,
+           save_prefix = nothing,
+           save_suffix = nothing,
+           save_delim = "_",
+           ext = r"fits(\\.tar\\.gz)?"i,
+           kwargs...)
 
 Iterates over the image arrays of the collection applying function `f` at each step.
 
@@ -366,7 +406,7 @@ end
 The above generates `processed_images` which consists of trimmed versions of image arrays present in `collection`.
 For saving the `processed_images` simultaneously with the operations performed
 ```julia
-processed_images = map(arrays(collection; save = true, path = "~/data/tekdata", save_prefix = "trimmed")) do img
+processed_images = map(arrays(collection; path = "~/data/tekdata", save_prefix = "trimmed")) do img
     trim(img, (:, 1040:1059))
 end
 ```
@@ -374,7 +414,15 @@ The trimmed image arrays are saved as `trimmed_(original_name)` (FITS files) at 
 
 Mapping version of `arrays` function is interfaced on iterative version of `arrays`, any valid parameter can be passed into iterative version as `kwargs`.
 """
-function arrays(f, collection; save = any(!isnothing, (save_prefix, path, save_suffix)), path = nothing, save_prefix = nothing, save_suffix = nothing, save_delim = "_", ext = r"fits(\.tar\.gz)?"i, kwargs...)
+function arrays(f,
+                collection;
+                save = any(!isnothing, (save_prefix, path, save_suffix)),
+                path = nothing,
+                save_prefix = nothing,
+                save_suffix = nothing,
+                save_delim = "_",
+                ext = r"fits(\.tar\.gz)?"i,
+                kwargs...)
     array_iterator = arrays(collection; kwargs...)
     locations = collection.path
 
