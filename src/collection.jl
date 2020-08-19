@@ -263,9 +263,7 @@ end
 Iterates over the `CCDData`s of the collection applying function `f` at each step.
 
 It returns an array of output values of function `f` applied on `CCDData`s.
-In addition to applying function `f`, the outputs can be saved. If `save = true`, it enables programmatical saving of returned value of the function `f` using [`CCDReduction.writefits`](@ref). File is saved at `path` specified by the user.
-Suffix and prefix can be added to filename of newly created files by modifying `save_suffix` and `save_prefix`, `save_delim` is used as delimiter.
-`ext` is the extension of files in collection, by default it is set to `r"fits(\\.tar\\.gz)?"i`.
+The output from `f` can be saved using the appropriate keyword arguments. The `save_prefix` argument will add a prefix to each filename delimited by `save_delim`. `save_suffix` will add a suffix prior to the extension, which can be manually provided via `ext`, similar to [`fitscollection`](@ref). Files will be saved in the directory they are stored unless `path` is given. Finally, `save` will default to `true` if any of the previous arguments are set, but can be manually overridden (useful for testing). Files will be saved using [`CCDReduction.writefits`](@ref).
 
 # Example
 ```julia
@@ -398,9 +396,7 @@ end
 Iterates over the image arrays of the collection applying function `f` at each step.
 
 It returns an array of output values of function `f` applied on image arrays.
-In addition to applying function `f`, the outputs can be saved. If `save = true`, it enables programmatical saving of returned value of the function `f` using [`CCDReduction.writefits`](@ref). File is saved at `path` specified by the user.
-Suffix and prefix can be added to filename of newly created files by modifying `save_suffix` and `save_prefix`, `save_delim` is used as delimiter.
-`ext` is the extension of files in collection, by default it is set to `r"fits(\\.tar\\.gz)?"i`.
+The output from `f` can be saved using the appropriate keyword arguments. The `save_prefix` argument will add a prefix to each filename delimited by `save_delim`. `save_suffix` will add a suffix prior to the extension, which can be manually provided via `ext`, similar to [`fitscollection`](@ref). Files will be saved in the directory they are stored unless `path` is given. Finally, `save` will default to `true` if any of the previous arguments are set, but can be manually overridden (useful for testing). Files will be saved using [`CCDReduction.writefits`](@ref).
 
 # Examples
 ```julia
