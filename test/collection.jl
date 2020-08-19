@@ -70,7 +70,7 @@ end
     @test arr1 == arr2
 end
 
-@testset "image-generators" begin
+@testset "ccds-generators" begin
     # setting initial data
     dir = joinpath(@__DIR__, "data")
     df = fitscollection(dir)
@@ -85,7 +85,7 @@ end
     end
 end
 
-@testset "saving-image" begin
+@testset "saving-ccds" begin
     dir = joinpath(@__DIR__, "data")
     savedir = @__DIR__
     collection = fitscollection(dir)
@@ -119,6 +119,17 @@ end
 
     # remove the files generated during tests
     rm.(collection1[:, :path])
+
+    # testing save functionality with path = nothing, i.e. at same location as of the input file
+    new_saved_data = ccds(collection; save_prefix = "save_without_path") do data
+        data
+    end
+    collection2 = fitscollection(dir)
+    @test first(size(collection2)) == 4
+
+    # removing data generated during testion
+    rm.(joinpath(dir, "save_without_path_M6707HH.fits"))
+    rm.(joinpath(dir, "save_without_path_M35070V.fits"))
 end
 
 @testset "saving-filename" begin
@@ -153,6 +164,17 @@ end
 
     # removing data generated during testing
     rm.(collection1[:, :path])
+
+    # testing save functionality with path = nothing, i.e. at same location as of the input file
+    new_saved_data = filenames(collection; save_prefix = "save_without_path") do filename
+        CCDData(filename)
+    end
+    collection2 = fitscollection(dir)
+    @test first(size(collection2)) == 4
+
+    # removing data generated during testion
+    rm.(joinpath(dir, "save_without_path_M6707HH.fits"))
+    rm.(joinpath(dir, "save_without_path_M35070V.fits"))
 end
 
 @testset "saving-arrays" begin
@@ -187,6 +209,17 @@ end
 
     # removing data generated during testing
     rm.(collection1[:, :path])
+
+    # testing save functionality with path = nothing, i.e. at same location as of the input file
+    new_saved_data = arrays(collection; save_prefix = "save_without_path") do data
+        data
+    end
+    collection2 = fitscollection(dir)
+    @test first(size(collection2)) == 4
+
+    # removing data generated during testion
+    rm.(joinpath(dir, "save_without_path_M6707HH.fits"))
+    rm.(joinpath(dir, "save_without_path_M35070V.fits"))
 end
 
 @testset "helper" begin

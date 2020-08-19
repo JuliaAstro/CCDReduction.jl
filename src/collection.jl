@@ -301,6 +301,10 @@ function ccds(f,
     processed_images = map(zip(locations, image_iterator)) do (location, output)
         processed_image = f(output)
         if save
+            # if path is nothing and still the file is being saved, the location of input file is used
+            if path isa Nothing
+                path = dirname(location)
+            end
             save_path = generate_filename(location, path, save_prefix, save_suffix, save_delim, ext)
             writefits(save_path, processed_image)
         end
@@ -368,6 +372,10 @@ function filenames(f,
     processed_images = map(zip(locations, path_iterator)) do (location, output)
         processed_image = f(output)
         if save
+            # if path is nothing and still the file is being saved, the location of input file is used
+            if path isa Nothing
+                path = dirname(location)
+            end
             save_path = generate_filename(location, path, save_prefix, save_suffix, save_delim, ext)
             writefits(save_path, processed_image)
         end
@@ -381,10 +389,10 @@ end
 """
     arrays(f,
            collection;
-           save = any(!isnothing, (save_prefix, path, save_suffix)),
            path = nothing,
            save_prefix = nothing,
            save_suffix = nothing,
+           save = any(!isnothing, (save_prefix, path, save_suffix)),
            save_delim = "_",
            ext = r"fits(\\.tar\\.gz)?"i,
            kwargs...)
@@ -416,10 +424,10 @@ Mapping version of `arrays` function is interfaced on iterative version of `arra
 """
 function arrays(f,
                 collection;
-                save = any(!isnothing, (save_prefix, path, save_suffix)),
                 path = nothing,
                 save_prefix = nothing,
                 save_suffix = nothing,
+                save = any(!isnothing, (save_prefix, path, save_suffix)),
                 save_delim = "_",
                 ext = r"fits(\.tar\.gz)?"i,
                 kwargs...)
@@ -429,6 +437,10 @@ function arrays(f,
     processed_images = map(zip(locations, array_iterator)) do (location, output)
         processed_image = f(output)
         if save
+            # if path is nothing and still the file is being saved, the location of input file is used
+            if path isa Nothing
+                path = dirname(location)
+            end
             save_path = generate_filename(location, path, save_prefix, save_suffix, save_delim, ext)
             writefits(save_path, processed_image)
         end
