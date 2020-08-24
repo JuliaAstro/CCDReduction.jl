@@ -23,7 +23,9 @@ export subtract_bias,
        arrays,
        filenames,
        ccds,
-       CCDData
+       CCDData,
+       data,
+       hdr
 
 include("ccddata.jl")
 include("methods.jl")

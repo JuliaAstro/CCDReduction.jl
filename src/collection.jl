@@ -160,7 +160,7 @@ end
 
 Generator for arrays of images of entries in data frame.
 
-Iterates over `collection` using each `path` and `hdu` to load data using [`CCDReduction.getdata`](@ref) into an `Array`.
+Iterates over `collection` using each `path` and `hdu` to load data into an `Array`.
 
 # Examples
 ```julia
@@ -229,7 +229,7 @@ end
 
 Generator for `CCDData`s of entries in data frame.
 
-Iterates over `collection` using each `path` and `hdu` to load data using [`FITSIO.FITS`](http://juliaastro.github.io/FITSIO.jl/latest/api.html#FITSIO.FITS) into a [`CCDData`](@ref).
+Iterates over `collection` using each `path` and `hdu` to load data into a [`CCDData`](@ref).
 
 # Examples
 ```julia
@@ -262,7 +262,6 @@ end
 
 Iterates over the `CCDData`s of the collection applying function `f` at each step.
 
-It returns an array of output values of function `f` applied on `CCDData`s.
 The output from `f` can be saved using the appropriate keyword arguments. The `save_prefix` argument will add a prefix to each filename delimited by `save_delim`. `save_suffix` will add a suffix prior to the extension, which can be manually provided via `ext`, similar to [`fitscollection`](@ref). Files will be saved in the directory they are stored unless `path` is given. Finally, `save` will default to `true` if any of the previous arguments are set, but can be manually overridden (useful for testing). Files will be saved using [`CCDReduction.writefits`](@ref).
 
 # Example
@@ -281,8 +280,6 @@ processed_images = map(ccds(collection; path = "~/data/tekdata", save_prefix = "
 end
 ```
 The trimmed images are saved as `trimmed_(original_name)` (FITS files) at `path = "~/data/tekdata"` as specified by the user.
-
-Mapping version of `ccds` function is interfaced on iterative version of `images`, any valid parameter can be passed into iterative version as `kwargs`.
 """
 function ccds(f,
               collection;
@@ -326,7 +323,6 @@ end
 
 Iterates over the file paths of the collection applying function `f` at each step.
 
-It returns an array of output values of function `f` applied on file paths.
 The output from `f` can be saved using the appropriate keyword arguments. The `save_prefix` argument will add a prefix to each filename delimited by `save_delim`. `save_suffix` will add a suffix prior to the extension, which can be manually provided via `ext`, similar to [`fitscollection`](@ref). Files will be saved in the directory they are stored unless `path` is given. Finally, `save` will default to `true` if any of the previous arguments are set, but can be manually overridden (useful for testing). Files will be saved using [`CCDReduction.writefits`](@ref).
 
 # Examples
@@ -350,8 +346,6 @@ data = map(filenames(collection; path = "~/data/tekdata", save_prefix = "retriev
 end
 ```
 The retrieved data is saved as `retrieved_from_filename_(original_name)` (FITS files) at `path = "~/data/tekdata"` as specified by the user.
-
-Mapping version of `filenames` function is interfaced on iterative version of `filenames`, any valid parameter can be passed into iterative version as `kwargs`.
 """
 function filenames(f,
                    collection;
@@ -395,7 +389,6 @@ end
 
 Iterates over the image arrays of the collection applying function `f` at each step.
 
-It returns an array of output values of function `f` applied on image arrays.
 The output from `f` can be saved using the appropriate keyword arguments. The `save_prefix` argument will add a prefix to each filename delimited by `save_delim`. `save_suffix` will add a suffix prior to the extension, which can be manually provided via `ext`, similar to [`fitscollection`](@ref). Files will be saved in the directory they are stored unless `path` is given. Finally, `save` will default to `true` if any of the previous arguments are set, but can be manually overridden (useful for testing). Files will be saved using [`CCDReduction.writefits`](@ref).
 
 # Examples
@@ -413,8 +406,6 @@ processed_images = map(arrays(collection; path = "~/data/tekdata", save_prefix =
 end
 ```
 The trimmed image arrays are saved as `trimmed_(original_name)` (FITS files) at `path = "~/data/tekdata"` as specified by the user.
-
-Mapping version of `arrays` function is interfaced on iterative version of `arrays`, any valid parameter can be passed into iterative version as `kwargs`.
 """
 function arrays(f,
                 collection;

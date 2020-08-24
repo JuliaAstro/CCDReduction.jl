@@ -38,9 +38,9 @@ end
 
 # separate function for combine involving CCDData because of custom header copying
 function combine(frames::Vararg{<:CCDData{<:Number}}; header_hdu = 1, kwargs...)
-    data_arrays = map(frame -> frame.data, frames)
+    data_arrays = map(frame -> data(frame), frames)
     processed_frame = combine(data_arrays...; kwargs...)
-    return CCDData(processed_frame, deepcopy(frames[header_hdu].hdr))
+    return CCDData(processed_frame, deepcopy(hdr(frames[header_hdu])))
 end
 
 # String supporting version of combine
