@@ -1,11 +1,13 @@
 # helper functions
 
-#=
-FITSIO.jl takes over memory read in by cfitsio, which reads in row-major form,
-whereas when Julia takes that memory, it is assumed as column major.
-Therefore all data read by `read` is transposed.
-Related comment: https://github.com/JuliaAstro/CCDReduction.jl/pull/16#issuecomment-638492572
-=#
+"""
+    CCDReduction.getdata(::FITSIO.ImageHDU)
+
+Loads the given HDU as an `Array`, permuting the dimensions appropriately.
+
+FITSIO.jl takes over memory read in by cfitsio, which reads in row-major form, whereas when Julia takes that memory, it is assumed as column major.
+Therefore all data read by [`FITSIO.read`](http://juliaastro.github.io/FITSIO.jl/latest/api.html#Base.read-Tuple{ImageHDU}) is transposed. This function allows the user to read data in a consistent way to `Array` by transposing after reading.
+"""
 function getdata(hdu::ImageHDU)
     data = read(hdu)
     d = ndims(data)
@@ -36,9 +38,9 @@ end
 
 # separate function for combine involving CCDData because of custom header copying
 function combine(frames::Vararg{<:CCDData{<:Number}}; header_hdu = 1, kwargs...)
-    data_arrays = map(frame -> frame.data, frames)
+    data_arrays = map(frame -> data(frame), frames)
     processed_frame = combine(data_arrays...; kwargs...)
-    return CCDData(processed_frame, deepcopy(frames[header_hdu].hdr))
+    return CCDData(processed_frame, deepcopy(hdr(frames[header_hdu])))
 end
 
 # String supporting version of combine

@@ -9,9 +9,67 @@ end
 
 parse_name(filename, ext, ::Val{true}) = filename
 
+# utility function for generating filename
+function generate_filename(path, save_location, save_prefix, save_suffix, save_delim, ext)
+    # get the filename
+    filename = basename(path)
+
+    # splitting name and extension
+    modified_name, extension = parse_name_ext(filename, "." * ext)
+
+    # adding prefix and suffix with delimiter
+    if !isnothing(save_prefix)
+        modified_name = string(save_prefix, save_delim, modified_name)
+    end
+    if !isnothing(save_suffix)
+        modified_name = string(modified_name, save_delim, save_suffix)
+    end
+
+    # adding extension to modified_name
+    file_path = joinpath(save_location, modified_name * extension)
+    return file_path
+end
+
+
+# utility function to return filename and extension separately
+# returns extension including "." at the beginning
+function parse_name_ext(filename, ext)
+    idxs = findall(ext, filename)
+    length(idxs) == 0 && return (filename, "")
+    breaking_index = first(last(idxs))
+    return filename[1:breaking_index - 1], filename[breaking_index:end]
+end
+
+
+"""
+    CCDReduction.writefits(file_path, data; header = nothing)
+    CCDReduction.writefits(file_path, ccd::CCDData)
+
+Writes `data`/`ccd` in FITS format at `file_path`.
+
+`FITSIO` takes over memory write in by `cfitsio`, which writes in row-major form, whereas when Julia gives that memory, it is assumed as column major.
+Therefore all data written by [`FITSIO.write`](http://juliaastro.github.io/FITSIO.jl/latest/api.html#Base.write-Tuple{FITS,Dict{String,V}%20where%20V}) is transposed. This function allows the user to write the data in a consistent way to FITS file by transposing before writing.
+"""
+function writefits(file_path, data; header = nothing)
+    d = ndims(data)
+    transposed_data = permutedims(data, d:-1:1)
+    FITS(file_path, "w") do fh
+        write(fh, transposed_data; header = header)
+    end
+end
+
+writefits(file_path, ccd::CCDData) = writefits(file_path, ccd.data; header = ccd.hdr)
+
 #---------------------------------------------------------------------------------------
 @doc raw"""
-    fitscollection(dir; recursive=true, abspath=true, keepext=true, ext=r"fits(\.tar\.gz)?", exclude=nothing, exclude_dir=nothing, exclude_key = ("", "HISTORY"))
+    fitscollection(dir;
+                   recursive=true,
+                   abspath=true,
+                   keepext=true,
+                   ext=r"fits(\.tar\.gz)?",
+                   exclude=nothing,
+                   exclude_dir=nothing,
+                   exclude_key=("", "HISTORY"))
 
 Walk through `dir` collecting FITS files, scanning their headers, and culminating into a `DataFrame` that can be used with the generators for iterating over many files and processing them. If `recursive` is false, no subdirectories will be walked through.
 
@@ -60,7 +118,7 @@ function fitscollection(basedir::String;
                         exclude = nothing,
                         exclude_dir = nothing,
                         exclude_key = ("", "HISTORY"))
-    df = DataFrame()
+    collection = DataFrame()
 
     for (root, dirs, files) in walkdir(basedir)
         # recursive searching functionality
@@ -88,25 +146,46 @@ function fitscollection(basedir::String;
                 # filtering out comment columns
                 _keys = filter(k -> k ∉ exclude_key, keys(header_data))
                 _values = (header_data[k] for k in _keys)
-                push!(df, (path = path, name = name, hdu = index, zip(Symbol.(_keys), _values)...); cols = :union)
+                push!(collection, (path = path, name = name, hdu = index, zip(Symbol.(_keys), _values)...); cols = :union)
             end
             close(fits_data)
         end
     end
-    return df
+    return collection
 end
 
 
 """
-    arrays(df::DataFrame)
+    arrays(collection)
 
 Generator for arrays of images of entries in data frame.
+
+Iterates over `collection` using each `path` and `hdu` to load data into an `Array`.
+
+# Examples
+```julia
+collection = fitscollection("~/data/tekdata")
+data = arrays(collection) |> collect
+```
+This returns all image arrays present in `collection`. This can also be used via a for-loop
+```julia
+collection = fitscollection("~/data/tekdata")
+for arr in arrays(collection)
+    @assert arr isa Array
+    println(size(arr))
+end
+
+# output
+(1048, 1068)
+(1048, 1068)
+...
+```
 """
 function arrays end
 
 # generator for image arrays specified by data frames (i.e. path of file, hdu etc.)
-@resumable function arrays(df::DataFrame)
-    for row in eachrow(df)
+@resumable function arrays(collection)
+    for row in eachrow(collection)
         fh = FITS(row.path)
         @yield getdata(fh[row.hdu])
         close(fh)
@@ -115,30 +194,243 @@ end
 
 
 """
-    filenames(df::DataFrame)
+    filenames(collection)
 
 Generator for filenames of entries in data frame.
+
+Iterates over `collection` using each `path`.
+
+# Examples
+```julia
+collection = fitscollection("~/data/tekdata")
+for path in filenames(collection)
+    @assert path isa String
+    println(path)
+end
+
+# output
+"~/data/tekdata/tek001.fits"
+"~/data/tekdata/tek002.fits"
+...
+```
 """
 function filenames end
 
 # generator for filenames specified by data frame (i.e. path of file, hdu etc.)
-@resumable function filenames(df::DataFrame)
-    for row in eachrow(df)
+@resumable function filenames(collection)
+    for row in eachrow(collection)
         @yield row.path
     end
 end
 
 
 """
-    images(df::DataFrame)
+    ccds(collection)
 
-Generator for `ImageHDU`s of entries in data frame.
+Generator for `CCDData`s of entries in data frame.
+
+Iterates over `collection` using each `path` and `hdu` to load data into a [`CCDData`](@ref).
+
+# Examples
+```julia
+collection = fitscollection("~/data/tekdata")
+for hdu in ccds(collection)
+    @assert hdu isa CCDData
+end
+```
 """
-function images end
+function ccds end
 
-# generator for ImageHDU specified by data frame (i.e. path of file, hdu etc.)
-@resumable function images(df::DataFrame)
-    for row in eachrow(df)
-        @yield FITS(row.path)[row.hdu]
+# generator for CCDData specified by data frame (i.e. path of file, hdu etc.)
+@resumable function ccds(collection)
+    for row in eachrow(collection)
+        @yield CCDData(row.path; hdu = row.hdu)
     end
+end
+
+
+"""
+    ccds(f,
+         collection;
+         path = nothing,
+         save_prefix = nothing,
+         save_suffix = nothing,
+         save = any(!isnothing, (save_prefix, path, save_suffix)),
+         save_delim = "_",
+         ext = r"fits(\\.tar\\.gz)?"i,
+         kwargs...)
+
+Iterates over the `CCDData`s of the collection applying function `f` at each step.
+
+The output from `f` can be saved using the appropriate keyword arguments. The `save_prefix` argument will add a prefix to each filename delimited by `save_delim`. `save_suffix` will add a suffix prior to the extension, which can be manually provided via `ext`, similar to [`fitscollection`](@ref). Files will be saved in the directory they are stored unless `path` is given. Finally, `save` will default to `true` if any of the previous arguments are set, but can be manually overridden (useful for testing). Files will be saved using [`CCDReduction.writefits`](@ref).
+
+# Example
+```julia
+collection = fitscollection("~/data/tekdata")
+processed_images = map(ccds(collection)) do img
+    trim(img, (:, 1040:1059))
+end
+```
+The above generates `processed_images` which consists of trimmed versions of images present in `collection`.
+
+For saving the `processed_images` simultaneously with the operations performed
+```julia
+processed_images = map(ccds(collection; path = "~/data/tekdata", save_prefix = "trimmed")) do img
+    trim(img, (:, 1040:1059))
+end
+```
+The trimmed images are saved as `trimmed_(original_name)` (FITS files) at `path = "~/data/tekdata"` as specified by the user.
+"""
+function ccds(f,
+              collection;
+              path = nothing,
+              save_prefix = nothing,
+              save_suffix = nothing,
+              save = any(!isnothing, (save_prefix, path, save_suffix)),
+              save_delim = "_",
+              ext = r"fits(\.tar\.gz)?"i,
+              kwargs...)
+    image_iterator = ccds(collection; kwargs...)
+    locations = collection.path
+
+    processed_images = map(zip(locations, image_iterator)) do (location, output)
+        processed_image = f(output)
+        if save
+            # if path is nothing and still the file is being saved, the location of input file is used
+            if path isa Nothing
+                path = dirname(location)
+            end
+            save_path = generate_filename(location, path, save_prefix, save_suffix, save_delim, ext)
+            writefits(save_path, processed_image)
+        end
+        processed_image
+    end
+
+    return processed_images
+end
+
+
+"""
+    filenames(f,
+              collection;
+              path = nothing,
+              save_prefix = nothing,
+              save_suffix = nothing,
+              save = any(!isnothing, (save_prefix, path, save_suffix)),
+              save_delim = "_",
+              ext = r"fits(\\.tar\\.gz)?"i,
+              kwargs...)
+
+Iterates over the file paths of the collection applying function `f` at each step.
+
+The output from `f` can be saved using the appropriate keyword arguments. The `save_prefix` argument will add a prefix to each filename delimited by `save_delim`. `save_suffix` will add a suffix prior to the extension, which can be manually provided via `ext`, similar to [`fitscollection`](@ref). Files will be saved in the directory they are stored unless `path` is given. Finally, `save` will default to `true` if any of the previous arguments are set, but can be manually overridden (useful for testing). Files will be saved using [`CCDReduction.writefits`](@ref).
+
+# Examples
+```julia
+collection = fitscollection("~/data/tekdata")
+data = map(filenames(collection)) do path
+    fh = FITS(path)
+    data = getdata(fh[1]) # assuming all 1-hdu are ImageHDUs
+    close(fh)
+    data
+end
+```
+The above generates `data` which consists of image arrays corresponding to 1st hdu of FITS file paths present in `collection`.
+For saving the `data` simultaneously with the operations performed
+```julia
+data = map(filenames(collection; path = "~/data/tekdata", save_prefix = "retrieved_from_filename")) do img
+    fh = FITS(path)
+    data = getdata(fh[1]) # assuming all 1-hdu are ImageHDUs
+    close(fh)
+    data
+end
+```
+The retrieved data is saved as `retrieved_from_filename_(original_name)` (FITS files) at `path = "~/data/tekdata"` as specified by the user.
+"""
+function filenames(f,
+                   collection;
+                   path = nothing,
+                   save_prefix = nothing,
+                   save_suffix = nothing,
+                   save = any(!isnothing, (save_prefix, path, save_suffix)),
+                   save_delim = "_",
+                   ext = r"fits(\.tar\.gz)?"i,
+                   kwargs...)
+    path_iterator = filenames(collection; kwargs...)
+    locations = collection.path
+
+    processed_images = map(zip(locations, path_iterator)) do (location, output)
+        processed_image = f(output)
+        if save
+            # if path is nothing and still the file is being saved, the location of input file is used
+            if path isa Nothing
+                path = dirname(location)
+            end
+            save_path = generate_filename(location, path, save_prefix, save_suffix, save_delim, ext)
+            writefits(save_path, processed_image)
+        end
+        processed_image
+    end
+
+    return processed_images
+end
+
+
+"""
+    arrays(f,
+           collection;
+           path = nothing,
+           save_prefix = nothing,
+           save_suffix = nothing,
+           save = any(!isnothing, (save_prefix, path, save_suffix)),
+           save_delim = "_",
+           ext = r"fits(\\.tar\\.gz)?"i,
+           kwargs...)
+
+Iterates over the image arrays of the collection applying function `f` at each step.
+
+The output from `f` can be saved using the appropriate keyword arguments. The `save_prefix` argument will add a prefix to each filename delimited by `save_delim`. `save_suffix` will add a suffix prior to the extension, which can be manually provided via `ext`, similar to [`fitscollection`](@ref). Files will be saved in the directory they are stored unless `path` is given. Finally, `save` will default to `true` if any of the previous arguments are set, but can be manually overridden (useful for testing). Files will be saved using [`CCDReduction.writefits`](@ref).
+
+# Examples
+```julia
+collection = fitscollection("~/data/tekdata")
+processed_images = map(arrays(collection)) do arr
+    trim(arr, (:, 1040:1059))
+end
+```
+The above generates `processed_images` which consists of trimmed versions of image arrays present in `collection`.
+For saving the `processed_images` simultaneously with the operations performed
+```julia
+processed_images = map(arrays(collection; path = "~/data/tekdata", save_prefix = "trimmed")) do img
+    trim(img, (:, 1040:1059))
+end
+```
+The trimmed image arrays are saved as `trimmed_(original_name)` (FITS files) at `path = "~/data/tekdata"` as specified by the user.
+"""
+function arrays(f,
+                collection;
+                path = nothing,
+                save_prefix = nothing,
+                save_suffix = nothing,
+                save = any(!isnothing, (save_prefix, path, save_suffix)),
+                save_delim = "_",
+                ext = r"fits(\.tar\.gz)?"i,
+                kwargs...)
+    array_iterator = arrays(collection; kwargs...)
+    locations = collection.path
+
+    processed_images = map(zip(locations, array_iterator)) do (location, output)
+        processed_image = f(output)
+        if save
+            # if path is nothing and still the file is being saved, the location of input file is used
+            if path isa Nothing
+                path = dirname(location)
+            end
+            save_path = generate_filename(location, path, save_prefix, save_suffix, save_delim, ext)
+            writefits(save_path, processed_image)
+        end
+        processed_image
+    end
+
+    return processed_images
 end
