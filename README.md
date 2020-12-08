@@ -1,6 +1,6 @@
 # CCDReduction.jl
 
-[![Build Status](https://travis-ci.com/juliaastro/CCDReduction.jl.svg?branch=master)](https://travis-ci.com/juliaastro/CCDReduction.jl)
+[![Build Status](https://github.com/juliaastro/CCDReduction.jl/workflows/CI/badge.svg?branch=master)](https://github.com/juliaastro/CCDReduction.jl/actions)
 [![PkgEval](https://juliaci.github.io/NanosoldierReports/pkgeval_badges/C/CCDReduction.svg)](https://juliaci.github.io/NanosoldierReports/pkgeval_badges/report.html)
 [![Codecov](https://codecov.io/gh/juliaastro/CCDReduction.jl/branch/master/graph/badge.svg)](https://codecov.io/gh/juliaastro/CCDReduction.jl)
 [![License](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
