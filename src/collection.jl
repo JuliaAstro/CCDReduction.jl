@@ -73,7 +73,10 @@ writefits(file_path, ccd::CCDData) = writefits(file_path, ccd.data; header = ccd
 
 Walk through `dir` collecting FITS files, scanning their headers, and culminating into a `DataFrame` that can be used with the generators for iterating over many files and processing them. If `recursive` is false, no subdirectories will be walked through.
 
-The table returned will contain the path to the file, the name of the file, and index of the corresponding hdu, and each FITS header column and value. If two FITS files have distinct columns, they will both appear in the table with `missing` in the appropriate rows.
+The table returned will contain the path to the file, the name of the file, and index of the corresponding HDU, and each FITS header column and value. If two FITS files have distinct columns, they will both appear in the table with `missing` in the appropriate rows. 
+
+!!! note "Duplicate Keys"
+    In certain cases, there are multiple FITS headers with the same key, e.g., `COMMENT`. In these cases, only the first instance of the key-value pair will be stored.
 
 If `abspath` is true, the path in the table will be absolute. If `keepext` is true, the name in the table will include the file extension, given by `ext`. `ext` will be used with `endswith` to filter for fits files compatible with `FITSIO.FITS`. `exclude` is a pattern that can be used with `occursin` to exclude certain filenames. For example, to exclude any files containing "sky",
 ```julia
@@ -143,17 +146,23 @@ function fitscollection(basedir::String;
                 path = abspath ? Base.abspath(location) : location
                 name = parse_name(filename, "." * ext, Val(keepext))
 
-                # filtering out comment columns
+                # filtering out excluded columns
                 _keys = filter(k -> k ∉ exclude_key, keys(header_data))
-                _values = (header_data[k] for k in _keys)
-                push!(collection, (path = path, name = name, hdu = index, zip(Symbol.(_keys), _values)...); cols = :union)
+                # if there are duplicate keys (usually COMMENT) only use first
+                unique_inds = unique(idx -> _keys[idx], eachindex(_keys))
+                unique_keys = _keys[unique_inds]
+                # create generator for values from the keys
+                _values = (header_data[k] for k in unique_keys)
+
+                key_val_itr = zip(Symbol.(unique_keys), _values)
+
+                push!(collection, (path = path, name = name, hdu = index, key_val_itr...); cols = :union)
             end
             close(fits_data)
         end
     end
     return collection
 end
-
 
 """
     arrays(collection)
