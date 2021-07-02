@@ -43,7 +43,7 @@ using CCDReduction: parse_name,
     @test df[1, :name] == "M6707HH.fits"
     @test size(df) == (1, length(relevant_keys) + 3)
 
-    ##exclude_dir
+    ## exclude_dir
     df = fitscollection(dir; exclude_dir = "data")
     @test size(df) == (0, 0)
 end
@@ -86,39 +86,41 @@ end
 end
 
 @testset "saving-ccds" begin
-    dir = joinpath(@__DIR__, "data")
-    savedir = @__DIR__
+    # copy data to separate temp directory for testing
+    source_dir = joinpath(@__DIR__, "data")
+    dir = mktempdir()
+    cp(source_dir, dir; force=true)
+
     collection = fitscollection(dir)
 
-    final = ccds(collection; save = true, path = savedir, save_prefix = "test1", save_suffix = "test2") do img
-        trim(img, (:, 1040:1059))
+    mktempdir() do savedir
+        final = ccds(collection; save = true, path = savedir, save_prefix = "test1", save_suffix = "test2") do img
+            trim(img, (:, 1040:1059))
+        end
+
+        # testing function outputs
+        @test final[1].data == trim(CCDData(M35070V[1]), (:, 1040:1059)).data
+        @test final[2].data == trim(CCDData(M6707HH[1]), (:, 1040:1059)).data
+
+        collection1 = fitscollection(savedir; recursive = false)
+
+        # generating arrays from collection1
+        new_saved_data = map(eachrow(collection1)) do row
+            fh = FITS(row.path)
+            data = getdata(fh[row.hdu])
+            close(fh)
+            data
+        end
+
+        # testing saved data
+        for (ccd, arr2) in zip(final, new_saved_data)
+            @test ccd.data == arr2
+        end
+
+        # testing saved filenames
+        @test collection1[1, :name] == "test1_M35070V_test2.fits"
+        @test collection1[2, :name] == "test1_M6707HH_test2.fits"
     end
-
-    # testing function outputs
-    @test final[1].data == trim(CCDData(M35070V[1]), (:, 1040:1059)).data
-    @test final[2].data == trim(CCDData(M6707HH[1]), (:, 1040:1059)).data
-
-    collection1 = fitscollection(savedir; recursive = false)
-
-    # generating arrays from collection1
-    new_saved_data = map(eachrow(collection1)) do row
-        fh = FITS(row.path)
-        data = getdata(fh[row.hdu])
-        close(fh)
-        data
-    end
-
-    # testing saved data
-    for (ccd, arr2) in zip(final, new_saved_data)
-        @test ccd.data == arr2
-    end
-
-    # testing saved filenames
-    @test collection1[1, :name] == "test1_M35070V_test2.fits"
-    @test collection1[2, :name] == "test1_M6707HH_test2.fits"
-
-    # remove the files generated during tests
-    rm.(collection1[:, :path])
 
     # testing save functionality with path = nothing, i.e. at same location as of the input file
     new_saved_data = ccds(collection; save_prefix = "save_without_path") do data
@@ -126,44 +128,43 @@ end
     end
     collection2 = fitscollection(dir)
     @test first(size(collection2)) == 4
-
-    # removing data generated during testion
-    rm.(joinpath(dir, "save_without_path_M6707HH.fits"))
-    rm.(joinpath(dir, "save_without_path_M35070V.fits"))
 end
 
 @testset "saving-filename" begin
-    dir = joinpath(@__DIR__, "data")
-    savedir = @__DIR__
+    # copy data to separate temp directory for testing
+    source_dir = joinpath(@__DIR__, "data")
+    dir = mktempdir()
+    cp(source_dir, dir; force=true)
+
     collection = fitscollection(dir)
 
-    final = filenames(collection; save = true, path = savedir, save_prefix = "test1", save_suffix = "test2") do img
-        getdata(FITS(img)[1])
+
+    mktempdir() do savedir
+        final = filenames(collection; save = true, path = savedir, save_prefix = "test1", save_suffix = "test2") do img
+            getdata(FITS(img)[1])
+        end
+    
+        # testing function outputs
+        @test final[1] == getdata(M35070V[1])
+        @test final[2] == getdata(M6707HH[1])
+    
+        collection1 = fitscollection(savedir; recursive = false)
+    
+        # generating arrays from collection1
+        new_saved_data = map(eachrow(collection1)) do row
+            fh = FITS(row.path)
+            data = getdata(fh[row.hdu])
+            close(fh)
+            data
+        end
+    
+        # testing saved data
+        @test final == new_saved_data
+    
+        # testing saved filenames
+        @test collection1[1, :name] == "test1_M35070V_test2.fits"
+        @test collection1[2, :name] == "test1_M6707HH_test2.fits"
     end
-
-    # testing function outputs
-    @test final[1] == getdata(M35070V[1])
-    @test final[2] == getdata(M6707HH[1])
-
-    collection1 = fitscollection(savedir; recursive = false)
-
-    # generating arrays from collection1
-    new_saved_data = map(eachrow(collection1)) do row
-        fh = FITS(row.path)
-        data = getdata(fh[row.hdu])
-        close(fh)
-        data
-    end
-
-    # testing saved data
-    @test final == new_saved_data
-
-    # testing saved filenames
-    @test collection1[1, :name] == "test1_M35070V_test2.fits"
-    @test collection1[2, :name] == "test1_M6707HH_test2.fits"
-
-    # removing data generated during testing
-    rm.(collection1[:, :path])
 
     # testing save functionality with path = nothing, i.e. at same location as of the input file
     new_saved_data = filenames(collection; save_prefix = "save_without_path") do filename
@@ -171,44 +172,42 @@ end
     end
     collection2 = fitscollection(dir)
     @test first(size(collection2)) == 4
-
-    # removing data generated during testion
-    rm.(joinpath(dir, "save_without_path_M6707HH.fits"))
-    rm.(joinpath(dir, "save_without_path_M35070V.fits"))
 end
 
 @testset "saving-arrays" begin
-    dir = joinpath(@__DIR__, "data")
-    savedir = @__DIR__
+    # copy data to separate temp directory for testing
+    source_dir = joinpath(@__DIR__, "data")
+    dir = mktempdir()
+    cp(source_dir, dir; force=true)
+
     collection = fitscollection(dir)
 
-    final = arrays(collection; save = true, path = savedir, save_prefix = "test1", save_suffix = "test2") do img
-        trim(img, (:, 1040:1059))
+    mktempdir() do savedir
+        final = arrays(collection; save = true, path = savedir, save_prefix = "test1", save_suffix = "test2") do img
+            trim(img, (:, 1040:1059))
+        end
+
+        # testing function outputs
+        @test final[1] == trim(getdata(M35070V[1]), (:, 1040:1059))
+        @test final[2] == trim(getdata(M6707HH[1]), (:, 1040:1059))
+
+        collection1 = fitscollection(savedir; recursive = false)
+
+        # generating arrays from collection1
+        new_saved_data = map(eachrow(collection1)) do row
+            fh = FITS(row.path)
+            data = getdata(fh[row.hdu])
+            close(fh)
+            data
+        end
+
+        # testing saved data
+        @test final == new_saved_data
+
+        # testing saved filenames
+        @test collection1[1, :name] == "test1_M35070V_test2.fits"
+        @test collection1[2, :name] == "test1_M6707HH_test2.fits"
     end
-
-    # testing function outputs
-    @test final[1] == trim(getdata(M35070V[1]), (:, 1040:1059))
-    @test final[2] == trim(getdata(M6707HH[1]), (:, 1040:1059))
-
-    collection1 = fitscollection(savedir; recursive = false)
-
-    # generating arrays from collection1
-    new_saved_data = map(eachrow(collection1)) do row
-        fh = FITS(row.path)
-        data = getdata(fh[row.hdu])
-        close(fh)
-        data
-    end
-
-    # testing saved data
-    @test final == new_saved_data
-
-    # testing saved filenames
-    @test collection1[1, :name] == "test1_M35070V_test2.fits"
-    @test collection1[2, :name] == "test1_M6707HH_test2.fits"
-
-    # removing data generated during testing
-    rm.(collection1[:, :path])
 
     # testing save functionality with path = nothing, i.e. at same location as of the input file
     new_saved_data = arrays(collection; save_prefix = "save_without_path") do data
@@ -216,10 +215,6 @@ end
     end
     collection2 = fitscollection(dir)
     @test first(size(collection2)) == 4
-
-    # removing data generated during testion
-    rm.(joinpath(dir, "save_without_path_M6707HH.fits"))
-    rm.(joinpath(dir, "save_without_path_M35070V.fits"))
 end
 
 @testset "helper" begin
@@ -246,22 +241,23 @@ end
     parse_name_ext("11.12.20_HD106754.Fits.Tar.gz", "." * r"fits(\.tar\.gz)?"i) == ("11.12.20_HD106754", ".Fits.Tar.gz")
 
     # testing writefits
-    filename = joinpath(@__DIR__, "test.fits")
-    sample_data = rand(5, 10)
-    writefits(filename, sample_data)
-    fh = FITS(filename)
-    image_array = getdata(fh[1])
-    @test image_array == sample_data
-    close(fh) # closing handle so that generated file can be deleted
-    rm(filename) # remove the data generated during testing
+    mktempdir() do path
+        filename = joinpath(path, "test1.fits")
+        sample_data = rand(5, 10)
+        writefits(filename, sample_data)
+        fh = FITS(filename)
+        image_array = getdata(fh[1])
+        @test image_array == sample_data
+        close(fh) # closing handle so that generated file can be deleted
 
-    # writitng CCDData
-    ccd = CCDData(zeros(4, 4))
-    writefits(filename, ccd)
-    fh = FITS(filename)
-    image_array = getdata(fh[1])
-    @test image_array == ccd.data
-    @test read_header(fh[1])["SIMPLE"] == true
-    close(fh)
-    rm(filename)
+        # writitng CCDData
+        filename = joinpath(path, "test2.fits")
+        ccd = CCDData(zeros(4, 4))
+        writefits(filename, ccd)
+        fh = FITS(filename)
+        image_array = getdata(fh[1])
+        @test image_array == ccd.data
+        @test read_header(fh[1])["SIMPLE"] == true
+        close(fh)
+    end
 end

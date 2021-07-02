@@ -46,7 +46,7 @@ julia> frame = [1.0 2.2 3.3 4.5];
 julia> bias = [0.0 0.2 0.3 0.5];
 
 julia> subtract_bias(frame, bias)
-1×4 Array{Float64,2}:
+1×4 Matrix{Float64}:
  1.0  2.0  3.0  4.0
 
 ```
@@ -90,11 +90,11 @@ If `frame` is a string, it will be loaded into [`CCDData`](@ref) first. The HDU 
 julia> frame = [4.0 2.0 3.0 1.0 1.0];
 
 julia> subtract_overscan(frame, (:, 4:5), dims = 2)
-1×5 Array{Float64,2}:
+1×5 Matrix{Float64}:
  3.0  1.0  2.0  0.0  0.0
 
 julia> subtract_overscan(frame, "[4:5, 1:1]", dims = 2)
-1×5 Array{Float64,2}:
+1×5 Matrix{Float64}:
  3.0  1.0  2.0  0.0  0.0
 
 ```
@@ -140,13 +140,13 @@ julia> frame = ones(3, 3);
 julia> flat = fill(2.0, (3, 3));
 
 julia> flat_correct(frame, flat, norm_value = 1.0)
-3×3 Array{Float64,2}:
+3×3 Matrix{Float64}:
  0.5  0.5  0.5
  0.5  0.5  0.5
  0.5  0.5  0.5
 
 julia> flat_correct(frame, flat)
-3×3 Array{Float64,2}:
+3×3 Matrix{Float64}:
  1.0  1.0  1.0
  1.0  1.0  1.0
  1.0  1.0  1.0
@@ -178,7 +178,7 @@ If `frame` is a string, it will be loaded into [`CCDData`](@ref) first. The HDU 
 julia> frame = ones(5, 5);
 
 julia> trim(frame, (:, 2:5))
-5×1 Array{Float64,2}:
+5×1 Matrix{Float64}:
  1.0
  1.0
  1.0
@@ -186,7 +186,7 @@ julia> trim(frame, (:, 2:5))
  1.0
 
 julia> trim(frame, "[2:5, 1:5]")
-5×1 Array{Float64,2}:
+5×1 Matrix{Float64}:
  1.0
  1.0
  1.0
@@ -255,13 +255,13 @@ If `frame` is a string, it will be loaded into [`CCDData`](@ref) first. The HDU 
 julia> frame = reshape(1:25, (5, 5));
 
 julia> crop(frame, (3, 3))
-3×3 Array{Int64,2}:
+3×3 Matrix{Int64}:
  7  12  17
  8  13  18
  9  14  19
 
 julia> crop(frame, (4, 3), force_equal = false)
-4×3 Array{Int64,2}:
+4×3 Matrix{Int64}:
  6  11  16
  7  12  17
  8  13  18
@@ -331,12 +331,12 @@ Header of output file (if applicable) is specified by `header_hdu` which by defa
 julia> frame = [reshape(1.0:4.0, (2, 2)) for i = 1:4];
 
 julia> combine(frame)
-2×2 Array{Float64,2}:
+2×2 Matrix{Float64}:
  1.0  3.0
  2.0  4.0
 
 julia> combine(frame, method = sum)
-2×2 Array{Float64,2}:
+2×2 Matrix{Float64}:
  4.0  12.0
  8.0  16.0
 
@@ -381,13 +381,13 @@ julia> frame = ones(3, 3);
 julia> dark_frame = ones(3, 3);
 
 julia> subtract_dark(frame, dark_frame)
-3×3 Array{Float64,2}:
+3×3 Matrix{Float64}:
  0.0  0.0  0.0
  0.0  0.0  0.0
  0.0  0.0  0.0
 
 julia> subtract_dark(frame, dark_frame, data_exposure = 1, dark_exposure = 4)
-3×3 Array{Float64,2}:
+3×3 Matrix{Float64}:
  0.75  0.75  0.75
  0.75  0.75  0.75
  0.75  0.75  0.75
