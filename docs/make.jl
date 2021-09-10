@@ -14,4 +14,8 @@ makedocs(modules = [CCDReduction],
     ],
 )
 
-deploydocs(repo = "github.com/JuliaAstro/CCDReduction.jl.git", push_preview=true)
+deploydocs(;
+    repo = "github.com/JuliaAstro/CCDReduction.jl.git",
+    push_preview = true,
+    devbranch = "main"
+)
