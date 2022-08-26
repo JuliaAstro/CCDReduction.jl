@@ -2,16 +2,13 @@ using Documenter
 using CCDReduction
 
 DocMeta.setdocmeta!(CCDReduction, :DocTestSetup, :(using CCDReduction); recursive = true)
-
+include("pages.jl")
 makedocs(modules = [CCDReduction],
     sitename = "CCDReduction.jl",
     format = Documenter.HTML(prettyurls = get(ENV, "CI", nothing) == "true"),
     authors = "Siddharth Lal",
     strict = true,
-    pages = [
-        "Home" => "index.md",
-        "API/Reference" => "api.md"
-    ],
+    pages = pages
 )
 
 deploydocs(;
