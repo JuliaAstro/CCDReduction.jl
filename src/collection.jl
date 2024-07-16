@@ -124,7 +124,7 @@ extended help (`??fitscollection`)
 Let's look at some file paths starting from `"/data"`. Here are examples of how
 they would be parsed
 
-```
+```plain
  root  dir   base   ext
 [----][---][------][---]
 /data/test/tek0001.fits
