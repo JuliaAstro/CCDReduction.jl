@@ -48,11 +48,8 @@ One can perform arithmetic operations on it as well:
 
 ```julia
 ccd1 = CCDData(zeros(4, 4))
-
 ccd2 = CCDData(ones(4, 4))
-
 sum_ccd1 = ccd1 + ccd2
-
 sum_ccd2 = ccd2 + ccd1
 ```
 

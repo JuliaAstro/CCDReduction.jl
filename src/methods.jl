@@ -100,7 +100,6 @@ julia> subtract_overscan(frame, (:, 4:5), dims = 2)
 julia> subtract_overscan(frame, "[4:5, 1:1]", dims = 2)
 1×5 Matrix{Float64}:
  3.0  1.0  2.0  0.0  0.0
-
 ```
 
 # See Also
@@ -159,7 +158,6 @@ julia> flat_correct(frame, flat)
  1.0  1.0  1.0
  1.0  1.0  1.0
  1.0  1.0  1.0
-
 ```
 
 # See Also
@@ -281,7 +279,6 @@ julia> crop(frame, (4, 3), force_equal = false)
  7  12  17
  8  13  18
  9  14  19
-
 ```
 
 # See Also
