@@ -308,18 +308,18 @@ function cropview(frame::AbstractArray, shape; force_equal = true)
 
     # generating idxs for cropped frame
     idxs = map(enumerate(size(frame)), shape) do (d, s1), s2
-                diff = s2 isa Colon ? 0 : s1 - s2
-                lower = iseven(diff) ? diff ÷ 2 : (diff - 1) ÷ 2
-                upper = if isodd(diff) && force_equal
-                            @warn "dimension $d changed from $s2 to $(s2 + 1)"
-                            (diff - 1) ÷ 2
-                        elseif isodd(diff)
-                            (diff + 1) ÷ 2
-                        else
-                            diff ÷ 2
-                        end
-                1 + lower:s1 - upper
-            end
+        diff = s2 isa Colon ? 0 : s1 - s2
+        lower = iseven(diff) ? diff ÷ 2 : (diff - 1) ÷ 2
+        upper = if isodd(diff) && force_equal
+                    @warn "dimension $d changed from $s2 to $(s2 + 1)"
+                    (diff - 1) ÷ 2
+                elseif isodd(diff)
+                    (diff + 1) ÷ 2
+                else
+                    diff ÷ 2
+                end
+        1 + lower:s1 - upper
+    end
 
     # returning the view
     return @view frame[idxs...]
