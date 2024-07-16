@@ -37,7 +37,9 @@ end
 
 Subtract the `bias_frame` from `frame`.
 
-If either are strings, they will be loaded into [`CCDData`](@ref) first. The HDU loaded can be specified by `hdu` as either an integer or a tuple corresponding to each file.
+If either are strings, they will be loaded into [`CCDData`](@ref) first. The HDU
+loaded can be specified by `hdu` as either an integer or a tuple corresponding
+to each file.
 
 # Examples
 ```jldoctest
@@ -80,10 +82,12 @@ subtract_overscan!(frame::AbstractArray, idxs::String; kwargs...) = subtract_ove
 
 Subtract the overscan frame from image.
 
-`dims` is the dimension along which `overscan_frame` is combined. The default value
-of `dims` is the axis with smaller length in overscan region. If `idxs` is a string it will be parsed as FITS-style indices.
+`dims` is the dimension along which `overscan_frame` is combined. The default
+value of `dims` is the axis with smaller length in overscan region.
+If `idxs` is a string it will be parsed as FITS-style indices.
 
-If `frame` is a string, it will be loaded into [`CCDData`](@ref) first. The HDU loaded can be specified by `hdu` which by default is 1.
+If `frame` is a string, it will be loaded into [`CCDData`](@ref) first.
+The HDU loaded can be specified by `hdu` which by default is 1.
 
 # Examples
 ```jldoctest
@@ -125,13 +129,18 @@ end
 
 Correct `frame` for non-uniformity using the calibrated `flat_frame`.
 
-By default, the `flat_frame` is normalized by its mean, but this can be changed by providing a custom `norm_value`.
+By default, the `flat_frame` is normalized by its mean, but this can be changed
+by providing a custom `norm_value`.
 
-If either are strings, they will be loaded into [`CCDData`](@ref) first. The HDU loaded can be specified by `hdu` as either an integer or a tuple corresponding to each file.
+If either are strings, they will be loaded into [`CCDData`](@ref) first. The HDU
+loaded can be specified by `hdu` as either an integer or a tuple corresponding
+to each file.
 
 !!! note
-    This function may introduce non-finite values if `flat_frame` contains values very close to `0` due to dividing by zero.
-    The default behavior will return `Inf` if the frame value is non-zero, and `Nan` if the frame value is `0`.
+    This function may introduce non-finite values if `flat_frame` contains
+    values very close to `0` due to dividing by zero.
+    The default behavior will return `Inf` if the frame value is non-zero, and
+    `Nan` if the frame value is `0`.
 
 # Examples
 ```jldoctest
@@ -168,10 +177,12 @@ end
 Trims the `frame` to remove the region specified by idxs.
 
 This function trims the array in a manner such that final array should be rectangular.
-The indices follow standard Julia convention, so `(:, 45:60)` trims all columns from 45 to 60 and `(1:20, :)` trims all the rows from 1 to 20.
+The indices follow standard Julia convention, so `(:, 45:60)` trims all columns
+from 45 to 60 and `(1:20, :)` trims all the rows from 1 to 20.
 The function also supports FITS-style indices.
 
-If `frame` is a string, it will be loaded into [`CCDData`](@ref) first. The HDU loaded can be specified by `hdu` which by default is 1.
+If `frame` is a string, it will be loaded into [`CCDData`](@ref) first.
+The HDU loaded can be specified by `hdu` which by default is 1.
 
 # Examples
 ```jldoctest
@@ -245,10 +256,14 @@ trimview(frame::AbstractArray, idxs::String) = trimview(frame, fits_indices(idxs
 
 Crops `frame` to the size specified by `shape` anchored by the frame center.
 
-This will remove rows/cols of the `frame` equally on each side. When there is an uneven difference in sizes (e.g. size 9 -> 6 can't be removed equally) the default is to
-increase the output size (e.g. 6 -> 7) so there is equal removal on each side. To disable this, set `force_equal=false`, which will remove the extra slice from the end of the axis.
+This will remove rows/cols of the `frame` equally on each side. When there is
+an uneven difference in sizes (e.g. size 9 -> 6 can't be removed equally) the
+default is to increase the output size (e.g. 6 -> 7) so there is equal removal
+on each side. To disable this, set `force_equal=false`, which will remove the
+extra slice from the end of the axis.
 
-If `frame` is a string, it will be loaded into [`CCDData`](@ref) first. The HDU loaded can be specified by `hdu` which by default is 1.
+If `frame` is a string, it will be loaded into [`CCDData`](@ref) first.
+The HDU loaded can be specified by `hdu` which by default is 1.
 
 # Examples
 ```jldoctest
