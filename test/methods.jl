@@ -112,9 +112,9 @@ end
     @test crop(ones(5, 5), (3, 3)) isa Array
 
     # testing error
-    @test_throws BoundsError cropview(ones(5, 5), (7, 3))
-    @test_throws ErrorException cropview(ones(5, 5), (3, -5))
-    @test_throws ErrorException cropview(ones(5, 5), (3, 4, 5))
+    @test_throws BoundsError       cropview(ones(5, 5), (7, 3))
+    @test_throws ErrorException    cropview(ones(5, 5), (3, -5))
+    @test_throws DimensionMismatch cropview(ones(5, 5), (3, 4, 5))
 end
 
 @testset "combining" begin

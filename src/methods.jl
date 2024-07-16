@@ -303,7 +303,9 @@ This function is same as the [`crop`](@ref) function but returns a view of the f
 """
 function cropview(frame::AbstractArray, shape; force_equal = true)
     # testing error
-    ndims(frame) == length(shape) || error("Dimension mismatch between frame and shape")
+    if ndims(frame) != length(shape)
+        throw(DimensionMismatch("Dimension mismatch between frame and shape"))
+    end
     any(s -> !isa(s, Colon) && s < 1, shape) && error("crop size $shape cant't be less than 1")
 
     # generating idxs for cropped frame
