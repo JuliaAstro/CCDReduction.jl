@@ -7,8 +7,7 @@ makedocs(modules = [CCDReduction],
     sitename = "CCDReduction.jl",
     format = Documenter.HTML(prettyurls = get(ENV, "CI", nothing) == "true"),
     authors = "Siddharth Lal",
-    strict = true,
-    pages = pages
+    pages = pages,
 )
 
 deploydocs(;

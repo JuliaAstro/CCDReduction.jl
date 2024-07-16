@@ -14,12 +14,12 @@ This package provides tools for basic reduction methods of CCD images.
 
 ## Installation
 
-From Julia enter Pkg mode
+From Julia enter Pkg mode (by pressing `]` in the Julia REPL)
 
-```julia
-julia>]
+```julia-repl
+julia> ]
 
-(1.3) pkg> add CCDReduction
+pkg> add CCDReduction
 ```
 
 ## Usage

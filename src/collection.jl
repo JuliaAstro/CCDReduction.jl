@@ -47,8 +47,12 @@ end
 
 Writes `data`/`ccd` in FITS format at `file_path`.
 
-`FITSIO` takes over memory write in by `cfitsio`, which writes in row-major form, whereas when Julia gives that memory, it is assumed as column major.
-Therefore all data written by [`FITSIO.write`](http://juliaastro.github.io/FITSIO.jl/latest/api.html#Base.write-Tuple{FITS,Dict{String,V}%20where%20V}) is transposed. This function allows the user to write the data in a consistent way to FITS file by transposing before writing.
+`FITSIO` takes over memory write in by `cfitsio`, which writes in row-major
+form, whereas when Julia gives that memory, it is assumed as column major.
+Therefore all data written by
+[`FITSIO.write`](https://juliaastro.org/FITSIO.jl/stable/api/#Base.write-Tuple{FITS,%20Dict{String}})
+is transposed. This function allows the user to write the data in a consistent
+    way to FITS file by transposing before writing.
 """
 function writefits(file_path, data; header = nothing)
     d = ndims(data)
@@ -71,37 +75,56 @@ writefits(file_path, ccd::CCDData) = writefits(file_path, ccd.data; header = ccd
                    exclude_dir=nothing,
                    exclude_key=("", "HISTORY"))
 
-Walk through `dir` collecting FITS files, scanning their headers, and culminating into a `DataFrame` that can be used with the generators for iterating over many files and processing them. If `recursive` is false, no subdirectories will be walked through.
+Walk through `dir` collecting FITS files, scanning their headers, and
+culminating into a `DataFrame` that can be used with the generators for
+iterating over many files and processing them. If `recursive` is false, no
+subdirectories will be walked through.
 
-The table returned will contain the path to the file, the name of the file, and index of the corresponding HDU, and each FITS header column and value. If two FITS files have distinct columns, they will both appear in the table with `missing` in the appropriate rows. 
+The table returned will contain the path to the file, the name of the file, and
+index of the corresponding HDU, and each FITS header column and value. If two
+FITS files have distinct columns, they will both appear in the table with
+`missing` in the appropriate rows.
 
 !!! note "Duplicate Keys"
-    In certain cases, there are multiple FITS headers with the same key, e.g., `COMMENT`. In these cases, only the first instance of the key-value pair will be stored.
+    In certain cases, there are multiple FITS headers with the same key, e.g.,
+    `COMMENT`. In these cases, only the first instance of the key-value pair
+    will be stored.
 
-If `abspath` is true, the path in the table will be absolute. If `keepext` is true, the name in the table will include the file extension, given by `ext`. `ext` will be used with `endswith` to filter for fits files compatible with `FITSIO.FITS`. `exclude` is a pattern that can be used with `occursin` to exclude certain filenames. For example, to exclude any files containing "sky",
+If `abspath` is true, the path in the table will be absolute. If `keepext` is
+true, the name in the table will include the file extension, given by `ext`.
+`ext` will be used with `endswith` to filter for fits files compatible with
+`FITSIO.FITS`. `exclude` is a pattern that can be used with `occursin` to
+exclude certain filenames. For example, to exclude any files containing "sky",
 ```julia
 fitscollection(...; exclude="sky")
 ```
-to exclude exact filenames, [regex strings](https://docs.julialang.org/en/v1/manual/strings/#Regular-Expressions-1) will prove powerful
+to exclude exact filenames,
+[regex strings](https://docs.julialang.org/en/v1/manual/strings/#Regular-Expressions-1)
+will prove powerful
 ```julia
 fitscollection(...; exclude=r"^tek001\d")
 ```
-finally, using external tools like [Glob.jl](https://github.com/vtjnash/Glob.jl) allows further customization
+finally, using external tools like [Glob.jl](https://github.com/vtjnash/Glob.jl)
+allows further customization
 ```julia
 using Glob
 fitscollection(...; exclude=fn"tek001*.fits") # same as regex match above
 ```
-Similarly, `exclude_dir` allows excluding entire folders using pattern matching (e.g. skipping a backup folder `exclude_dir="backup"`).
-`exclude_key` allows excluding certain entries in the header unit of `ImageHDU` in FITS files (e.g. skipping `"HISTORY"` and `""` `exclude_key = ("HISTORY", "")`).
+Similarly, `exclude_dir` allows excluding entire folders using pattern matching
+(e.g. skipping a backup folder `exclude_dir="backup"`).
+`exclude_key` allows excluding certain entries in the header unit of `ImageHDU`
+in FITS files (e.g. skipping `"HISTORY"` and `""` `exclude_key = ("HISTORY", "")`).
 
-For more information about the file matching and path deconstruction, see the extended help (`??fitscollection`)
+For more information about the file matching and path deconstruction, see the
+extended help (`??fitscollection`)
 # Extended Help
 
 ## Parts of a path
 
-Let's look at some file paths starting from `"/data"`. Here are examples of how they would be parsed
+Let's look at some file paths starting from `"/data"`. Here are examples of how
+they would be parsed
 
-```
+```plain
  root  dir   base   ext
 [----][---][------][---]
 /data/test/tek0001.fits
@@ -111,7 +134,12 @@ Let's look at some file paths starting from `"/data"`. Here are examples of how 
 /data/test/sci/tek0001.fits
 ```
 
-If `keepext` is `true`, `name=base * ext`, otherwise it is just `base`. If `abspath` is `true`, the path will be `root * dir * base * ext`, otherwise it will be `dir * base * ext`. These options allow flexility in creating a table that can be easily saved and loaded to avoid having to manually filter files. Especially consider how `abspath` can allow keeping tables that will transfer easily between computers or between data sources with common structures.
+If `keepext` is `true`, `name=base * ext`, otherwise it is just `base`. If
+`abspath` is `true`, the path will be `root * dir * base * ext`, otherwise it
+will be `dir * base * ext`. These options allow flexility in creating a table
+that can be easily saved and loaded to avoid having to manually filter files.
+Especially consider how `abspath` can allow keeping tables that will transfer
+easily between computers or between data sources with common structures.
 """
 function fitscollection(basedir::String;
                         recursive = true,
@@ -176,7 +204,8 @@ Iterates over `collection` using each `path` and `hdu` to load data into an `Arr
 collection = fitscollection("~/data/tekdata")
 data = arrays(collection) |> collect
 ```
-This returns all image arrays present in `collection`. This can also be used via a for-loop
+This returns all image arrays present in `collection`.
+This can also be used via a for-loop
 ```julia
 collection = fitscollection("~/data/tekdata")
 for arr in arrays(collection)
@@ -238,7 +267,8 @@ end
 
 Generator for `CCDData`s of entries in data frame.
 
-Iterates over `collection` using each `path` and `hdu` to load data into a [`CCDData`](@ref).
+Iterates over `collection` using each `path` and `hdu` to load data into a
+[`CCDData`](@ref).
 
 # Examples
 ```julia
@@ -271,7 +301,14 @@ end
 
 Iterates over the `CCDData`s of the collection applying function `f` at each step.
 
-The output from `f` can be saved using the appropriate keyword arguments. The `save_prefix` argument will add a prefix to each filename delimited by `save_delim`. `save_suffix` will add a suffix prior to the extension, which can be manually provided via `ext`, similar to [`fitscollection`](@ref). Files will be saved in the directory they are stored unless `path` is given. Finally, `save` will default to `true` if any of the previous arguments are set, but can be manually overridden (useful for testing). Files will be saved using [`CCDReduction.writefits`](@ref).
+The output from `f` can be saved using the appropriate keyword arguments. The
+`save_prefix` argument will add a prefix to each filename delimited by
+`save_delim`. `save_suffix` will add a suffix prior to the extension, which can
+be manually provided via `ext`, similar to [`fitscollection`](@ref). Files will
+be saved in the directory they are stored unless `path` is given. Finally,
+`save` will default to `true` if any of the previous arguments are set, but can
+be manually overridden (useful for testing). Files will be saved using
+[`CCDReduction.writefits`](@ref).
 
 # Example
 ```julia
@@ -280,7 +317,8 @@ processed_images = map(ccds(collection)) do img
     trim(img, (:, 1040:1059))
 end
 ```
-The above generates `processed_images` which consists of trimmed versions of images present in `collection`.
+The above generates `processed_images` which consists of trimmed versions of
+images present in `collection`.
 
 For saving the `processed_images` simultaneously with the operations performed
 ```julia
@@ -288,7 +326,8 @@ processed_images = map(ccds(collection; path = "~/data/tekdata", save_prefix = "
     trim(img, (:, 1040:1059))
 end
 ```
-The trimmed images are saved as `trimmed_(original_name)` (FITS files) at `path = "~/data/tekdata"` as specified by the user.
+The trimmed images are saved as `trimmed_(original_name)` (FITS files) at
+`path = "~/data/tekdata"` as specified by the user.
 """
 function ccds(f,
               collection;
@@ -332,7 +371,14 @@ end
 
 Iterates over the file paths of the collection applying function `f` at each step.
 
-The output from `f` can be saved using the appropriate keyword arguments. The `save_prefix` argument will add a prefix to each filename delimited by `save_delim`. `save_suffix` will add a suffix prior to the extension, which can be manually provided via `ext`, similar to [`fitscollection`](@ref). Files will be saved in the directory they are stored unless `path` is given. Finally, `save` will default to `true` if any of the previous arguments are set, but can be manually overridden (useful for testing). Files will be saved using [`CCDReduction.writefits`](@ref).
+The output from `f` can be saved using the appropriate keyword arguments. The
+`save_prefix` argument will add a prefix to each filename delimited by
+`save_delim`. `save_suffix` will add a suffix prior to the extension, which can
+be manually provided via `ext`, similar to [`fitscollection`](@ref). Files will
+be saved in the directory they are stored unless `path` is given. Finally,
+`save` will default to `true` if any of the previous arguments are set, but can
+be manually overridden (useful for testing). Files will be saved using
+[`CCDReduction.writefits`](@ref).
 
 # Examples
 ```julia
@@ -344,7 +390,8 @@ data = map(filenames(collection)) do path
     data
 end
 ```
-The above generates `data` which consists of image arrays corresponding to 1st hdu of FITS file paths present in `collection`.
+The above generates `data` which consists of image arrays corresponding to 1st
+hdu of FITS file paths present in `collection`.
 For saving the `data` simultaneously with the operations performed
 ```julia
 data = map(filenames(collection; path = "~/data/tekdata", save_prefix = "retrieved_from_filename")) do img
@@ -354,7 +401,8 @@ data = map(filenames(collection; path = "~/data/tekdata", save_prefix = "retriev
     data
 end
 ```
-The retrieved data is saved as `retrieved_from_filename_(original_name)` (FITS files) at `path = "~/data/tekdata"` as specified by the user.
+The retrieved data is saved as `retrieved_from_filename_(original_name)`
+(FITS files) at `path = "~/data/tekdata"` as specified by the user.
 """
 function filenames(f,
                    collection;
@@ -398,7 +446,14 @@ end
 
 Iterates over the image arrays of the collection applying function `f` at each step.
 
-The output from `f` can be saved using the appropriate keyword arguments. The `save_prefix` argument will add a prefix to each filename delimited by `save_delim`. `save_suffix` will add a suffix prior to the extension, which can be manually provided via `ext`, similar to [`fitscollection`](@ref). Files will be saved in the directory they are stored unless `path` is given. Finally, `save` will default to `true` if any of the previous arguments are set, but can be manually overridden (useful for testing). Files will be saved using [`CCDReduction.writefits`](@ref).
+The output from `f` can be saved using the appropriate keyword arguments.
+The `save_prefix` argument will add a prefix to each filename delimited by
+`save_delim`. `save_suffix` will add a suffix prior to the extension, which can
+be manually provided via `ext`, similar to [`fitscollection`](@ref). Files will
+be saved in the directory they are stored unless `path` is given. Finally,
+`save` will default to `true` if any of the previous arguments are set, but can
+be manually overridden (useful for testing). Files will be saved using
+[`CCDReduction.writefits`](@ref).
 
 # Examples
 ```julia
@@ -407,14 +462,16 @@ processed_images = map(arrays(collection)) do arr
     trim(arr, (:, 1040:1059))
 end
 ```
-The above generates `processed_images` which consists of trimmed versions of image arrays present in `collection`.
+The above generates `processed_images` which consists of trimmed versions of
+image arrays present in `collection`.
 For saving the `processed_images` simultaneously with the operations performed
 ```julia
 processed_images = map(arrays(collection; path = "~/data/tekdata", save_prefix = "trimmed")) do img
     trim(img, (:, 1040:1059))
 end
 ```
-The trimmed image arrays are saved as `trimmed_(original_name)` (FITS files) at `path = "~/data/tekdata"` as specified by the user.
+The trimmed image arrays are saved as `trimmed_(original_name)` (FITS files)
+at `path = "~/data/tekdata"` as specified by the user.
 """
 function arrays(f,
                 collection;

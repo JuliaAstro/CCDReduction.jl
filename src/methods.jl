@@ -37,7 +37,9 @@ end
 
 Subtract the `bias_frame` from `frame`.
 
-If either are strings, they will be loaded into [`CCDData`](@ref) first. The HDU loaded can be specified by `hdu` as either an integer or a tuple corresponding to each file.
+If either are strings, they will be loaded into [`CCDData`](@ref) first. The HDU
+loaded can be specified by `hdu` as either an integer or a tuple corresponding
+to each file.
 
 # Examples
 ```jldoctest
@@ -80,10 +82,12 @@ subtract_overscan!(frame::AbstractArray, idxs::String; kwargs...) = subtract_ove
 
 Subtract the overscan frame from image.
 
-`dims` is the dimension along which `overscan_frame` is combined. The default value
-of `dims` is the axis with smaller length in overscan region. If `idxs` is a string it will be parsed as FITS-style indices.
+`dims` is the dimension along which `overscan_frame` is combined. The default
+value of `dims` is the axis with smaller length in overscan region.
+If `idxs` is a string it will be parsed as FITS-style indices.
 
-If `frame` is a string, it will be loaded into [`CCDData`](@ref) first. The HDU loaded can be specified by `hdu` which by default is 1.
+If `frame` is a string, it will be loaded into [`CCDData`](@ref) first.
+The HDU loaded can be specified by `hdu` which by default is 1.
 
 # Examples
 ```jldoctest
@@ -96,7 +100,6 @@ julia> subtract_overscan(frame, (:, 4:5), dims = 2)
 julia> subtract_overscan(frame, "[4:5, 1:1]", dims = 2)
 1×5 Matrix{Float64}:
  3.0  1.0  2.0  0.0  0.0
-
 ```
 
 # See Also
@@ -125,13 +128,18 @@ end
 
 Correct `frame` for non-uniformity using the calibrated `flat_frame`.
 
-By default, the `flat_frame` is normalized by its mean, but this can be changed by providing a custom `norm_value`.
+By default, the `flat_frame` is normalized by its mean, but this can be changed
+by providing a custom `norm_value`.
 
-If either are strings, they will be loaded into [`CCDData`](@ref) first. The HDU loaded can be specified by `hdu` as either an integer or a tuple corresponding to each file.
+If either are strings, they will be loaded into [`CCDData`](@ref) first. The HDU
+loaded can be specified by `hdu` as either an integer or a tuple corresponding
+to each file.
 
 !!! note
-    This function may introduce non-finite values if `flat_frame` contains values very close to `0` due to dividing by zero.
-    The default behavior will return `Inf` if the frame value is non-zero, and `Nan` if the frame value is `0`.
+    This function may introduce non-finite values if `flat_frame` contains
+    values very close to `0` due to dividing by zero.
+    The default behavior will return `Inf` if the frame value is non-zero, and
+    `Nan` if the frame value is `0`.
 
 # Examples
 ```jldoctest
@@ -150,7 +158,6 @@ julia> flat_correct(frame, flat)
  1.0  1.0  1.0
  1.0  1.0  1.0
  1.0  1.0  1.0
-
 ```
 
 # See Also
@@ -168,10 +175,12 @@ end
 Trims the `frame` to remove the region specified by idxs.
 
 This function trims the array in a manner such that final array should be rectangular.
-The indices follow standard Julia convention, so `(:, 45:60)` trims all columns from 45 to 60 and `(1:20, :)` trims all the rows from 1 to 20.
+The indices follow standard Julia convention, so `(:, 45:60)` trims all columns
+from 45 to 60 and `(1:20, :)` trims all the rows from 1 to 20.
 The function also supports FITS-style indices.
 
-If `frame` is a string, it will be loaded into [`CCDData`](@ref) first. The HDU loaded can be specified by `hdu` which by default is 1.
+If `frame` is a string, it will be loaded into [`CCDData`](@ref) first.
+The HDU loaded can be specified by `hdu` which by default is 1.
 
 # Examples
 ```jldoctest
@@ -245,10 +254,14 @@ trimview(frame::AbstractArray, idxs::String) = trimview(frame, fits_indices(idxs
 
 Crops `frame` to the size specified by `shape` anchored by the frame center.
 
-This will remove rows/cols of the `frame` equally on each side. When there is an uneven difference in sizes (e.g. size 9 -> 6 can't be removed equally) the default is to
-increase the output size (e.g. 6 -> 7) so there is equal removal on each side. To disable this, set `force_equal=false`, which will remove the extra slice from the end of the axis.
+This will remove rows/cols of the `frame` equally on each side. When there is
+an uneven difference in sizes (e.g. size 9 -> 6 can't be removed equally) the
+default is to increase the output size (e.g. 6 -> 7) so there is equal removal
+on each side. To disable this, set `force_equal=false`, which will remove the
+extra slice from the end of the axis.
 
-If `frame` is a string, it will be loaded into [`CCDData`](@ref) first. The HDU loaded can be specified by `hdu` which by default is 1.
+If `frame` is a string, it will be loaded into [`CCDData`](@ref) first.
+The HDU loaded can be specified by `hdu` which by default is 1.
 
 # Examples
 ```jldoctest
@@ -266,7 +279,6 @@ julia> crop(frame, (4, 3), force_equal = false)
  7  12  17
  8  13  18
  9  14  19
-
 ```
 
 # See Also
@@ -291,23 +303,25 @@ This function is same as the [`crop`](@ref) function but returns a view of the f
 """
 function cropview(frame::AbstractArray, shape; force_equal = true)
     # testing error
-    ndims(frame) == length(shape) || error("Dimension mismatch between frame and shape")
+    if ndims(frame) != length(shape)
+        throw(DimensionMismatch("Dimension mismatch between frame and shape"))
+    end
     any(s -> !isa(s, Colon) && s < 1, shape) && error("crop size $shape cant't be less than 1")
 
     # generating idxs for cropped frame
     idxs = map(enumerate(size(frame)), shape) do (d, s1), s2
-                diff = s2 isa Colon ? 0 : s1 - s2
-                lower = iseven(diff) ? diff ÷ 2 : (diff - 1) ÷ 2
-                upper = if isodd(diff) && force_equal
-                            @warn "dimension $d changed from $s2 to $(s2 + 1)"
-                            (diff - 1) ÷ 2
-                        elseif isodd(diff)
-                            (diff + 1) ÷ 2
-                        else
-                            diff ÷ 2
-                        end
-                1 + lower:s1 - upper
-            end
+        diff = s2 isa Colon ? 0 : s1 - s2
+        lower = iseven(diff) ? diff ÷ 2 : (diff - 1) ÷ 2
+        upper = if isodd(diff) && force_equal
+                    @warn "dimension $d changed from $s2 to $(s2 + 1)"
+                    (diff - 1) ÷ 2
+                elseif isodd(diff)
+                    (diff + 1) ÷ 2
+                else
+                    diff ÷ 2
+                end
+        1 + lower:s1 - upper
+    end
 
     # returning the view
     return @view frame[idxs...]

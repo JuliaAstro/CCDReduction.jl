@@ -1,6 +1,6 @@
 # abstract data type for CCDData
 """
-    AbstractCCDData{T}
+    abstract type AbstractCCDData{T} <: AbstractMatrix{T}
 
 Supertype for `CCDData` based on `AbstractMatrix` interface.
 
@@ -20,6 +20,7 @@ Base.promote_rule(::Type{AbstractCCDData{T}}, ::Type{AbstractCCDData{V}}) where 
 
 # custom data type to hold ImageHDU
 """
+    CCDData <: AbstractCCDData
     CCDData(data::AbstractMatrix, [hdr::FITSHeader])
 
 Struct to store `ImageHDU`, derived from [`AbstractCCDData`](@ref).
@@ -47,11 +48,8 @@ One can perform arithmetic operations on it as well:
 
 ```julia
 ccd1 = CCDData(zeros(4, 4))
-
 ccd2 = CCDData(ones(4, 4))
-
 sum_ccd1 = ccd1 + ccd2
-
 sum_ccd2 = ccd2 + ccd1
 ```
 
@@ -93,7 +91,12 @@ function Base.similar(bc::Broadcast.Broadcasted{Broadcast.ArrayStyle{CCDData}}, 
     ccd = find_ccd(bc)
     CCDData(similar(data(ccd), T, axes(bc)), hdr(ccd))
 end
-"`A = find_ccd(As)` returns the first CCDData among the arguments."
+
+"""
+    find_ccd(As)
+
+Return the first CCDData among the arguments.
+"""
 find_ccd(bc::Base.Broadcast.Broadcasted) = find_ccd(bc.args)
 find_ccd(args::Tuple) = find_ccd(find_ccd(args[1]), Base.tail(args))
 find_ccd(x) = x

@@ -5,8 +5,12 @@
 
 Loads the given HDU as an `Array`, permuting the dimensions appropriately.
 
-FITSIO.jl takes over memory read in by cfitsio, which reads in row-major form, whereas when Julia takes that memory, it is assumed as column major.
-Therefore all data read by [`FITSIO.read`](http://juliaastro.github.io/FITSIO.jl/latest/api.html#Base.read-Tuple{ImageHDU}) is transposed. This function allows the user to read data in a consistent way to `Array` by transposing after reading.
+FITSIO.jl takes over memory read in by cfitsio, which reads in row-major form,
+whereas when Julia takes that memory, it is assumed as column major.
+Therefore all data read by
+[`FITSIO.read`](http://juliaastro.org/FITSIO.jl/latest/api.html#Base.read-Tuple{ImageHDU})
+is transposed. This function allows the user to read data in a consistent way to
+`Array` by transposing after reading.
 """
 function getdata(hdu::ImageHDU)
     data = read(hdu)
