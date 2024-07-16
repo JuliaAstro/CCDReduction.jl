@@ -14,6 +14,14 @@ function test_header(ccd1::CCDData, ccd2::CCDData)
     end
 end
 
-@testset "basic methods" begin include("methods.jl") end
-@testset "FITS interface" begin include("fits.jl") end
-@testset "collection" begin include("collection.jl") end
+@testset "CCDRedction" begin
+    @testset "basic methods" begin
+        include("methods.jl")
+    end
+    @testset "FITS interface" begin
+        include("fits.jl")
+    end
+    @testset "collection" begin
+        include("collection.jl")
+    end
+end
