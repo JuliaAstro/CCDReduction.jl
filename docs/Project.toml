@@ -1,4 +1,5 @@
 [deps]
+CCDReduction = "b790e538-3052-4cb9-9f1f-e05859a455f5"
 Documenter = "e30172f5-a6a5-5a46-863b-614d45cd2de4"
 FITSIO = "525bcba6-941b-5504-bd06-fd0dc1a4d2eb"
 Underscores = "d9a01c3f-67ce-4d8c-9b55-35f6e4050bb1"
@@ -7,3 +8,6 @@ Underscores = "d9a01c3f-67ce-4d8c-9b55-35f6e4050bb1"
 Documenter = "1"
 FITSIO = "0.16, 0.17"
 Underscores = "2"
+
+[sources.CCDReduction]
+path = ".."
