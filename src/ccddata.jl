@@ -34,12 +34,12 @@ ccd[1]
 ```
 This accesses the 1st element in matrix associated with `ccd`.
 
-```
+```julia
 ccd["SIMPLE"]
 ```
 One can also access the header directly from `ccd`, the key can be `Symbol` as well.
 
-```
+```julia
 ccd[:SIMPLE] = false
 ```
 Header values can be directly modified from `ccd`.
