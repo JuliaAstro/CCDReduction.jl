@@ -1,7 +1,7 @@
 name = "CCDReduction"
 uuid = "b790e538-3052-4cb9-9f1f-e05859a455f5"
 authors = ["Siddharth Lal"]
-version = "0.2.2"
+version = "0.2.3"
 
 [deps]
 DataFrames = "a93c6f00-e57d-5684-b7b6-d8193f3e46c0"
@@ -14,6 +14,6 @@ Statistics = "10745b16-79ce-11e8-11f9-7d13ad32a3b2"
 DataFrames = "0.21, 0.22, 1"
 FITSIO = "0.16, 0.17"
 LazyStack = "0.0.7, 0.1"
-ResumableFunctions = "0.5.1, 0.6"
+ResumableFunctions = "0.5.1, 0.6, 1"
 Statistics = "1"
 julia = "1.3"
