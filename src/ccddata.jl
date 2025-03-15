@@ -95,7 +95,7 @@ end
 """
     find_ccd(As)
 
-Return the first CCDData among the arguments.
+Return the first [`CCDData`](@ref) among the arguments.
 """
 find_ccd(bc::Base.Broadcast.Broadcasted) = find_ccd(bc.args)
 find_ccd(args::Tuple) = find_ccd(find_ccd(args[1]), Base.tail(args))
