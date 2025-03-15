@@ -360,7 +360,7 @@ function combine(frames::Vararg{<:AbstractArray{<:Number}}; method = median)
     firstframe = first(frames)
     dim = ndims(firstframe) + 1
     shape = size(firstframe)
-    return reshape(method(LazyStack.stack(frames...), dims = dim), shape)
+    return reshape(method(LazyStack.lazystack(frames...), dims = dim), shape)
 end
 
 combine(frames; kwargs...) = combine(frames...; kwargs...)
