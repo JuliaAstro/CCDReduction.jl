@@ -13,7 +13,7 @@ Statistics = "10745b16-79ce-11e8-11f9-7d13ad32a3b2"
 [compat]
 DataFrames = "0.21, 0.22, 1"
 FITSIO = "0.16, 0.17"
-LazyStack = "0.0.7, 0.1"
+LazyStack = "0.1"
 ResumableFunctions = "0.5.1, 0.6, 1"
 Statistics = "1"
 julia = "1.3"
