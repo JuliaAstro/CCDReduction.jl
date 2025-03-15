@@ -1,6 +1,4 @@
-using CCDReduction: axes_min_length,
-                    fits_indices,
-                    convert_value
+using CCDReduction: axes_min_length, fits_indices, convert_value
 
 @testset "bias subtraction" begin
     # testing non-mutating version
