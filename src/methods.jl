@@ -356,7 +356,7 @@ julia> combine(frame, method = sum)
 
 ```
 """
-function combine(frames::Vararg{<:AbstractArray{<:Number}}; method = median)
+function combine(frames::Vararg{AbstractArray{<:Number}}; method = median)
     firstframe = first(frames)
     dim = ndims(firstframe) + 1
     shape = size(firstframe)
