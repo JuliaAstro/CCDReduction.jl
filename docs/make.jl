@@ -2,10 +2,13 @@ using Documenter
 using CCDReduction
 
 DocMeta.setdocmeta!(CCDReduction, :DocTestSetup, :(using CCDReduction); recursive = true)
+
 include("pages.jl")
-makedocs(modules = [CCDReduction],
+
+makedocs(;
+    modules = [CCDReduction],
     sitename = "CCDReduction.jl",
-    format = Documenter.HTML(
+    format = Documenter.HTML(;
         prettyurls = get(ENV, "CI", nothing) == "true",
         canonical = "https://JuliaAstro.org/CCDReduction/stable/",
     ),
